@@ -1,2 +1,2 @@
-# k-che
+# kuche
 KÜCHE - Gestión gastronómica
