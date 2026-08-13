@@ -1575,7 +1575,69 @@
   }
 
 
-  function deleteProduct(id) {
+  function editProduct(id) {
+
+  const product = inventory.find(
+    item => item.id === id
+  );
+
+  if (!product) {
+    return;
+  }
+
+  const newName = prompt(
+    "Nombre del insumo:",
+    product.name
+  );
+
+  if (newName === null) {
+    return;
+  }
+
+  const newQuantity = prompt(
+    "Cantidad actual:",
+    product.quantity
+  );
+
+  if (newQuantity === null) {
+    return;
+  }
+
+  const newMinimum = prompt(
+    "Stock mínimo:",
+    product.minimum
+  );
+
+  if (newMinimum === null) {
+    return;
+  }
+
+  product.name = newName.trim();
+
+  product.quantity = parseFloat(newQuantity);
+
+  product.minimum = parseFloat(newMinimum);
+
+  if (
+    !product.name ||
+    isNaN(product.quantity) ||
+    isNaN(product.minimum)
+  ) {
+
+    alert(
+      "Los datos ingresados no son válidos."
+    );
+
+    return;
+  }
+
+  saveInventory();
+
+  renderInventory();
+
+  updateDashboard();
+
+}  function deleteProduct(id) {
 
     const confirmed =
       confirm(
@@ -1779,7 +1841,7 @@
 
               <button
                 class="delete-button"
-                onclick="deleteProduct(${product.id})"
+                onclick="<div style="display:flex; gap:12px; align-items:center;">    <button     class="secondary-button"     onclick="editProduct(${product.id})"   >     Editar   </button>    <button     class="delete-button"     onclick="deleteProduct(${product.id})"   >     Eliminar   </button>  </div>"
               >
                 Eliminar
               </button>
