@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KÜCHE — Gestión Gastronómica</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #f4efe4;
+      color: #173f35;
+    }
+
+    header {
+      background: #173f35;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 32px;
+      letter-spacing: 3px;
+    }
+
+    header p {
+      margin-top: 6px;
+      opacity: 0.85;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 30px auto;
+      padding: 20px;
+    }
+
+    .welcome {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .welcome h2 {
+      margin-bottom: 10px;
+    }
+
+    .modules {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .module {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .module:hover {
+      transform: translateY(-4px);
+    }
+
+    .module h3 {
+      margin-bottom: 10px;
+    }
+
+    .module p {
+      color: #666;
+      font-size: 14px;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      padding: 20px;
+      color: #777;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>KÜCHE</h1>
+    <p>Software de gestión para administradores gastronómicos</p>
+  </header>
+
+  <main class="container">
+
+    <section class="welcome">
+      <h2>Bienvenido a KÜCHE</h2>
+      <p>
+        Centraliza la gestión de tu establecimiento gastronómico
+        en una sola plataforma.
+      </p>
+    </section>
+
+    <section class="modules">
+
+      <div class="module">
+        <h3>📦 Inventario</h3>
+        <p>Controla insumos, cantidades y stock mínimo.</p>
+      </div>
+
+      <div class="module">
+        <h3>🍳 Producción</h3>
+        <p>Organiza preparaciones y producción diaria.</p>
+      </div>
+
+      <div class="module">
+        <h3>🌡️ Temperaturas</h3>
+        <p>Registra y controla las temperaturas de almacenamiento.</p>
+      </div>
+
+      <div class="module">
+        <h3>👥 Personal</h3>
+        <p>Gestiona trabajadores, turnos y responsabilidades.</p>
+      </div>
+
+      <div class="module">
+        <h3>✅ Checklists</h3>
+        <p>Controla tareas de apertura, cierre, limpieza y BPM.</p>
+      </div>
+
+      <div class="module">
+        <h3>📊 Reportes</h3>
+        <p>Visualiza información importante para tomar decisiones.</p>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer>
+    KÜCHE © 2026 — Gestión gastronómica inteligente
+  </footer>
+
+</body>
+</html>
