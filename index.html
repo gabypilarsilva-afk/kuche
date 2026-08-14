@@ -386,6 +386,38 @@ color:var(--muted);
 margin-top:4px;
 }
 
+
+
+/* REPORTES */
+.report-controls{
+background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;
+margin-bottom:18px;box-shadow:var(--shadow);display:flex;gap:12px;align-items:end;flex-wrap:wrap
+}
+.report-controls .field{min-width:170px}
+.report-controls .report-actions{display:flex;gap:8px;flex-wrap:wrap}
+.report-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+.report-stat{background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow)}
+.report-stat .label{font-size:11px;color:var(--muted);margin-bottom:8px}
+.report-stat .number{font-size:25px;font-weight:650;color:var(--green-dark)}
+.report-stat .detail{font-size:10px;color:var(--muted);margin-top:6px}
+.report-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-bottom:20px}
+.report-section{background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
+.report-section-header{padding:17px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:12px}
+.report-section-header h3{font-size:15px;color:var(--green-dark)}
+.report-section-header span{font-size:10px;color:var(--muted)}
+.report-kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:16px}
+.report-kpi{background:#f8f9f7;border-radius:9px;padding:12px}
+.report-kpi span{display:block;font-size:9px;text-transform:uppercase;color:var(--muted)}
+.report-kpi strong{display:block;margin-top:5px;font-size:16px;color:var(--green-dark)}
+.report-progress-wrap{padding:0 16px 16px}
+.report-progress-label{display:flex;justify-content:space-between;font-size:11px;margin-bottom:7px}
+.report-progress{height:8px;background:#edf0ed;border-radius:20px;overflow:hidden}
+.report-progress span{display:block;height:100%;background:var(--green)}
+.report-table-title{font-size:15px;font-weight:650;color:var(--green-dark);margin:24px 0 12px}
+.report-empty{padding:20px;text-align:center;color:var(--muted);font-size:12px}
+@media(max-width:1100px){.report-summary{grid-template-columns:repeat(2,1fr)}.report-grid{grid-template-columns:1fr}}
+@media(max-width:750px){.report-summary{grid-template-columns:1fr}.report-controls{align-items:stretch}.report-controls .field{min-width:100%}.report-kpis{grid-template-columns:1fr}}
+
 .coming-soon{background:#fff;border:1px solid var(--border);border-radius:12px;padding:60px 30px;text-align:center;box-shadow:var(--shadow)}
 .coming-soon h2{color:var(--green-dark);margin-bottom:8px}
 .coming-soon p{font-size:13px;color:var(--muted)}
@@ -1894,14 +1926,145 @@ Cerrar
 <div class="page-header">
 <div>
 <h1>Reportes</h1>
-<p>Indicadores para la toma de decisiones.</p>
+<p>Visión consolidada de costos, operación, personal, inocuidad y cumplimiento.</p>
 </div>
 </div>
 
-<div class="coming-soon">
-<h2>Módulo en desarrollo</h2>
-<p>El siguiente módulo integrará inventario, costos, producción, personal, temperaturas y cumplimiento de checklists.</p>
+<div class="report-controls">
+
+<div class="field">
+<label>Período</label>
+<select id="reportPeriod" onchange="setReportPeriod()">
+<option value="today">Hoy</option>
+<option value="week">Esta semana</option>
+<option value="month" selected>Este mes</option>
+<option value="custom">Personalizado</option>
+</select>
 </div>
+
+<div class="field">
+<label>Desde</label>
+<input id="reportStartDate" type="date" onchange="renderReports()">
+</div>
+
+<div class="field">
+<label>Hasta</label>
+<input id="reportEndDate" type="date" onchange="renderReports()">
+</div>
+
+<div class="report-actions">
+<button class="primary-button" onclick="renderReports()">Actualizar</button>
+<button class="secondary-button" onclick="exportReportCSV()">Exportar CSV</button>
+<button class="secondary-button" onclick="window.print()">Imprimir</button>
+</div>
+
+</div>
+
+<div class="report-summary">
+
+<div class="report-stat">
+<div class="label">Valor inventario actual</div>
+<div class="number" id="reportInventoryValue">$0</div>
+<div class="detail" id="reportInventoryDetail">0 insumos</div>
+</div>
+
+<div class="report-stat">
+<div class="label">Costo laboral período</div>
+<div class="number" id="reportLaborCost">$0</div>
+<div class="detail" id="reportLaborDetail">0 horas</div>
+</div>
+
+<div class="report-stat">
+<div class="label">Producción completada</div>
+<div class="number" id="reportProductionRate">0%</div>
+<div class="detail" id="reportProductionDetail">0 de 0 preparaciones</div>
+</div>
+
+<div class="report-stat">
+<div class="label">Cumplimiento checklists</div>
+<div class="number" id="reportChecklistRate">0%</div>
+<div class="detail" id="reportChecklistDetail">0 tareas completadas</div>
+</div>
+
+</div>
+
+<div class="report-grid">
+
+<div class="report-section">
+<div class="report-section-header">
+<h3>Inventario</h3>
+<span>Estado actual</span>
+</div>
+<div class="report-kpis">
+<div class="report-kpi"><span>Insumos</span><strong id="reportInventoryCount">0</strong></div>
+<div class="report-kpi"><span>Stock crítico</span><strong id="reportLowStock">0</strong></div>
+<div class="report-kpi"><span>Entradas período</span><strong id="reportEntries">0</strong></div>
+<div class="report-kpi"><span>Salidas período</span><strong id="reportExits">0</strong></div>
+</div>
+</div>
+
+<div class="report-section">
+<div class="report-section-header">
+<h3>Recetas y rentabilidad</h3>
+<span>Costeo actual</span>
+</div>
+<div class="report-kpis">
+<div class="report-kpi"><span>Recetas costeadas</span><strong id="reportRecipeCount">0</strong></div>
+<div class="report-kpi"><span>Food Cost promedio</span><strong id="reportFoodCost">0%</strong></div>
+<div class="report-kpi"><span>Margen promedio</span><strong id="reportMargin">0%</strong></div>
+<div class="report-kpi"><span>Precio promedio / porción</span><strong id="reportAvgPrice">$0</strong></div>
+</div>
+</div>
+
+<div class="report-section">
+<div class="report-section-header">
+<h3>Personal</h3>
+<span>Período seleccionado</span>
+</div>
+<div class="report-kpis">
+<div class="report-kpi"><span>Horas normales</span><strong id="reportNormalHours">0 h</strong></div>
+<div class="report-kpi"><span>Horas feriado</span><strong id="reportHolidayHours">0 h</strong></div>
+<div class="report-kpi"><span>Días trabajados</span><strong id="reportWorkedDays">0</strong></div>
+<div class="report-kpi"><span>Promedio pago / día</span><strong id="reportAvgDailyLabor">$0</strong></div>
+</div>
+</div>
+
+<div class="report-section">
+<div class="report-section-header">
+<h3>Temperaturas</h3>
+<span>Inocuidad</span>
+</div>
+<div class="report-kpis">
+<div class="report-kpi"><span>Controles</span><strong id="reportTempTotal">0</strong></div>
+<div class="report-kpi"><span>Correctos</span><strong id="reportTempOk">0</strong></div>
+<div class="report-kpi"><span>Fuera de rango</span><strong id="reportTempBad">0</strong></div>
+<div class="report-kpi"><span>Cumplimiento</span><strong id="reportTempRate">0%</strong></div>
+</div>
+<div class="report-progress-wrap">
+<div class="report-progress-label"><span>Controles dentro de rango</span><strong id="reportTempProgressLabel">0%</strong></div>
+<div class="report-progress"><span id="reportTempProgress" style="width:0%"></span></div>
+</div>
+</div>
+
+</div>
+
+<div class="report-table-title">Detalle de costo laboral</div>
+<div class="table-card"><div class="table-wrapper"><table>
+<thead><tr><th>Trabajador</th><th>Días</th><th>Horas normales</th><th>Horas feriado</th><th>Costo período</th></tr></thead>
+<tbody id="reportLaborTable"></tbody>
+</table></div></div>
+
+<div class="report-table-title">Incidencias de temperatura</div>
+<div class="table-card"><div class="table-wrapper"><table>
+<thead><tr><th>Fecha</th><th>Control</th><th>Temperatura</th><th>Rango</th><th>Responsable</th><th>Acción correctiva</th></tr></thead>
+<tbody id="reportTemperatureTable"></tbody>
+</table></div></div>
+
+<div class="report-table-title">Producción del período</div>
+<div class="table-card"><div class="table-wrapper"><table>
+<thead><tr><th>Fecha</th><th>Preparación</th><th>Cantidad</th><th>Responsable</th><th>Estado</th></tr></thead>
+<tbody id="reportProductionTable"></tbody>
+</table></div></div>
 
 </section>
 
@@ -2277,6 +2440,15 @@ setChecklistDefaultDate();
 renderChecklists();
 
 updateChecklistStats();
+
+}
+
+
+if(pageId==="reports"){
+
+initializeReportDates();
+
+renderReports();
 
 }
 
@@ -6541,6 +6713,8 @@ renderChecklists();
 
 updateChecklistStats();
 
+initializeReportDates();
+
 updateDashboard();
 
 }
@@ -7815,6 +7989,433 @@ ${escapeHTML(record.observation||"—")}
 
 })
 .join("");
+
+}
+
+
+/* =====================================================
+REPORTES
+===================================================== */
+
+function dateToLocalISO(date){
+
+return (
+date.getFullYear()+
+"-"+
+String(date.getMonth()+1).padStart(2,"0")+
+"-"+
+String(date.getDate()).padStart(2,"0")
+);
+
+}
+
+function initializeReportDates(){
+
+const period=document.getElementById("reportPeriod");
+const start=document.getElementById("reportStartDate");
+const end=document.getElementById("reportEndDate");
+
+if(!period||!start||!end){
+return;
+}
+
+if(!start.value||!end.value){
+period.value="month";
+setReportPeriod();
+}
+
+}
+
+function setReportPeriod(){
+
+const period=document.getElementById("reportPeriod").value;
+const startInput=document.getElementById("reportStartDate");
+const endInput=document.getElementById("reportEndDate");
+
+const today=new Date();
+let start=new Date(today);
+let end=new Date(today);
+
+if(period==="today"){
+start=new Date(today);
+end=new Date(today);
+}
+
+else if(period==="week"){
+const day=today.getDay();
+const diff=day===0?-6:1-day;
+start=new Date(today);
+start.setDate(today.getDate()+diff);
+end=new Date(start);
+end.setDate(start.getDate()+6);
+}
+
+else if(period==="month"){
+start=new Date(today.getFullYear(),today.getMonth(),1);
+end=new Date(today.getFullYear(),today.getMonth()+1,0);
+}
+
+else if(period==="custom"){
+startInput.disabled=false;
+endInput.disabled=false;
+renderReports();
+return;
+}
+
+startInput.value=dateToLocalISO(start);
+endInput.value=dateToLocalISO(end);
+startInput.disabled=false;
+endInput.disabled=false;
+
+renderReports();
+
+}
+
+function getReportRange(){
+
+const start=document.getElementById("reportStartDate")?.value||getToday();
+const end=document.getElementById("reportEndDate")?.value||getToday();
+
+return start<=end
+?{start,end}
+:{start:end,end:start};
+
+}
+
+function dateInReportRange(dateValue){
+
+if(!dateValue){
+return false;
+}
+
+const {start,end}=getReportRange();
+const date=String(dateValue).slice(0,10);
+
+return date>=start&&date<=end;
+
+}
+
+function countReportDays(){
+
+const {start,end}=getReportRange();
+const a=new Date(start+"T00:00:00");
+const b=new Date(end+"T00:00:00");
+
+return Math.max(1,Math.round((b-a)/86400000)+1);
+
+}
+
+function renderReports(){
+
+const reportSection=document.getElementById("reports");
+if(!reportSection){
+return;
+}
+
+const {start,end}=getReportRange();
+
+if(start>end){
+return;
+}
+
+/* INVENTARIO */
+
+const inventoryValue=inventory.reduce(
+(sum,item)=>sum+(Number(item.quantity)||0)*(Number(item.cost)||0),
+0
+);
+
+const lowStock=inventory.filter(item=>
+Number(item.quantity)<=Number(item.minimum)
+);
+
+const rangeMovements=movements.filter(item=>
+dateInReportRange(item.date)
+);
+
+const entries=rangeMovements
+.filter(item=>item.type==="entrada")
+.reduce((sum,item)=>sum+Number(item.quantity||0),0);
+
+const exits=rangeMovements
+.filter(item=>item.type==="salida")
+.reduce((sum,item)=>sum+Number(item.quantity||0),0);
+
+reportInventoryValue.textContent="$"+formatMoney(inventoryValue);
+reportInventoryDetail.textContent=inventory.length+" insumo(s) · "+lowStock.length+" crítico(s)";
+reportInventoryCount.textContent=inventory.length;
+reportLowStock.textContent=lowStock.length;
+reportEntries.textContent=entries.toFixed(2);
+reportExits.textContent=exits.toFixed(2);
+
+/* PERSONAL */
+
+const laborRecords=attendance.filter(record=>
+record.status==="presente"&&dateInReportRange(record.date)
+);
+
+const laborCost=laborRecords.reduce(
+(sum,record)=>sum+Number(record.payment||0),0
+);
+
+const normalHours=laborRecords
+.filter(record=>!record.isHoliday)
+.reduce((sum,record)=>sum+Number(record.hours||0),0);
+
+const holidayHours=laborRecords
+.filter(record=>record.isHoliday)
+.reduce((sum,record)=>sum+Number(record.hours||0),0);
+
+const workedDates=[...new Set(laborRecords.map(record=>record.date))];
+const avgDailyLabor=workedDates.length?laborCost/workedDates.length:0;
+
+reportLaborCost.textContent="$"+formatMoney(laborCost);
+reportLaborDetail.textContent=(normalHours+holidayHours).toFixed(1)+" horas · "+laborRecords.length+" registro(s)";
+reportNormalHours.textContent=normalHours.toFixed(1)+" h";
+reportHolidayHours.textContent=holidayHours.toFixed(1)+" h";
+reportWorkedDays.textContent=workedDates.length;
+reportAvgDailyLabor.textContent="$"+formatMoney(avgDailyLabor);
+
+renderReportLaborTable(laborRecords);
+
+/* PRODUCCIÓN */
+
+const productionRange=productions.filter(item=>
+dateInReportRange(item.date)
+);
+
+const completedProduction=productionRange.filter(item=>
+item.status==="completado"
+).length;
+
+const productionRate=productionRange.length
+?Math.round(completedProduction/productionRange.length*100)
+:0;
+
+reportProductionRate.textContent=productionRate+"%";
+reportProductionDetail.textContent=completedProduction+" de "+productionRange.length+" preparaciones";
+
+renderReportProductionTable(productionRange);
+
+/* CHECKLISTS */
+
+const totalTasksPerDay=checklists.reduce(
+(sum,list)=>sum+(Array.isArray(list.tasks)?list.tasks.length:0),0
+);
+
+const expectedChecklistTasks=totalTasksPerDay*countReportDays();
+
+const completedChecklistRecords=checklistRecords.filter(record=>
+record.completed&&dateInReportRange(record.date)
+);
+
+const uniqueCompleted=new Set(
+completedChecklistRecords.map(record=>
+record.date+"|"+record.checklistId+"|"+record.taskId
+)
+).size;
+
+const checklistRate=expectedChecklistTasks
+?Math.min(100,Math.round(uniqueCompleted/expectedChecklistTasks*100))
+:0;
+
+reportChecklistRate.textContent=checklistRate+"%";
+reportChecklistDetail.textContent=uniqueCompleted+" de "+expectedChecklistTasks+" tareas esperadas";
+
+/* RECETAS */
+
+const calculatedRecipes=recipes.map(calculateSavedRecipe);
+
+const recipeCount=calculatedRecipes.length;
+
+const avgFoodCost=recipeCount
+?calculatedRecipes.reduce((sum,item)=>sum+Number(item.foodCost||0),0)/recipeCount
+:0;
+
+const avgMargin=recipeCount
+?calculatedRecipes.reduce((sum,item)=>sum+Number(item.realMargin||0),0)/recipeCount
+:0;
+
+const avgPrice=recipeCount
+?calculatedRecipes.reduce((sum,item)=>sum+Number(item.finalPerPortion||0),0)/recipeCount
+:0;
+
+reportRecipeCount.textContent=recipeCount;
+reportFoodCost.textContent=avgFoodCost.toFixed(1)+"%";
+reportMargin.textContent=avgMargin.toFixed(1)+"%";
+reportAvgPrice.textContent="$"+formatMoney(avgPrice);
+
+/* TEMPERATURAS */
+
+const tempRange=temperatureRecords.filter(record=>
+dateInReportRange(record.date)
+);
+
+const tempOk=tempRange.filter(record=>record.status==="ok").length;
+const tempBad=tempRange.filter(record=>record.status==="bad").length;
+const tempRate=tempRange.length?Math.round(tempOk/tempRange.length*100):0;
+
+reportTempTotal.textContent=tempRange.length;
+reportTempOk.textContent=tempOk;
+reportTempBad.textContent=tempBad;
+reportTempRate.textContent=tempRate+"%";
+reportTempProgressLabel.textContent=tempRate+"%";
+reportTempProgress.style.width=tempRate+"%";
+
+renderReportTemperatureTable(tempRange.filter(record=>record.status==="bad"));
+
+}
+
+function renderReportLaborTable(records){
+
+const table=document.getElementById("reportLaborTable");
+if(!table){return;}
+
+const grouped={};
+
+records.forEach(record=>{
+
+const key=String(record.staffId||record.staffName);
+
+if(!grouped[key]){
+
+grouped[key]={
+name:record.staffName||"Trabajador",
+dates:new Set(),
+normal:0,
+holiday:0,
+cost:0
+};
+
+}
+
+grouped[key].dates.add(record.date);
+
+if(record.isHoliday){
+grouped[key].holiday+=Number(record.hours||0);
+}else{
+grouped[key].normal+=Number(record.hours||0);
+}
+
+grouped[key].cost+=Number(record.payment||0);
+
+});
+
+const rows=Object.values(grouped)
+.sort((a,b)=>b.cost-a.cost);
+
+if(!rows.length){
+table.innerHTML='<tr><td colspan="5"><div class="report-empty">No hay registros de personal en el período.</div></td></tr>';
+return;
+}
+
+table.innerHTML=rows.map(item=>`
+<tr>
+<td><strong>${escapeHTML(item.name)}</strong></td>
+<td>${item.dates.size}</td>
+<td>${item.normal.toFixed(2)} h</td>
+<td>${item.holiday.toFixed(2)} h</td>
+<td><strong>$${formatMoney(item.cost)}</strong></td>
+</tr>
+`).join("");
+
+}
+
+function renderReportTemperatureTable(records){
+
+const table=document.getElementById("reportTemperatureTable");
+if(!table){return;}
+
+if(!records.length){
+table.innerHTML='<tr><td colspan="6"><div class="report-empty">No hay temperaturas fuera de rango en el período.</div></td></tr>';
+return;
+}
+
+table.innerHTML=records
+.sort((a,b)=>String(b.date).localeCompare(String(a.date)))
+.map(record=>`
+<tr>
+<td>${formatDate(record.date)} ${record.time||""}</td>
+<td>${escapeHTML(record.name||record.type||"Control")}</td>
+<td><strong>${record.value} °C</strong></td>
+<td>${record.min} °C a ${record.max} °C</td>
+<td>${escapeHTML(record.responsible||"—")}</td>
+<td>${escapeHTML(record.correctiveAction||"Sin acción registrada")}</td>
+</tr>
+`).join("");
+
+}
+
+function renderReportProductionTable(records){
+
+const table=document.getElementById("reportProductionTable");
+if(!table){return;}
+
+if(!records.length){
+table.innerHTML='<tr><td colspan="5"><div class="report-empty">No hay producción registrada en el período.</div></td></tr>';
+return;
+}
+
+table.innerHTML=records
+.sort((a,b)=>String(b.date).localeCompare(String(a.date)))
+.map(item=>`
+<tr>
+<td>${formatDate(item.date)}</td>
+<td><strong>${escapeHTML(item.name)}</strong></td>
+<td>${item.quantity} ${escapeHTML(item.unit||"")}</td>
+<td>${escapeHTML(item.responsible||"—")}</td>
+<td><span class="badge ${item.status==="completado"?"badge-success":item.status==="en_proceso"?"badge-warning":"badge-blue"}">${item.status==="completado"?"Completado":item.status==="en_proceso"?"En proceso":"Pendiente"}</span></td>
+</tr>
+`).join("");
+
+}
+
+function exportReportCSV(){
+
+renderReports();
+
+const {start,end}=getReportRange();
+const laborRecords=attendance.filter(record=>record.status==="presente"&&dateInReportRange(record.date));
+const productionRange=productions.filter(item=>dateInReportRange(item.date));
+const tempRange=temperatureRecords.filter(item=>dateInReportRange(item.date));
+
+const rows=[
+["KÜCHE - REPORTE"],
+["Desde",start,"Hasta",end],
+[],
+["RESUMEN"],
+["Valor inventario",document.getElementById("reportInventoryValue").textContent],
+["Costo laboral",document.getElementById("reportLaborCost").textContent],
+["Producción completada",document.getElementById("reportProductionRate").textContent],
+["Cumplimiento checklists",document.getElementById("reportChecklistRate").textContent],
+[],
+["PERSONAL"],
+["Fecha","Trabajador","Horas","Feriado","Tarifa","Pago"],
+...laborRecords.map(r=>[r.date,r.staffName,Number(r.hours||0).toFixed(2),r.isHoliday?"Sí":"No",Number(r.hourlyRateApplied||0),Number(r.payment||0)]),
+[],
+["PRODUCCIÓN"],
+["Fecha","Preparación","Cantidad","Unidad","Responsable","Estado"],
+...productionRange.map(r=>[r.date,r.name,r.quantity,r.unit,r.responsible,r.status]),
+[],
+["TEMPERATURAS"],
+["Fecha","Control","Temperatura","Mínimo","Máximo","Responsable","Estado","Acción correctiva"],
+...tempRange.map(r=>[r.date,r.name,r.value,r.min,r.max,r.responsible,r.status,r.correctiveAction||""])
+];
+
+const csv=rows.map(row=>row.map(value=>{
+const text=String(value??"").replaceAll('"','""');
+return '"'+text+'"';
+}).join(";")).join("\n");
+
+const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"});
+const url=URL.createObjectURL(blob);
+const link=document.createElement("a");
+link.href=url;
+link.download="kuche_reporte_"+start+"_"+end+".csv";
+document.body.appendChild(link);
+link.click();
+link.remove();
+URL.revokeObjectURL(url);
 
 }
 
