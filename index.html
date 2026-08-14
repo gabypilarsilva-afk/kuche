@@ -541,6 +541,27 @@ COMPRAS / MERMAS / VENTAS / IA
 @media(max-width:1100px){.kpi-grid-5{grid-template-columns:repeat(2,1fr)}.cid-form-grid,.cid-settings-grid,.mod-grid,.reservation-form-grid,.reservation-second-grid,.shift-form-grid,.trace-form-grid{grid-template-columns:repeat(2,1fr)}.week-board{grid-template-columns:repeat(7,180px)}}
 @media(max-width:750px){.module-grid,.kpi-grid-5,.cid-form-grid,.cid-settings-grid,.mod-grid,.reservation-form-grid,.reservation-second-grid,.shift-form-grid,.trace-form-grid,.table-config-grid{grid-template-columns:1fr}}
 
+
+
+/* =====================================================
+   POS / COMANDAS / CAJA
+===================================================== */
+.stock-alert-pill{border:0;border-radius:999px;padding:8px 12px;font-size:11px;font-weight:800;cursor:pointer;background:#fff5d8;color:#805b12;box-shadow:0 1px 0 rgba(0,0,0,.04)}
+.stock-alert-pill.danger{background:var(--danger-soft);color:var(--danger)}
+.stock-alert-pill.ok{background:#eaf6ef;color:var(--ok)}
+.pos-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.pos-stock-banner{border:1px solid var(--line);background:white;border-radius:12px;padding:14px;margin-bottom:16px}
+.pos-stock-banner.warning{border-color:#dfc681;background:#fffaf0}.pos-stock-banner.danger{border-color:#dca7a2;background:var(--danger-soft)}
+.pos-stock-list{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}.pos-stock-chip{border-radius:999px;padding:6px 9px;background:#f3f1eb;font-size:11px}.pos-stock-chip.low{background:#fff1c8;color:#825b0d}.pos-stock-chip.out{background:#f8dfdc;color:#9c3c34}
+.pos-table-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin:14px 0 18px}.pos-table-card{border:1px solid var(--line);border-radius:13px;padding:14px;background:white;cursor:pointer;transition:.15s}.pos-table-card:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(30,41,37,.07)}.pos-table-card.open{border-color:#d5b461;background:#fffaf0}.pos-table-card.selected{outline:2px solid var(--green-dark)}.pos-table-name{font-weight:800}.pos-table-meta{font-size:11px;color:var(--muted);margin-top:5px}
+.pos-workspace{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(330px,.7fr);gap:16px;align-items:start}.pos-catalog-card,.pos-order-card{border:1px solid var(--line);background:white;border-radius:14px;padding:16px}.pos-order-card{position:sticky;top:82px}.pos-catalog-controls{display:grid;grid-template-columns:1fr 180px;gap:10px;margin-bottom:12px}.pos-product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:9px;max-height:600px;overflow:auto;padding-right:2px}.pos-product{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}.pos-product.low{border-color:#e0bd68;background:#fffaf0}.pos-product.out{border-color:#d99b95;background:#fff7f6}.pos-product-name{font-weight:800;font-size:13px}.pos-product-price{font-size:17px;font-weight:800;margin:7px 0}.pos-product-meta{font-size:10px;color:var(--muted);min-height:28px}.pos-product button{width:100%;margin-top:8px}
+.pos-cart-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}.pos-cart-row:last-child{border-bottom:0}.pos-cart-name{font-weight:750;font-size:12px}.pos-cart-note{font-size:10px;color:var(--muted);margin-top:3px}.pos-cart-controls{display:flex;align-items:center;gap:5px}.qty-btn{width:27px;height:27px;border:1px solid var(--line);background:white;border-radius:7px;cursor:pointer}.pos-total-box{margin-top:12px;padding-top:12px;border-top:2px solid var(--line)}.pos-total-line{display:flex;justify-content:space-between;padding:4px 0;font-size:12px}.pos-total-line.grand{font-size:17px;font-weight:850}.pos-order-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}.pos-order-actions button{flex:1;min-width:115px}
+.pos-empty{padding:30px 15px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}.payment-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.tip-buttons{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}.tip-buttons button{padding:7px 10px}.payment-check{margin-top:12px;border-radius:10px;padding:11px;background:#f5f3ed;font-size:12px}.payment-check.bad{background:var(--danger-soft);color:var(--danger)}.payment-check.ok{background:#eaf6ef;color:var(--ok)}
+.cash-hero{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}.cash-card{border:1px solid var(--line);background:white;border-radius:12px;padding:13px}.cash-card span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.04em}.cash-card strong{display:block;margin-top:5px;font-size:18px}.cash-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.cash-box{border:1px solid var(--line);background:white;border-radius:14px;padding:16px}.cash-movement-grid{display:grid;grid-template-columns:170px 160px 1fr auto;gap:8px;align-items:end}.cash-diff-positive{color:var(--ok);font-weight:800}.cash-diff-negative{color:var(--danger);font-weight:800}.audit-row{font-size:11px}.audit-row strong{font-size:12px}
+.station-badge{display:inline-block;font-size:9px;text-transform:uppercase;letter-spacing:.05em;padding:3px 6px;border-radius:999px;background:#edf0ee;color:#46534e;margin-top:4px}
+@media(max-width:1100px){.pos-workspace{grid-template-columns:1fr}.pos-order-card{position:static}.pos-kpi-grid,.cash-hero{grid-template-columns:repeat(2,1fr)}.payment-grid{grid-template-columns:repeat(2,1fr)}.cash-grid{grid-template-columns:1fr}}
+@media(max-width:750px){.pos-kpi-grid,.cash-hero,.payment-grid{grid-template-columns:1fr}.pos-catalog-controls,.cash-movement-grid{grid-template-columns:1fr}.pos-product-grid{grid-template-columns:1fr 1fr}.pos-order-actions button{min-width:100%}}
+
 </style>
 </head>
 
@@ -597,6 +618,8 @@ COMPRAS / MERMAS / VENTAS / IA
 <button class="nav-item" onclick="showPage('sales',this)"><span>Ventas diarias</span></button>
 <button class="nav-item" onclick="showPage('reconciliation',this)"><span>Conciliación stock</span></button>
 <button class="nav-item" onclick="showPage('reservations',this)"><span>Reservas</span></button>
+<button class="nav-item" onclick="showPage('commandas',this)"><span>Mesas y comandas</span></button>
+<button class="nav-item" onclick="showPage('cash',this)"><span>Caja y cierre de turno</span></button>
 <button class="nav-item" onclick="showPage('traceability',this)"><span>Vencimientos y trazabilidad</span></button>
 
 <div class="nav-title">Producción y control</div>
@@ -657,6 +680,7 @@ COMPRAS / MERMAS / VENTAS / IA
 
 <header class="topbar">
 <div class="topbar-title" id="topbarTitle">Panel de gestión</div>
+<button id="workerStockAlert" class="stock-alert-pill" style="display:none" onclick="openGarzonCommandasFromAlert()">Disponibilidad</button>
 <div class="system-status">Sistema operativo</div>
 </header>
 
@@ -1138,6 +1162,17 @@ COMPRAS / MERMAS / VENTAS / IA
 <option>Salsa</option>
 <option>Preparación base</option>
 <option>Otro</option>
+</select>
+</div>
+
+<div class="field">
+<label>Estación de comanda</label>
+<select id="recipeStation">
+<option value="Cocina">Cocina</option>
+<option value="Bar">Bar</option>
+<option value="Cafetería">Cafetería</option>
+<option value="Postres">Postres</option>
+<option value="Otra">Otra</option>
 </select>
 </div>
 
@@ -2223,6 +2258,74 @@ Cerrar
 </section>
 
 <!-- ASISTENTE IA -->
+
+<!-- MESAS Y COMANDAS / POS -->
+<section id="commandas" class="page">
+<div class="page-header">
+  <div><h1>Mesas y comandas</h1><p>Abre mesas, registra pedidos, separa comandas por estación y controla disponibilidad en tiempo real.</p></div>
+  <div class="staff-actions"><button class="secondary-button" onclick="renderPOS()">Actualizar stock</button><button class="primary-button" onclick="printCurrentPOSOrder('all')">Imprimir comanda</button></div>
+</div>
+<div class="pos-kpi-grid">
+  <div class="stat-card"><div class="stat-label">Mesas abiertas</div><div class="stat-value" id="posOpenTables">0</div><div class="stat-detail">Con comanda activa</div></div>
+  <div class="stat-card"><div class="stat-label">Venta abierta</div><div class="stat-value" id="posOpenValue">$0</div><div class="stat-detail">Aún no cobrada</div></div>
+  <div class="stat-card"><div class="stat-label">Stock bajo</div><div class="stat-value" id="posLowCount">0</div><div class="stat-detail">Productos para advertir</div></div>
+  <div class="stat-card"><div class="stat-label">Sin stock</div><div class="stat-value" id="posOutCount">0</div><div class="stat-detail">Requieren PIN para comandar</div></div>
+</div>
+<div id="posStockBanner" class="pos-stock-banner"></div>
+<div class="card"><div class="card-header"><h2>Mesas</h2><span>Selecciona una mesa para abrir o continuar su comanda</span></div><div id="posTablesGrid" class="pos-table-grid"></div></div>
+<div class="pos-workspace" style="margin-top:16px">
+  <div class="pos-catalog-card">
+    <div class="card-header"><h2>Productos</h2><span>Disponibilidad calculada desde Recetas + Inventario</span></div>
+    <div class="pos-catalog-controls"><input id="posProductSearch" placeholder="Buscar producto..." oninput="renderPOSCatalog()"><select id="posCategoryFilter" onchange="renderPOSCatalog()"><option value="">Todas las categorías</option></select></div>
+    <div id="posProductGrid" class="pos-product-grid"></div>
+  </div>
+  <div class="pos-order-card">
+    <div id="posNoOrder" class="pos-empty"><strong>Selecciona una mesa</strong><div style="margin-top:5px">La comanda aparecerá aquí.</div></div>
+    <div id="posOrderContent" style="display:none">
+      <div class="card-header"><div><h2 id="posOrderTableName">Mesa</h2><span id="posOrderWorker">Garzón</span></div><span class="badge badge-warning">Abierta</span></div>
+      <div class="field" style="margin-bottom:10px"><label>Personas</label><input id="posPeople" type="number" min="1" value="1" onchange="updatePOSPeople()"></div>
+      <div id="posCart"></div>
+      <div class="pos-total-box"><div class="pos-total-line"><span>Subtotal</span><strong id="posSubtotal">$0</strong></div><div class="pos-total-line grand"><span>Total</span><strong id="posTotal">$0</strong></div></div>
+      <div class="pos-order-actions">
+        <button class="secondary-button" onclick="printCurrentPOSOrder('Cocina')">Cocina</button>
+        <button class="secondary-button" onclick="printCurrentPOSOrder('Bar')">Bar</button>
+        <button class="secondary-button" onclick="printCurrentPOSOrder('all')">Todo</button>
+        <button class="primary-button" onclick="openPOSPayment()">Cobrar mesa</button>
+      </div>
+      <button class="danger-button" style="width:100%;margin-top:8px" onclick="cancelCurrentPOSOrder()">Cancelar comanda</button>
+    </div>
+  </div>
+</div>
+<div id="posPaymentPanel" class="form-panel" style="margin-top:16px">
+  <div class="form-title">Cobro de mesa</div>
+  <div class="status-box" id="posPaymentSummary"></div>
+  <div class="tip-buttons"><button class="secondary-button" onclick="setPOSTip(0)">Sin propina</button><button class="secondary-button" onclick="setPOSTip(10)">10%</button><button class="secondary-button" onclick="setPOSTip(15)">15%</button><button class="secondary-button" onclick="setPOSTip(20)">20%</button></div>
+  <div class="payment-grid">
+    <div class="field"><label>Propina $</label><input id="posTipAmount" type="number" min="0" value="0" oninput="updatePOSPaymentCheck()"></div>
+    <div class="field"><label>Medio propina</label><select id="posTipMethod" onchange="updatePOSPaymentCheck()"><option value="efectivo">Efectivo</option><option value="debito">Débito</option><option value="credito">Crédito</option><option value="transferencia">Transferencia</option></select></div>
+    <div class="field"><label>Descuento $</label><input id="posDiscount" type="number" min="0" value="0" oninput="updatePOSPaymentCheck()"></div>
+    <div class="field"><label>Nota de pago</label><input id="posPaymentNote" type="text" placeholder="Opcional"></div>
+  </div>
+  <h3 style="margin:16px 0 8px">Distribución del pago de la venta</h3>
+  <div class="payment-grid">
+    <div class="field"><label>Efectivo $</label><input id="payCash" type="number" min="0" value="0" oninput="updatePOSPaymentCheck()"></div>
+    <div class="field"><label>Débito $</label><input id="payDebit" type="number" min="0" value="0" oninput="updatePOSPaymentCheck()"></div>
+    <div class="field"><label>Crédito $</label><input id="payCredit" type="number" min="0" value="0" oninput="updatePOSPaymentCheck()"></div>
+    <div class="field"><label>Transferencia $</label><input id="payTransfer" type="number" min="0" value="0" oninput="updatePOSPaymentCheck()"></div>
+  </div>
+  <div id="posPaymentCheck" class="payment-check"></div>
+  <div class="form-actions"><button class="primary-button" onclick="finalizePOSPayment()">Cerrar cuenta y registrar venta</button><button class="secondary-button" onclick="closePOSPayment()">Cancelar</button></div>
+</div>
+<div class="card admin-sensitive" style="margin-top:16px"><div class="card-header"><h2>Autorizaciones de excepción</h2><span>Uso de PIN para comandar sin stock o modificar comandas enviadas</span></div><div class="table-wrapper"><table><thead><tr><th>Fecha</th><th>Trabajador</th><th>Acción</th><th>Producto / mesa</th><th>Motivo</th></tr></thead><tbody id="posAuditBody"></tbody></table></div></div>
+</section>
+
+<!-- CAJA Y CIERRE DE TURNO -->
+<section id="cash" class="page">
+<div class="page-header"><div><h1>Caja y cierre de turno</h1><p>Apertura, ventas automáticas desde comandas, propinas, movimientos y conciliación de cierre.</p></div><button class="secondary-button" onclick="renderCash()">Actualizar</button></div>
+<div id="cashWorkspace"></div>
+<div class="card" style="margin-top:16px"><div class="card-header"><h2>Historial de cajas</h2><span>Aperturas y cierres registrados</span></div><div class="table-wrapper"><table><thead><tr><th>Fecha</th><th>Responsable</th><th>Apertura</th><th>Venta POS</th><th>Propinas</th><th>Efectivo esperado</th><th>Efectivo contado</th><th>Diferencia</th></tr></thead><tbody id="cashHistoryBody"></tbody></table></div></div>
+</section>
+
 <section id="assistant" class="page">
 <div class="page-header"><div><h1>Asistente IA</h1><p>Análisis inteligente de mermas, costos, inventario y operación.</p></div><button class="primary-button" onclick="generateAIAnalysis()">Actualizar análisis</button></div>
 <div class="ai-hero"><h2>Análisis operativo inteligente</h2><p>KÜCHE analiza los datos guardados en este navegador para detectar patrones, pérdidas y oportunidades de mejora. Tus datos no salen del dispositivo. Para una IA generativa en la nube se necesitará posteriormente un backend seguro; nunca se debe guardar una clave privada dentro de GitHub Pages.</p></div>
@@ -2622,6 +2725,12 @@ let editingShiftId=null;
 let shiftWeekStart="";
 let editingTraceId=null;
 let traceFilter="all";
+let posOrders = JSON.parse(localStorage.getItem("kuchePOSOrders")) || [];
+let cashRegisters = JSON.parse(localStorage.getItem("kucheCashRegisters")) || [];
+let cashMovements = JSON.parse(localStorage.getItem("kucheCashMovements")) || [];
+let auditLog = JSON.parse(localStorage.getItem("kucheAuditLog")) || [];
+let activePOSOrderId = null;
+
 
 
 
@@ -2773,6 +2882,11 @@ function saveWasteData(){localStorage.setItem("kucheWaste",JSON.stringify(wastes
 function saveStaffMeals(){localStorage.setItem("kucheStaffMeals",JSON.stringify(staffMeals));}
 function saveSales(){localStorage.setItem("kucheSales",JSON.stringify(sales));}
 function saveReconciliations(){localStorage.setItem("kucheReconciliations",JSON.stringify(reconciliations));}
+function savePOSOrders(){localStorage.setItem("kuchePOSOrders",JSON.stringify(posOrders));}
+function saveCashRegisters(){localStorage.setItem("kucheCashRegisters",JSON.stringify(cashRegisters));}
+function saveCashMovements(){localStorage.setItem("kucheCashMovements",JSON.stringify(cashMovements));}
+function saveAuditLog(){localStorage.setItem("kucheAuditLog",JSON.stringify(auditLog));}
+
 
 
 /* =====================================================
@@ -2989,6 +3103,9 @@ updateReconciliationStats();
 if(pageId==="assistant"){
 generateAIAnalysis();
 }
+if(pageId==="commandas"){renderPOS();}
+if(pageId==="cash"){renderCash();}
+
 
 if(pageId==="reservations"){ setReservationDefaults(); loadReservationTables(); renderDiningTables(); renderReservations(); updateReservationStats(); }
 if(pageId==="shifts"){ initializeShiftWeek(); loadShiftStaff(); renderShifts(); updateShiftStats(); }
@@ -4138,6 +4255,7 @@ recipeFormTitle.textContent="Nueva receta";
 
 recipeName.value="";
 recipeCategory.value="";
+if(document.getElementById("recipeStation"))recipeStation.value="Cocina";
 recipeYield.value=1;
 
 recipeLabor.value=costSettings.labor;
@@ -4645,6 +4763,8 @@ name,
 
 category:categoryValue,
 
+station:document.getElementById("recipeStation")?.value||inferRecipeStation({category:categoryValue}),
+
 yield:yieldValue,
 
 ingredients,
@@ -4739,6 +4859,7 @@ recipeFormTitle.textContent="Editar receta";
 
 recipeName.value=recipe.name;
 recipeCategory.value=recipe.category;
+if(document.getElementById("recipeStation"))recipeStation.value=recipe.station||inferRecipeStation(recipe);
 recipeYield.value=recipe.yield;
 
 recipeLabor.value=
@@ -8518,7 +8639,7 @@ function updateSalePreview(){const recipe=recipes.find(x=>String(x.id)===String(
 function saveSale(){const recipe=recipes.find(x=>String(x.id)===String(document.getElementById("saleRecipe").value));const qty=Number(document.getElementById("saleQuantity").value);const price=Number(document.getElementById("saleUnitPrice").value);const date=document.getElementById("saleDate").value;if(!recipe||qty<=0||price<0||!date){alert("Completa receta, cantidad, precio y fecha.");return;}const consumptions=recipeConsumptions(recipe,qty);if(!canConsume(consumptions)){const faltan=consumptions.filter(c=>!c.product||Number(c.product.quantity)<c.quantity).map(c=>c.productName).join(", ");alert("Stock insuficiente para registrar la venta. Faltan: "+faltan);return;}const id=Date.now();applyConsumptions(consumptions,"Venta · "+recipe.name,"sale",id,date);sales.unshift({id,date,recipeId:recipe.id,recipeName:recipe.name,quantity:qty,unitPrice:price,total:qty*price,channel:document.getElementById("saleChannel").value,consumptions:consumptions.map(({product,...rest})=>rest),status:"activa",createdAt:new Date().toISOString()});saveSales();saveInventory();saveMovements();closeSaleForm();renderSales();updateSalesStats();renderInventory();updateDashboard();}
 function cancelSale(id){const x=sales.find(i=>i.id===id);if(!x||x.status==="anulada")return;if(!confirm("¿Anular venta y devolver consumo teórico al inventario?"))return;restoreConsumptions(x.consumptions||[],"Anulación venta","sale_cancel",x.id);x.status="anulada";saveSales();saveInventory();saveMovements();renderSales();updateSalesStats();renderInventory();}
 function showAllSales(){salesShowAll=true;renderSales();}
-function renderSales(){const table=document.getElementById("salesTable");if(!table)return;const date=document.getElementById("salesFilterDate")?.value||getToday();let list=sales;if(!salesShowAll)list=list.filter(x=>x.date===date);if(!list.length){table.innerHTML='<tr><td colspan="7"><div class="empty-state"><strong>No hay ventas registradas</strong></div></td></tr>';return;}table.innerHTML=list.map(x=>`<tr><td>${formatDate(x.date)}</td><td><strong>${escapeHTML(x.recipeName)}</strong></td><td>${x.quantity}</td><td>$${formatMoney(x.unitPrice)}</td><td><strong>$${formatMoney(x.total)}</strong></td><td>${escapeHTML(x.channel||"—")}${x.status==="anulada"?'<div class="category">Anulada</div>':''}</td><td>${x.status!=="anulada"?`<button class="danger-button" onclick="cancelSale(${x.id})">Anular</button>`:""}</td></tr>`).join("");}
+function renderSales(){const table=document.getElementById("salesTable");if(!table)return;const date=document.getElementById("salesFilterDate")?.value||getToday();let list=sales;if(!salesShowAll)list=list.filter(x=>x.date===date);if(!list.length){table.innerHTML='<tr><td colspan="7"><div class="empty-state"><strong>No hay ventas registradas</strong></div></td></tr>';return;}table.innerHTML=list.map(x=>`<tr><td>${formatDate(x.date)}</td><td><strong>${escapeHTML(x.recipeName)}</strong></td><td>${x.quantity}</td><td>$${formatMoney(x.unitPrice)}</td><td><strong>$${formatMoney(x.total)}</strong></td><td>${escapeHTML(x.channel||"—")}${x.status==="anulada"?'<div class="category">Anulada</div>':''}</td><td>${x.status!=="anulada"&&x.source!=="pos"?`<button class="danger-button" onclick="cancelSale(${x.id})">Anular</button>`:x.source==="pos"?`<span class="badge badge-blue">Desde POS</span>`:""}</td></tr>`).join("");}
 function updateSalesStats(){const month=getCurrentMonthPrefix(),today=getToday();const active=sales.filter(x=>x.status!=="anulada"),todayList=active.filter(x=>x.date===today),monthList=active.filter(x=>(x.date||"").startsWith(month));const todayAmount=todayList.reduce((a,b)=>a+Number(b.total||0),0),monthAmount=monthList.reduce((a,b)=>a+Number(b.total||0),0);document.getElementById("salesTodayAmount")&&(document.getElementById("salesTodayAmount").textContent="$"+formatMoney(todayAmount));document.getElementById("salesTodayUnits")&&(document.getElementById("salesTodayUnits").textContent=todayList.reduce((a,b)=>a+Number(b.quantity||0),0));document.getElementById("salesMonthAmount")&&(document.getElementById("salesMonthAmount").textContent="$"+formatMoney(monthAmount));document.getElementById("salesAverageTicket")&&(document.getElementById("salesAverageTicket").textContent="$"+formatMoney(monthList.length?monthAmount/monthList.length:0));}
 
 function loadReconciliationProducts(){const sel=document.getElementById("reconProduct");if(!sel)return;sel.innerHTML='<option value="">Seleccionar insumo</option>'+inventory.map(x=>`<option value="${x.id}">${escapeHTML(x.name)} · teórico ${x.quantity} ${escapeHTML(x.unit)}</option>`).join("");}
@@ -9718,6 +9839,99 @@ function setTraceFilter(f){traceFilter=f;renderTraceability();}
 function renderTraceability(){if(!document.getElementById("traceTableBody"))return;const q=(traceSearch?.value||"").toLowerCase();let list=traceLots.filter(x=>(x.productName+" "+x.lot+" "+x.supplierName).toLowerCase().includes(q));if(traceFilter==="soon")list=list.filter(x=>traceDaysLeft(x.expiryDate)>=0&&traceDaysLeft(x.expiryDate)<=3);if(traceFilter==="expired")list=list.filter(x=>traceDaysLeft(x.expiryDate)<0);traceTableBody.innerHTML=list.length?list.sort((a,b)=>a.expiryDate.localeCompare(b.expiryDate)).map(x=>{const d=traceDaysLeft(x.expiryDate),status=d<0?"Vencido":d<=3?"Por vencer":"Vigente",badge=d<0?"badge-danger":d<=3?"badge-warning":"badge-success";return `<tr><td><div class="product-name">${escapeHTML(x.productName)}</div></td><td>${escapeHTML(x.lot)}</td><td>${x.quantity} ${escapeHTML(x.unit||'')}</td><td>${formatDate(x.productionDate)}</td><td>${formatDate(x.expiryDate)}<div class="category">${d<0?Math.abs(d)+' días vencido':d+' días'}</div></td><td>${escapeHTML(x.supplierName||'—')}</td><td><span class="badge ${badge}">${status}</span></td><td><div class="actions"><button class="secondary-button" onclick="editTraceLot(${x.id})">Editar</button><button class="danger-button" onclick="deleteTraceLot(${x.id})">Eliminar</button></div></td></tr>`}).join(""):'<tr><td colspan="8"><div class="empty-state"><strong>Sin lotes</strong></div></td></tr>';const alerts=traceLots.filter(x=>traceDaysLeft(x.expiryDate)<=3).sort((a,b)=>a.expiryDate.localeCompare(b.expiryDate));traceAlerts.innerHTML=alerts.slice(0,6).map(x=>{const d=traceDaysLeft(x.expiryDate);return `<div class="trace-alert ${d<0?'danger':''}"><strong>${escapeHTML(x.productName)}</strong> · Lote ${escapeHTML(x.lot)} · ${d<0?'Vencido hace '+Math.abs(d)+' día(s)':'Vence en '+d+' día(s)'}</div>`}).join("");}
 function updateTraceStats(){if(!document.getElementById("traceActiveLots"))return;const active=traceLots.filter(x=>traceDaysLeft(x.expiryDate)>=0),soon=traceLots.filter(x=>traceDaysLeft(x.expiryDate)>=0&&traceDaysLeft(x.expiryDate)<=3),expired=traceLots.filter(x=>traceDaysLeft(x.expiryDate)<0);traceActiveLots.textContent=active.length;traceSoonLots.textContent=soon.length;traceExpiredLots.textContent=expired.length;traceProducts.textContent=new Set(traceLots.map(x=>x.productId)).size;const risk=[...soon,...expired].reduce((sum,x)=>{const p=inventory.find(i=>String(i.id)===String(x.productId));return sum+Number(x.quantity||0)*Number(p?.cost||0)},0);traceRiskValue.textContent="$"+formatMoney(risk);}
 
+
+/* =====================================================
+   MESAS, COMANDAS, STOCK Y CAJA
+===================================================== */
+function normalizeRole(value){return String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();}
+function getCurrentWorker(){return currentSession?.role==="worker"?staff.find(w=>String(w.id)===String(currentSession.workerId)):null;}
+function isGarzon(){const r=normalizeRole(getCurrentWorker()?.role);return r.includes("garzon")||r.includes("mesero");}
+function isCashier(){const r=normalizeRole(getCurrentWorker()?.role);return r.includes("cajero");}
+function inferRecipeStation(recipe){const c=normalizeRole(recipe?.category);if(c.includes("bebestible"))return "Bar";if(c.includes("postre"))return "Postres";return "Cocina";}
+function getRecipeStation(recipe){return recipe?.station||inferRecipeStation(recipe);}
+function getPOSWorkerIdentity(){if(currentSession?.role==="worker"){const w=getCurrentWorker();return {workerId:w?.id||currentSession.workerId,workerName:w?.name||currentSession.name||"Trabajador"};}return {workerId:"admin",workerName:appSettings.adminName||"Administrador"};}
+function getActiveOrderForTable(tableId){return posOrders.find(o=>String(o.tableId)===String(tableId)&&o.status==="open");}
+function getActivePOSOrder(){return posOrders.find(o=>String(o.id)===String(activePOSOrderId)&&o.status==="open")||null;}
+function getOrderSubtotal(order){return (order?.items||[]).reduce((s,i)=>s+Number(i.quantity||0)*Number(i.unitPrice||0),0);}
+function getOrderDiscount(order){return Math.max(0,Number(order?.discount||0));}
+function getOrderTotal(order){return Math.max(0,getOrderSubtotal(order)-getOrderDiscount(order));}
+function getOpenCommittedByProduct(){const map={};posOrders.filter(o=>o.status==="open").forEach(o=>(o.items||[]).forEach(item=>{const recipe=recipes.find(r=>String(r.id)===String(item.recipeId));if(!recipe)return;recipeConsumptions(recipe,Number(item.quantity||0)).forEach(c=>{map[c.productId]=(map[c.productId]||0)+Number(c.quantity||0);});}));return map;}
+function getRecipeAvailability(recipe){
+ const committed=getOpenCommittedByProduct();let portions=Infinity;let criticalIngredient=false;const details=[];const yieldValue=Math.max(1,Number(recipe.yield)||1);
+ (recipe.ingredients||[]).forEach(i=>{const p=inventory.find(x=>String(x.id)===String(i.productId));const perPortion=Number(i.quantity||0)/yieldValue;if(!p||perPortion<=0){portions=0;details.push((i.productName||"Insumo")+": no disponible");return;}const free=Number(p.quantity||0)-Number(committed[p.id]||0);const possible=Math.floor(Math.max(0,free)/perPortion+1e-9);portions=Math.min(portions,possible);if(Number(p.quantity||0)<=Number(p.minimum||0))criticalIngredient=true;if(possible<=3)details.push(p.name+": "+possible+" porción(es) aprox.");});
+ if(portions===Infinity)portions=0;const status=portions<1?"out":(portions<=3||criticalIngredient?"low":"ok");return {status,portions,details};
+}
+function getPOSStockSummary(){const rows=recipes.map(r=>({recipe:r,...getRecipeAvailability(r)}));return {all:rows,low:rows.filter(x=>x.status==="low"),out:rows.filter(x=>x.status==="out")};}
+function renderWorkerStockAlert(){const el=document.getElementById("workerStockAlert");if(!el)return;if(currentSession?.role==="worker"&&isGarzon()){const s=getPOSStockSummary();el.style.display="inline-flex";el.className="stock-alert-pill "+(s.out.length?"danger":s.low.length?"":"ok");el.textContent=s.out.length?`${s.out.length} sin stock · ${s.low.length} bajo`:s.low.length?`${s.low.length} producto(s) con poco stock`:"Stock disponible";}else el.style.display="none";}
+function openGarzonCommandasFromAlert(){const btn=Array.from(document.querySelectorAll('.nav-item')).find(b=>(b.getAttribute('onclick')||'').includes("'commandas'"));showPage('commandas',btn);}
+function renderPOS(){
+ if(!document.getElementById("posTablesGrid"))return;renderWorkerStockAlert();
+ const summary=getPOSStockSummary();posOpenTables.textContent=posOrders.filter(o=>o.status==="open").length;posOpenValue.textContent="$"+formatMoney(posOrders.filter(o=>o.status==="open").reduce((s,o)=>s+getOrderTotal(o),0));posLowCount.textContent=summary.low.length;posOutCount.textContent=summary.out.length;
+ const banner=document.getElementById("posStockBanner");banner.className="pos-stock-banner "+(summary.out.length?"danger":summary.low.length?"warning":"");
+ banner.innerHTML=summary.out.length||summary.low.length?`<strong>Disponibilidad para venta</strong><div style="font-size:11px;color:var(--muted);margin-top:3px">El stock se calcula considerando inventario y comandas abiertas. Los productos sin stock requieren PIN de administrador.</div><div class="pos-stock-list">${summary.out.slice(0,10).map(x=>`<span class="pos-stock-chip out">${escapeHTML(x.recipe.name)} · SIN STOCK</span>`).join("")}${summary.low.slice(0,10).map(x=>`<span class="pos-stock-chip low">${escapeHTML(x.recipe.name)} · quedan ~${x.portions}</span>`).join("")}</div>`:`<strong>Disponibilidad normal</strong><div style="font-size:11px;color:var(--muted);margin-top:3px">No hay productos del menú en condición crítica.</div>`;
+ renderPOSTables();renderPOSCatalog();renderPOSOrder();renderPOSAudit();
+}
+function renderPOSTables(){const box=document.getElementById("posTablesGrid");if(!box)return;if(!diningTables.length){box.innerHTML='<div class="pos-empty">No hay mesas configuradas. Créelas desde Reservas.</div>';return;}box.innerHTML=diningTables.map(t=>{const o=getActiveOrderForTable(t.id);return `<div class="pos-table-card ${o?'open':''} ${String(activePOSOrderId)===String(o?.id)?'selected':''}" onclick="openPOSTable(${t.id})"><div class="pos-table-name">${escapeHTML(t.name)}</div><div class="pos-table-meta">Capacidad ${Number(t.capacity||0)||'—'}${o?` · ${o.people||1} pers.<br><strong>$${formatMoney(getOrderTotal(o))}</strong>`:' · Disponible'}</div></div>`}).join("");}
+function openPOSTable(tableId){let order=getActiveOrderForTable(tableId);if(!order){const table=diningTables.find(t=>String(t.id)===String(tableId));if(!table)return;const w=getPOSWorkerIdentity();order={id:Date.now(),tableId:table.id,tableName:table.name,workerId:w.workerId,workerName:w.workerName,people:1,items:[],status:"open",openedAt:new Date().toISOString(),discount:0};posOrders.unshift(order);savePOSOrders();}activePOSOrderId=order.id;renderPOS();}
+function renderPOSCategories(){const sel=document.getElementById("posCategoryFilter");if(!sel)return;const current=sel.value;const cats=[...new Set(recipes.map(r=>r.category).filter(Boolean))].sort();sel.innerHTML='<option value="">Todas las categorías</option>'+cats.map(c=>`<option>${escapeHTML(c)}</option>`).join("");sel.value=current;}
+function renderPOSCatalog(){const grid=document.getElementById("posProductGrid");if(!grid)return;renderPOSCategories();const q=(document.getElementById("posProductSearch")?.value||"").toLowerCase();const cat=document.getElementById("posCategoryFilter")?.value||"";let list=recipes.filter(r=>r.name.toLowerCase().includes(q)&&(!cat||r.category===cat));if(!list.length){grid.innerHTML='<div class="pos-empty">No hay productos para mostrar.</div>';return;}grid.innerHTML=list.map(r=>{const a=getRecipeAvailability(r);const calc=calculateSavedRecipe(r);const price=Math.round(Number(calc.finalPerPortion||0));const cls=a.status==="out"?'out':a.status==="low"?'low':'';const availability=a.status==="out"?'SIN STOCK':a.status==="low"?`Stock bajo · ~${a.portions} porción(es)`:`Disponible · ~${a.portions} porción(es)`;return `<div class="pos-product ${cls}"><div class="pos-product-name">${escapeHTML(r.name)}</div><span class="station-badge">${escapeHTML(getRecipeStation(r))}</span><div class="pos-product-price">$${formatMoney(price)}</div><div class="pos-product-meta">${escapeHTML(availability)}</div><button class="${a.status==='out'?'danger-button':'primary-button'}" onclick="addPOSItem(${r.id})">${a.status==='out'?'Agregar con PIN':'Agregar'}</button></div>`}).join("");}
+function authorizeAdminOverride(action,subject,reason){const required=String(appSettings.adminPin||"");if(!required){alert("Para autorizar esta excepción primero configura un PIN de administrador en Configuración.");return false;}const entered=prompt("Esta acción requiere PIN de administrador:");if(entered===null)return false;if(entered!==required){alert("PIN incorrecto.");return false;}const why=reason||prompt("Motivo de la autorización:")||"Sin motivo informado";const w=getPOSWorkerIdentity();auditLog.unshift({id:Date.now()+Math.random(),date:new Date().toISOString(),workerId:w.workerId,workerName:w.workerName,action,subject,reason:why});saveAuditLog();renderPOSAudit();return true;}
+function addPOSItem(recipeId){const order=getActivePOSOrder();if(!order){alert("Primero selecciona una mesa.");return;}const recipe=recipes.find(r=>String(r.id)===String(recipeId));if(!recipe)return;const a=getRecipeAvailability(recipe);let override=false;if(a.status==="out"){if(!authorizeAdminOverride("Comanda sin stock",recipe.name,"Producto marcado sin stock por inventario teórico"))return;override=true;}const found=order.items.find(i=>String(i.recipeId)===String(recipe.id));const calc=calculateSavedRecipe(recipe);if(found){found.quantity=Number(found.quantity||0)+1;found.override=found.override||override;}else order.items.push({id:Date.now()+Math.random(),recipeId:recipe.id,recipeName:recipe.name,station:getRecipeStation(recipe),quantity:1,unitPrice:Math.round(Number(calc.finalPerPortion||0)),notes:"",override,addedBy:getPOSWorkerIdentity().workerName,addedAt:new Date().toISOString()});savePOSOrders();renderPOS();}
+function changePOSQty(itemId,delta){const order=getActivePOSOrder();if(!order)return;const item=order.items.find(i=>String(i.id)===String(itemId));if(!item)return;if(delta>0){const recipe=recipes.find(r=>String(r.id)===String(item.recipeId));const a=recipe?getRecipeAvailability(recipe):{status:'out'};if(a.status==='out'){if(!authorizeAdminOverride("Aumentar producto sin stock",item.recipeName,"Stock teórico insuficiente"))return;item.override=true;}item.quantity+=1;}else{if(order.lastPrintedAt&&!authorizeAdminOverride("Modificar comanda enviada",item.recipeName,"Reducción/eliminación después de impresión"))return;item.quantity-=1;if(item.quantity<=0)order.items=order.items.filter(i=>String(i.id)!==String(itemId));}savePOSOrders();renderPOS();}
+function editPOSItemNote(itemId){const order=getActivePOSOrder();const item=order?.items.find(i=>String(i.id)===String(itemId));if(!item)return;const v=prompt("Observación para cocina/bar:",item.notes||"");if(v===null)return;item.notes=v.trim();savePOSOrders();renderPOSOrder();}
+function updatePOSPeople(){const order=getActivePOSOrder();if(!order)return;order.people=Math.max(1,Number(document.getElementById("posPeople")?.value)||1);savePOSOrders();renderPOSTables();}
+function renderPOSOrder(){const order=getActivePOSOrder(),empty=document.getElementById("posNoOrder"),content=document.getElementById("posOrderContent");if(!empty||!content)return;if(!order){empty.style.display="block";content.style.display="none";return;}empty.style.display="none";content.style.display="block";posOrderTableName.textContent=order.tableName;posOrderWorker.textContent=order.workerName+" · abierta "+new Date(order.openedAt).toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});posPeople.value=order.people||1;posCart.innerHTML=order.items.length?order.items.map(i=>`<div class="pos-cart-row"><div><div class="pos-cart-name">${escapeHTML(i.recipeName)} ${i.override?'<span class="badge badge-danger">PIN</span>':''}</div><span class="station-badge">${escapeHTML(i.station||'Cocina')}</span><div class="pos-cart-note">${escapeHTML(i.notes||'Sin observaciones')}</div><button class="secondary-button" style="margin-top:5px;padding:4px 7px;font-size:10px" onclick="editPOSItemNote('${i.id}')">Nota</button></div><div><div class="pos-cart-controls"><button class="qty-btn" onclick="changePOSQty('${i.id}',-1)">−</button><strong>${i.quantity}</strong><button class="qty-btn" onclick="changePOSQty('${i.id}',1)">+</button></div><div style="text-align:right;font-size:11px;margin-top:5px">$${formatMoney(i.quantity*i.unitPrice)}</div></div></div>`).join(""):'<div class="pos-empty">Aún no agregas productos.</div>';posSubtotal.textContent="$"+formatMoney(getOrderSubtotal(order));posTotal.textContent="$"+formatMoney(getOrderTotal(order));}
+function cancelCurrentPOSOrder(){const order=getActivePOSOrder();if(!order)return;if(order.items.length&&order.lastPrintedAt&&!authorizeAdminOverride("Cancelar comanda enviada",order.tableName,"Cancelación posterior a impresión"))return;if(!confirm("¿Cancelar esta comanda?"))return;order.status="cancelled";order.cancelledAt=new Date().toISOString();savePOSOrders();activePOSOrderId=null;renderPOS();}
+function printCurrentPOSOrder(station){const order=getActivePOSOrder();if(!order||!order.items.length){alert("No hay productos en la comanda.");return;}const groups={};order.items.forEach(i=>{const st=i.station||'Cocina';if(station!=="all"&&st!==station)return;(groups[st]||(groups[st]=[])).push(i);});if(!Object.keys(groups).length){alert("No hay productos para esa estación.");return;}const win=window.open("","_blank","width=430,height=720");if(!win){alert("El navegador bloqueó la ventana de impresión.");return;}const sections=Object.entries(groups).map(([st,items])=>`<section style="page-break-after:always"><h2>${escapeHTML(st)}</h2><div>Mesa: <strong>${escapeHTML(order.tableName)}</strong> · Personas: ${order.people||1}</div><div>Garzón: ${escapeHTML(order.workerName)} · ${new Date().toLocaleString('es-CL')}</div><hr>${items.map(i=>`<div style="font-size:18px;margin:12px 0"><strong>${i.quantity} × ${escapeHTML(i.recipeName)}</strong>${i.notes?`<div style="font-size:14px">Obs: ${escapeHTML(i.notes)}</div>`:''}</div>`).join('')}</section>`).join('');win.document.write(`<!doctype html><html><head><title>Comanda ${escapeHTML(order.tableName)}</title><style>body{font-family:Arial,sans-serif;padding:16px;color:#111}h2{font-size:22px;margin:0 0 8px}hr{border:0;border-top:1px dashed #333;margin:14px 0}@media print{body{padding:0}section:last-child{page-break-after:auto}}</style></head><body>${sections}</body></html>`);win.document.close();order.lastPrintedAt=new Date().toISOString();savePOSOrders();setTimeout(()=>{win.focus();win.print();},250);}
+function openPOSPayment(){const order=getActivePOSOrder();if(!order||!order.items.length){alert("La comanda está vacía.");return;}const reg=getActiveCashRegister();if(!reg){alert("Debes abrir una caja antes de cobrar una mesa.");openCashFromPOS();return;}posPaymentPanel.classList.add("open");posDiscount.value=Number(order.discount||0);posTipAmount.value=0;posTipMethod.value="efectivo";payCash.value=getOrderTotal(order);payDebit.value=0;payCredit.value=0;payTransfer.value=0;posPaymentNote.value="";updatePOSPaymentCheck();}
+function closePOSPayment(){document.getElementById("posPaymentPanel")?.classList.remove("open");}
+function setPOSTip(pct){const order=getActivePOSOrder();if(!order)return;posTipAmount.value=Math.round(getOrderTotal(order)*Number(pct||0)/100);updatePOSPaymentCheck();}
+function getPOSPaymentData(){const order=getActivePOSOrder();const discount=Math.max(0,Number(posDiscount?.value)||0);const total=Math.max(0,getOrderSubtotal(order)-discount);const payments={efectivo:Math.max(0,Number(payCash?.value)||0),debito:Math.max(0,Number(payDebit?.value)||0),credito:Math.max(0,Number(payCredit?.value)||0),transferencia:Math.max(0,Number(payTransfer?.value)||0)};const paid=Object.values(payments).reduce((a,b)=>a+b,0);const tip=Math.max(0,Number(posTipAmount?.value)||0);return {discount,total,payments,paid,tip,tipMethod:posTipMethod?.value||"efectivo"};}
+function updatePOSPaymentCheck(){const order=getActivePOSOrder();if(!order)return;const d=getPOSPaymentData();posPaymentSummary.innerHTML=`Subtotal: <strong>$${formatMoney(getOrderSubtotal(order))}</strong> · Descuento: <strong>$${formatMoney(d.discount)}</strong> · Venta: <strong>$${formatMoney(d.total)}</strong> · Propina: <strong>$${formatMoney(d.tip)}</strong>`;const diff=d.paid-d.total;posPaymentCheck.className="payment-check "+(Math.abs(diff)<=1?"ok":"bad");posPaymentCheck.innerHTML=`Pagos de venta registrados: <strong>$${formatMoney(d.paid)}</strong> · ${Math.abs(diff)<=1?'Cuadra correctamente':(diff<0?'Faltan $'+formatMoney(Math.abs(diff)):'Sobran $'+formatMoney(diff))}`;}
+function applyPOSConsumptions(consumptions,order,authorizedShortage){consumptions.forEach(c=>{const p=inventory.find(x=>String(x.id)===String(c.productId));if(!p)return;const old=Number(p.quantity)||0;const result=old-Number(c.quantity||0);if(result<0&&!authorizedShortage)throw new Error("STOCK");p.quantity=result;movements.unshift({id:Date.now()+Math.random(),productId:p.id,productName:p.name,type:"salida",quantity:Number(c.quantity||0),reason:"POS · "+order.tableName,previousStock:old,resultingStock:result,unit:p.unit,date:new Date().toISOString(),source:"pos",sourceId:order.id});});}
+function finalizePOSPayment(){const order=getActivePOSOrder(),reg=getActiveCashRegister();if(!order||!reg){alert("No hay comanda o caja activa.");return;}const d=getPOSPaymentData();if(d.discount>getOrderSubtotal(order)){alert("El descuento no puede superar el subtotal.");return;}if(d.discount>0){if(!authorizeAdminOverride("Aplicar descuento",order.tableName,"Descuento POS $"+formatMoney(d.discount)))return;}if(Math.abs(d.paid-d.total)>1){alert("Los medios de pago deben sumar exactamente el total de la venta.");return;}let allConsumptions=[];order.items.forEach(item=>{const r=recipes.find(x=>String(x.id)===String(item.recipeId));if(r)allConsumptions.push(...recipeConsumptions(r,item.quantity));});const aggregate={};allConsumptions.forEach(c=>{const k=String(c.productId);if(!aggregate[k])aggregate[k]={...c,quantity:0};aggregate[k].quantity+=Number(c.quantity||0);});const consumptionList=Object.values(aggregate);const shortage=consumptionList.filter(c=>!c.product||Number(c.product.quantity)<Number(c.quantity)-1e-9);let shortageAuthorized=order.items.some(i=>i.override);if(shortage.length&&!shortageAuthorized){const names=shortage.map(c=>c.productName).join(", ");if(!authorizeAdminOverride("Cerrar venta con stock insuficiente",order.tableName,"Faltan insumos: "+names))return;shortageAuthorized=true;}
+ try{applyPOSConsumptions(consumptionList,order,shortageAuthorized);}catch(e){alert("No se pudo descontar inventario por stock insuficiente.");return;}
+ order.discount=d.discount;order.total=d.total;order.tip=d.tip;order.tipMethod=d.tipMethod;order.payments=d.payments;order.paymentNote=posPaymentNote.value.trim();order.cashRegisterId=reg.id;order.status="paid";order.closedBy=getPOSWorkerIdentity().workerName;order.closedAt=new Date().toISOString();
+ const gross=getOrderSubtotal(order);const factor=gross>0?d.total/gross:1;order.items.forEach(item=>{const r=recipes.find(x=>String(x.id)===String(item.recipeId));const cons=r?recipeConsumptions(r,item.quantity).map(({product,...rest})=>rest):[];const lineGross=Number(item.quantity)*Number(item.unitPrice);const lineTotal=lineGross*factor;sales.unshift({id:Date.now()+Math.random(),date:getToday(),recipeId:item.recipeId,recipeName:item.recipeName,quantity:item.quantity,unitPrice:item.quantity?lineTotal/item.quantity:0,total:lineTotal,channel:"POS",consumptions:cons,status:"activa",source:"pos",orderId:order.id,cashRegisterId:reg.id,createdAt:new Date().toISOString()});});
+ savePOSOrders();saveSales();saveInventory();saveMovements();activePOSOrderId=null;closePOSPayment();renderPOS();renderCash();renderInventory();updateSalesStats();updateDashboard();alert("Cuenta cerrada y venta registrada correctamente.");}
+function openCashFromPOS(){const btn=Array.from(document.querySelectorAll('.nav-item')).find(b=>(b.getAttribute('onclick')||'').includes("'cash'"));showPage('cash',btn);}
+function renderPOSAudit(){const body=document.getElementById("posAuditBody");if(!body)return;body.innerHTML=auditLog.slice(0,30).map(a=>`<tr class="audit-row"><td>${new Date(a.date).toLocaleString('es-CL')}</td><td><strong>${escapeHTML(a.workerName)}</strong></td><td>${escapeHTML(a.action)}</td><td>${escapeHTML(a.subject||'—')}</td><td>${escapeHTML(a.reason||'—')}</td></tr>`).join("")||'<tr><td colspan="5"><div class="empty-state">Sin autorizaciones registradas.</div></td></tr>';}
+
+function cashOwnerKey(){return currentSession?.role==="worker"?String(currentSession.workerId):"admin";}
+function getActiveCashRegister(){const key=cashOwnerKey();return cashRegisters.find(r=>r.status==="open"&&String(r.workerId)===key)||null;}
+function getRegisterOrders(reg){return posOrders.filter(o=>o.status==="paid"&&String(o.cashRegisterId)===String(reg.id));}
+function getCashSummary(reg){const orders=getRegisterOrders(reg);const by={efectivo:0,debito:0,credito:0,transferencia:0};const tips={efectivo:0,debito:0,credito:0,transferencia:0};orders.forEach(o=>{Object.keys(by).forEach(k=>by[k]+=Number(o.payments?.[k]||0));if(tips[o.tipMethod]!==undefined)tips[o.tipMethod]+=Number(o.tip||0);});const moves=cashMovements.filter(m=>String(m.registerId)===String(reg.id));const entries=moves.filter(m=>m.type==="entrada").reduce((s,m)=>s+Number(m.amount||0),0);const outputs=moves.filter(m=>["gasto","retiro","devolucion"].includes(m.type)).reduce((s,m)=>s+Number(m.amount||0),0);const saleTotal=orders.reduce((s,o)=>s+Number(o.total||0),0),tipTotal=orders.reduce((s,o)=>s+Number(o.tip||0),0);const expectedCash=Number(reg.openingCash||0)+by.efectivo+tips.efectivo+entries-outputs;return {orders,by,tips,moves,entries,outputs,saleTotal,tipTotal,expectedCash};}
+function openCashRegister(){if(getActiveCashRegister()){alert("Ya tienes una caja abierta.");return;}const amount=Number(document.getElementById("cashOpeningInput")?.value);if(Number.isNaN(amount)||amount<0){alert("Ingresa un fondo inicial válido.");return;}const w=getPOSWorkerIdentity();cashRegisters.unshift({id:Date.now(),workerId:w.workerId,workerName:w.workerName,date:getToday(),openingCash:amount,openedAt:new Date().toISOString(),status:"open"});saveCashRegisters();renderCash();}
+function addCashMovement(){const reg=getActiveCashRegister();if(!reg){alert("No hay una caja abierta.");return;}const type=document.getElementById("cashMovementType")?.value,amount=Number(document.getElementById("cashMovementAmount")?.value),reason=document.getElementById("cashMovementReason")?.value.trim();if(!type||!amount||amount<=0||!reason){alert("Completa tipo, monto y motivo.");return;}cashMovements.unshift({id:Date.now(),registerId:reg.id,type,amount,reason,workerName:getPOSWorkerIdentity().workerName,createdAt:new Date().toISOString()});saveCashMovements();renderCash();}
+function openCashCloseForm(){const box=document.getElementById("cashCloseBox");if(box)box.style.display="block";updateCashClosePreview();}
+function updateCashClosePreview(){const reg=getActiveCashRegister();if(!reg)return;const s=getCashSummary(reg);const counted=Number(document.getElementById("cashCounted")?.value)||0,debit=Number(document.getElementById("cashDeclaredDebit")?.value)||0,credit=Number(document.getElementById("cashDeclaredCredit")?.value)||0,transfer=Number(document.getElementById("cashDeclaredTransfer")?.value)||0;const diffs={cash:counted-s.expectedCash,debit:debit-(s.by.debito+s.tips.debito),credit:credit-(s.by.credit+s.tips.credit),transfer:transfer-(s.by.transferencia+s.tips.transferencia)};const el=document.getElementById("cashClosePreview");if(el)el.innerHTML=`Efectivo esperado <strong>$${formatMoney(s.expectedCash)}</strong> · Diferencia efectivo <strong class="${diffs.cash<0?'cash-diff-negative':'cash-diff-positive'}">${diffs.cash>=0?'+':''}$${formatMoney(diffs.cash)}</strong><br>Débito dif. $${formatMoney(diffs.debit)} · Crédito dif. $${formatMoney(diffs.credit)} · Transferencia dif. $${formatMoney(diffs.transfer)}`;return diffs;}
+function closeCashRegister(){const reg=getActiveCashRegister();if(!reg)return;const s=getCashSummary(reg),counted=Number(document.getElementById("cashCounted")?.value);if(Number.isNaN(counted)||counted<0){alert("Ingresa el efectivo contado.");return;}const debit=Number(document.getElementById("cashDeclaredDebit")?.value)||0,credit=Number(document.getElementById("cashDeclaredCredit")?.value)||0,transfer=Number(document.getElementById("cashDeclaredTransfer")?.value)||0;const diffs={cash:counted-s.expectedCash,debit:debit-(s.by.debito+s.tips.debito),credit:credit-(s.by.credit+s.tips.credit),transfer:transfer-(s.by.transferencia+s.tips.transferencia)};reg.status="closed";reg.closedAt=new Date().toISOString();reg.countedCash=counted;reg.declaredDebit=debit;reg.declaredCredit=credit;reg.declaredTransfer=transfer;reg.expectedCash=s.expectedCash;reg.saleTotal=s.saleTotal;reg.tipTotal=s.tipTotal;reg.differences=diffs;saveCashRegisters();renderCash();updateDashboard();}
+function renderCash(){const ws=document.getElementById("cashWorkspace");if(!ws)return;const reg=getActiveCashRegister();if(!reg){ws.innerHTML=`<div class="cash-box"><h2>Abrir caja</h2><p style="color:var(--muted);font-size:12px">Registra el dinero físico con el que comienza este turno. Las ventas cobradas desde Comandas se agregarán automáticamente.</p><div class="field" style="max-width:300px"><label>Fondo inicial $</label><input id="cashOpeningInput" type="number" min="0" value="0"></div><button class="primary-button" style="margin-top:10px" onclick="openCashRegister()">Abrir caja</button></div>`;renderCashHistory();return;}const s=getCashSummary(reg);ws.innerHTML=`<div class="cash-hero"><div class="cash-card"><span>Fondo inicial</span><strong>$${formatMoney(reg.openingCash)}</strong></div><div class="cash-card"><span>Ventas POS</span><strong>$${formatMoney(s.saleTotal)}</strong></div><div class="cash-card"><span>Propinas</span><strong>$${formatMoney(s.tipTotal)}</strong></div><div class="cash-card"><span>Movimientos</span><strong>${s.moves.length}</strong></div><div class="cash-card"><span>Efectivo esperado</span><strong>$${formatMoney(s.expectedCash)}</strong></div></div><div class="cash-grid"><div class="cash-box"><h2>Conciliación del turno</h2><div class="config-info-row"><span>Efectivo ventas</span><strong>$${formatMoney(s.by.efectivo)}</strong></div><div class="config-info-row"><span>Débito</span><strong>$${formatMoney(s.by.debito)}</strong></div><div class="config-info-row"><span>Crédito</span><strong>$${formatMoney(s.by.credito)}</strong></div><div class="config-info-row"><span>Transferencias</span><strong>$${formatMoney(s.by.transferencia)}</strong></div><div class="config-info-row"><span>Entradas de caja</span><strong>+$${formatMoney(s.entries)}</strong></div><div class="config-info-row"><span>Gastos / retiros / devoluciones</span><strong>−$${formatMoney(s.outputs)}</strong></div><button class="primary-button" style="margin-top:14px" onclick="openCashCloseForm()">Cerrar y cuadrar caja</button></div><div class="cash-box"><h2>Movimiento de efectivo</h2><div class="cash-movement-grid"><div class="field"><label>Tipo</label><select id="cashMovementType"><option value="gasto">Gasto</option><option value="retiro">Retiro</option><option value="entrada">Entrada</option><option value="devolucion">Devolución</option></select></div><div class="field"><label>Monto $</label><input id="cashMovementAmount" type="number" min="0"></div><div class="field"><label>Motivo</label><input id="cashMovementReason" type="text" placeholder="Ej. compra urgente"></div><button class="secondary-button" onclick="addCashMovement()">Registrar</button></div><div style="margin-top:12px">${s.moves.slice(0,8).map(m=>`<div class="config-info-row"><span>${escapeHTML(m.type)} · ${escapeHTML(m.reason)}</span><strong>${m.type==='entrada'?'+':'−'}$${formatMoney(m.amount)}</strong></div>`).join('')||'<div class="category">Sin movimientos manuales</div>'}</div></div></div><div id="cashCloseBox" class="cash-box" style="display:none;margin-top:14px"><h2>Cierre de caja</h2><div class="payment-grid"><div class="field"><label>Efectivo contado $</label><input id="cashCounted" type="number" min="0" value="${Math.round(s.expectedCash)}" oninput="updateCashClosePreview()"></div><div class="field"><label>Débito declarado $</label><input id="cashDeclaredDebit" type="number" min="0" value="${Math.round(s.by.debito+s.tips.debito)}" oninput="updateCashClosePreview()"></div><div class="field"><label>Crédito declarado $</label><input id="cashDeclaredCredit" type="number" min="0" value="${Math.round(s.by.credito+s.tips.credito)}" oninput="updateCashClosePreview()"></div><div class="field"><label>Transferencias declaradas $</label><input id="cashDeclaredTransfer" type="number" min="0" value="${Math.round(s.by.transferencia+s.tips.transferencia)}" oninput="updateCashClosePreview()"></div></div><div id="cashClosePreview" class="payment-check"></div><button class="primary-button" style="margin-top:10px" onclick="closeCashRegister()">Confirmar cierre</button></div>`;renderCashHistory();}
+function renderCashHistory(){const body=document.getElementById("cashHistoryBody");if(!body)return;let list=cashRegisters;if(currentSession?.role==="worker")list=list.filter(r=>String(r.workerId)===String(currentSession.workerId));body.innerHTML=list.slice(0,40).map(r=>{const s=r.status==='closed'?null:getCashSummary(r);const sale=r.status==='closed'?Number(r.saleTotal||0):Number(s?.saleTotal||0),tips=r.status==='closed'?Number(r.tipTotal||0):Number(s?.tipTotal||0),expected=r.status==='closed'?Number(r.expectedCash||0):Number(s?.expectedCash||0),counted=r.status==='closed'?Number(r.countedCash||0):0,diff=r.status==='closed'?Number(r.differences?.cash||0):0;return `<tr><td>${formatDate(r.date)}<div class="category">${r.status==='open'?'Abierta':'Cerrada'}</div></td><td><strong>${escapeHTML(r.workerName)}</strong></td><td>$${formatMoney(r.openingCash)}</td><td>$${formatMoney(sale)}</td><td>$${formatMoney(tips)}</td><td>$${formatMoney(expected)}</td><td>${r.status==='closed'?'$'+formatMoney(counted):'—'}</td><td class="${diff<0?'cash-diff-negative':diff>0?'cash-diff-positive':''}">${r.status==='closed'?(diff>=0?'+':'')+'$'+formatMoney(diff):'—'}</td></tr>`}).join('')||'<tr><td colspan="8"><div class="empty-state">Sin cajas registradas.</div></td></tr>';}
+
+/* Permisos específicos por cargo */
+workerCanAccess = function(pageId){
+ const role=normalizeRole(getCurrentWorker()?.role);const base=["dashboard","checklists","shifts"];
+ if(role.includes("garzon")||role.includes("mesero"))return [...base,"reservations","commandas","cash"].includes(pageId);
+ if(role.includes("cajero"))return [...base,"cash","reservations"].includes(pageId);
+ if(role.includes("jefe de cocina")||role.includes("cocinero")||role.includes("ayudante"))return [...base,"production","temperatures"].includes(pageId);
+ if(role.includes("barista"))return [...base,"temperatures"].includes(pageId);
+ if(role.includes("administrador"))return true;
+ return base.includes(pageId);
+};
+const _baseApplyAccessMode = applyAccessMode;
+applyAccessMode = function(){
+ _baseApplyAccessMode();
+ document.querySelectorAll(".nav-item").forEach(btn=>{const m=(btn.getAttribute("onclick")||"").match(/showPage\('([^']+)'/);if(!m)return;if(currentSession?.role==="worker")btn.style.display=workerCanAccess(m[1])?"":"none";});
+ renderWorkerStockAlert();
+};
+
+/* IA: agrega POS, caja y excepciones al diagnóstico */
+const _baseGenerateAIAnalysis = generateAIAnalysis;
+generateAIAnalysis = function(){
+ _baseGenerateAIAnalysis();const out=document.getElementById("aiOutput");if(!out)return;const today=getToday();const todayOrders=posOrders.filter(o=>o.status==="paid"&&String(o.closedAt||"").slice(0,10)===today);const todaySales=todayOrders.reduce((s,o)=>s+Number(o.total||0),0);const units={};todayOrders.forEach(o=>(o.items||[]).forEach(i=>units[i.recipeName]=(units[i.recipeName]||0)+Number(i.quantity||0)));const top=Object.entries(units).sort((a,b)=>b[1]-a[1])[0];const closedToday=cashRegisters.filter(r=>r.status==="closed"&&r.date===today);const cashDiff=closedToday.reduce((s,r)=>s+Number(r.differences?.cash||0),0);const overrides=auditLog.filter(a=>String(a.date||"").slice(0,10)===today).length;const stock=getPOSStockSummary();out.innerHTML+=`<h3 style="margin-top:18px">Análisis POS y caja</h3><p>Comandas pagadas hoy: <strong>${todayOrders.length}</strong> · Venta POS: <strong>$${formatMoney(todaySales)}</strong>${top?` · Producto más vendido: <strong>${escapeHTML(top[0])}</strong> (${top[1]})`:''}.</p><p>Disponibilidad actual: <strong>${stock.low.length}</strong> producto(s) con stock bajo y <strong>${stock.out.length}</strong> sin stock. Autorizaciones con PIN hoy: <strong>${overrides}</strong>.</p><p>Cierres de caja hoy: <strong>${closedToday.length}</strong> · Diferencia acumulada de efectivo: <strong>${cashDiff>=0?'+':''}$${formatMoney(cashDiff)}</strong>.</p>`;
+};
+
 /* =====================================================
    RECETAS: EXTENSIÓN DE GUARDADO MOD
 ===================================================== */
@@ -9806,6 +10020,10 @@ renderChecklists();
 updateChecklistStats();
 
 updateDashboard();
+
+renderPOS();
+renderCash();
+renderWorkerStockAlert();
 
 initializeLogin();
 
