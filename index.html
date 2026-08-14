@@ -10186,7 +10186,16 @@ async function inviteWorkerToCloud(worker){
        redirect_to:getCloudRedirectURL()
      }
    });
-   if(error)throw error;
+   if(error){
+     let functionMessage="";
+     try{
+       if(error?.context&&typeof error.context.json==="function"){
+         const payload=await error.context.clone().json();
+         functionMessage=payload?.error||payload?.message||payload?.code||"";
+       }
+     }catch(parseError){console.error("No se pudo leer la respuesta de invite-worker",parseError);}
+     throw new Error(functionMessage||error?.message||"La función invite-worker devolvió un error.");
+   }
    if(data?.error)throw new Error(data.error);
    worker.cloudStaffId=data?.staff_id||worker.cloudStaffId||null;
    worker.authUserId=data?.user_id||worker.authUserId||null;
