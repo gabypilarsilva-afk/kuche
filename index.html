@@ -1,919 +1,2091 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
 <title>KÜCHE | Gestión Gastronómica</title>
 
 <style>
+
 :root{
---green-dark:#173f35;
---green:#24594b;
---green-soft:#e8f0ec;
---cream:#f6f3ec;
---white:#fff;
---text:#202825;
---muted:#78817d;
---border:#e3e7e3;
---danger:#c94b4b;
---danger-soft:#fbecec;
---warning:#b87921;
---warning-soft:#fff3dc;
---success:#34785a;
---success-soft:#e8f4ed;
---blue:#416a91;
---blue-soft:#edf3f8;
---shadow:0 4px 18px rgba(23,63,53,.06)
+
+    --green-dark:#173f35;
+    --green:#24594b;
+    --green-soft:#e8f0ec;
+
+    --cream:#f6f3ec;
+    --white:#ffffff;
+
+    --text:#202825;
+    --muted:#78817d;
+
+    --border:#e3e7e3;
+
+    --danger:#c94b4b;
+    --danger-soft:#fbecec;
+
+    --warning:#b87921;
+    --warning-soft:#fff3dc;
+
+    --success:#34785a;
+    --success-soft:#e8f4ed;
+
+    --blue:#416a91;
+    --blue-soft:#edf3f8;
+
+    --shadow:
+        0 4px 18px rgba(23,63,53,.06);
+
 }
+
 
 *{
-box-sizing:border-box;
-margin:0;
-padding:0
+
+    box-sizing:border-box;
+
+    margin:0;
+
+    padding:0;
+
 }
+
 
 body{
-font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-background:var(--cream);
-color:var(--text)
+
+    font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+
+    background:var(--cream);
+
+    color:var(--text);
+
 }
 
-button,input,select,textarea{
-font-family:inherit
+
+button,
+input,
+select,
+textarea{
+
+    font-family:inherit;
+
 }
+
 
 button{
-cursor:pointer
+
+    cursor:pointer;
+
 }
+
+
+/* =========================
+APP
+========================= */
 
 .app{
-min-height:100vh;
-display:flex
+
+    min-height:100vh;
+
+    display:flex;
+
 }
 
-/* SIDEBAR */
+
+/* =========================
+SIDEBAR
+========================= */
 
 .sidebar{
-width:250px;
-position:fixed;
-top:0;
-bottom:0;
-left:0;
-background:var(--green-dark);
-color:#fff;
-padding:26px 16px;
-display:flex;
-flex-direction:column;
-z-index:100
+
+    width:250px;
+
+    position:fixed;
+
+    top:0;
+    bottom:0;
+    left:0;
+
+    background:var(--green-dark);
+
+    color:white;
+
+    padding:26px 16px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    z-index:100;
+
 }
+
 
 .brand{
-padding:0 12px 28px;
-border-bottom:1px solid rgba(255,255,255,.12)
+
+    padding:
+        0 12px 28px;
+
+    border-bottom:
+        1px solid rgba(255,255,255,.12);
+
 }
+
 
 .brand-name{
-font-size:25px;
-font-weight:700;
-letter-spacing:4px
+
+    font-size:25px;
+
+    font-weight:700;
+
+    letter-spacing:4px;
+
 }
+
 
 .brand-subtitle{
-margin-top:6px;
-font-size:11px;
-color:rgba(255,255,255,.6)
+
+    margin-top:6px;
+
+    font-size:11px;
+
+    color:
+        rgba(255,255,255,.60);
+
 }
+
 
 .nav{
-margin-top:24px
+
+    margin-top:24px;
+
 }
+
 
 .nav-title{
-padding:0 12px 9px;
-margin-top:18px;
-font-size:10px;
-text-transform:uppercase;
-letter-spacing:1.3px;
-color:rgba(255,255,255,.4)
+
+    padding:
+        0 12px 9px;
+
+    margin-top:18px;
+
+    font-size:10px;
+
+    text-transform:uppercase;
+
+    letter-spacing:1.3px;
+
+    color:
+        rgba(255,255,255,.40);
+
 }
+
 
 .nav-title:first-child{
-margin-top:0
+
+    margin-top:0;
+
 }
+
 
 .nav-item{
-width:100%;
-border:0;
-background:transparent;
-color:rgba(255,255,255,.72);
-padding:12px;
-border-radius:8px;
-text-align:left;
-font-size:14px;
-margin-bottom:4px;
-transition:.2s
+
+    width:100%;
+
+    border:0;
+
+    background:transparent;
+
+    color:
+        rgba(255,255,255,.72);
+
+    padding:12px;
+
+    border-radius:8px;
+
+    text-align:left;
+
+    font-size:14px;
+
+    margin-bottom:4px;
+
+    transition:.2s;
+
 }
+
 
 .nav-item:hover{
-background:rgba(255,255,255,.08);
-color:#fff
+
+    background:
+        rgba(255,255,255,.08);
+
+    color:white;
+
 }
+
 
 .nav-item.active{
-background:var(--green);
-color:#fff
+
+    background:var(--green);
+
+    color:white;
+
 }
+
 
 .sidebar-bottom{
-margin-top:auto;
-padding-top:18px;
-border-top:1px solid rgba(255,255,255,.12)
+
+    margin-top:auto;
+
+    padding-top:18px;
+
+    border-top:
+        1px solid rgba(255,255,255,.12);
+
 }
+
 
 .user-mini{
-display:flex;
-align-items:center;
-gap:10px;
-padding:8px 10px
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    padding:8px 10px;
+
 }
+
 
 .avatar{
-width:34px;
-height:34px;
-border-radius:50%;
-background:#d8e5df;
-color:var(--green-dark);
-display:flex;
-align-items:center;
-justify-content:center;
-font-weight:700;
-font-size:12px
+
+    width:34px;
+
+    height:34px;
+
+    border-radius:50%;
+
+    background:#d8e5df;
+
+    color:var(--green-dark);
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-weight:700;
+
+    font-size:12px;
+
 }
+
 
 .user-info strong{
-display:block;
-font-size:13px
+
+    display:block;
+
+    font-size:13px;
+
 }
+
 
 .user-info span{
-display:block;
-margin-top:2px;
-font-size:11px;
-color:rgba(255,255,255,.5)
+
+    display:block;
+
+    margin-top:2px;
+
+    font-size:11px;
+
+    color:
+        rgba(255,255,255,.50);
+
 }
 
-/* MAIN */
+
+/* =========================
+MAIN
+========================= */
 
 .main{
-margin-left:250px;
-width:calc(100% - 250px);
-min-height:100vh
+
+    margin-left:250px;
+
+    width:
+        calc(100% - 250px);
+
+    min-height:100vh;
+
 }
+
 
 .topbar{
-height:72px;
-background:#fff;
-border-bottom:1px solid var(--border);
-display:flex;
-align-items:center;
-justify-content:space-between;
-padding:0 34px
+
+    height:72px;
+
+    background:white;
+
+    border-bottom:
+        1px solid var(--border);
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    padding:0 34px;
+
 }
+
 
 .topbar-title{
-color:var(--muted);
-font-size:13px
+
+    color:var(--muted);
+
+    font-size:13px;
+
 }
+
 
 .system-status{
-padding:7px 11px;
-border-radius:20px;
-background:var(--success-soft);
-color:var(--success);
-font-size:11px;
-font-weight:600
+
+    padding:
+        7px 11px;
+
+    border-radius:20px;
+
+    background:var(--success-soft);
+
+    color:var(--success);
+
+    font-size:11px;
+
+    font-weight:600;
+
 }
+
 
 .content{
-max-width:1450px;
-padding:34px
+
+    max-width:1500px;
+
+    padding:34px;
+
 }
+
+
+/* =========================
+PAGES
+========================= */
 
 .page{
-display:none
+
+    display:none;
+
 }
+
 
 .page.active{
-display:block
+
+    display:block;
+
 }
+
 
 .page-header{
-display:flex;
-justify-content:space-between;
-align-items:flex-start;
-gap:20px;
-margin-bottom:28px
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:flex-start;
+
+    gap:20px;
+
+    margin-bottom:28px;
+
 }
+
 
 .page-header h1{
-color:var(--green-dark);
-font-size:28px;
-font-weight:650;
-margin-bottom:6px
+
+    color:var(--green-dark);
+
+    font-size:28px;
+
+    font-weight:650;
+
+    margin-bottom:6px;
+
 }
+
 
 .page-header p{
-color:var(--muted);
-font-size:14px
+
+    color:var(--muted);
+
+    font-size:14px;
+
 }
 
-/* BOTONES */
+
+/* =========================
+BUTTONS
+========================= */
 
 .primary-button{
-border:0;
-border-radius:8px;
-padding:11px 17px;
-background:var(--green-dark);
-color:#fff;
-font-size:13px;
-font-weight:600;
-transition:.2s
+
+    border:0;
+
+    border-radius:8px;
+
+    padding:
+        11px 17px;
+
+    background:var(--green-dark);
+
+    color:white;
+
+    font-size:13px;
+
+    font-weight:600;
+
 }
+
 
 .primary-button:hover{
-background:var(--green)
+
+    background:var(--green);
+
 }
+
 
 .secondary-button{
-border:1px solid var(--border);
-background:#fff;
-color:var(--text);
-padding:9px 13px;
-border-radius:8px;
-font-size:12px;
-font-weight:600
+
+    border:
+        1px solid var(--border);
+
+    background:white;
+
+    color:var(--text);
+
+    padding:
+        9px 13px;
+
+    border-radius:8px;
+
+    font-size:12px;
+
+    font-weight:600;
+
 }
+
 
 .secondary-button:hover{
-background:var(--cream)
+
+    background:var(--cream);
+
 }
+
 
 .danger-button{
-border:0;
-background:transparent;
-color:var(--danger);
-font-size:12px;
-font-weight:600
+
+    border:0;
+
+    background:transparent;
+
+    color:var(--danger);
+
+    font-size:12px;
+
+    font-weight:600;
+
 }
+
 
 .danger-button:hover{
-text-decoration:underline
+
+    text-decoration:underline;
+
 }
 
-/* DASHBOARD */
+
+/* =========================
+GENERAL CARDS
+========================= */
 
 .stats{
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:16px;
-margin-bottom:26px
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(4,1fr);
+
+    gap:16px;
+
+    margin-bottom:26px;
+
 }
+
 
 .stat-card{
-background:#fff;
-border:1px solid var(--border);
-border-radius:12px;
-padding:20px;
-box-shadow:var(--shadow)
+
+    background:white;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:12px;
+
+    padding:20px;
+
+    box-shadow:var(--shadow);
+
 }
+
 
 .stat-label{
-color:var(--muted);
-font-size:12px;
-margin-bottom:10px
+
+    color:var(--muted);
+
+    font-size:12px;
+
+    margin-bottom:10px;
+
 }
+
 
 .stat-value{
-color:var(--green-dark);
-font-size:27px;
-font-weight:650
+
+    color:var(--green-dark);
+
+    font-size:27px;
+
+    font-weight:650;
+
 }
+
 
 .stat-detail{
-color:var(--muted);
-font-size:11px;
-margin-top:7px
+
+    color:var(--muted);
+
+    font-size:11px;
+
+    margin-top:7px;
+
 }
+
 
 .dashboard-grid{
-display:grid;
-grid-template-columns:1.4fr 1fr;
-gap:20px
+
+    display:grid;
+
+    grid-template-columns:
+        1.4fr 1fr;
+
+    gap:20px;
+
 }
+
 
 .card{
-background:#fff;
-border:1px solid var(--border);
-border-radius:12px;
-box-shadow:var(--shadow)
+
+    background:white;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:12px;
+
+    box-shadow:var(--shadow);
+
 }
+
 
 .card-header{
-padding:20px;
-border-bottom:1px solid var(--border);
-display:flex;
-justify-content:space-between;
-align-items:center
+
+    padding:20px;
+
+    border-bottom:
+        1px solid var(--border);
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
 }
+
 
 .card-header h2{
-color:var(--green-dark);
-font-size:15px
+
+    color:var(--green-dark);
+
+    font-size:15px;
+
 }
+
 
 .card-header span{
-color:var(--muted);
-font-size:11px
+
+    color:var(--muted);
+
+    font-size:11px;
+
 }
+
 
 .alert-list{
-padding:6px 20px
+
+    padding:
+        6px 20px;
+
 }
+
 
 .alert-item{
-padding:15px 0;
-border-bottom:1px solid var(--border);
-display:flex;
-justify-content:space-between;
-align-items:center;
-gap:20px
+
+    padding:15px 0;
+
+    border-bottom:
+        1px solid var(--border);
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:20px;
+
 }
+
 
 .alert-item:last-child{
-border-bottom:0
+
+    border-bottom:0;
+
 }
+
 
 .alert-name{
-font-size:13px;
-font-weight:600
+
+    font-size:13px;
+
+    font-weight:600;
+
 }
+
 
 .alert-meta{
-color:var(--muted);
-font-size:11px;
-margin-top:4px
+
+    color:var(--muted);
+
+    font-size:11px;
+
+    margin-top:4px;
+
 }
+
 
 .activity{
-padding:10px 20px
+
+    padding:
+        10px 20px;
+
 }
+
 
 .activity-item{
-padding:14px 0;
-border-bottom:1px solid var(--border)
+
+    padding:14px 0;
+
+    border-bottom:
+        1px solid var(--border);
+
 }
+
 
 .activity-item:last-child{
-border-bottom:0
+
+    border-bottom:0;
+
 }
+
 
 .activity-title{
-font-size:13px;
-font-weight:600
+
+    font-size:13px;
+
+    font-weight:600;
+
 }
+
 
 .activity-time{
-color:var(--muted);
-font-size:11px;
-margin-top:4px
+
+    color:var(--muted);
+
+    font-size:11px;
+
+    margin-top:4px;
+
 }
 
-/* BADGES */
+
+/* =========================
+BADGES
+========================= */
 
 .badge{
-display:inline-block;
-padding:6px 9px;
-border-radius:20px;
-font-size:10px;
-font-weight:600;
-white-space:nowrap
+
+    display:inline-block;
+
+    padding:
+        6px 9px;
+
+    border-radius:20px;
+
+    font-size:10px;
+
+    font-weight:600;
+
+    white-space:nowrap;
+
 }
+
 
 .badge-success{
-background:var(--success-soft);
-color:var(--success)
+
+    background:var(--success-soft);
+
+    color:var(--success);
+
 }
+
 
 .badge-danger{
-background:var(--danger-soft);
-color:var(--danger)
+
+    background:var(--danger-soft);
+
+    color:var(--danger);
+
 }
+
 
 .badge-warning{
-background:var(--warning-soft);
-color:var(--warning)
+
+    background:var(--warning-soft);
+
+    color:var(--warning);
+
 }
+
 
 .badge-blue{
-background:var(--blue-soft);
-color:var(--blue)
+
+    background:var(--blue-soft);
+
+    color:var(--blue);
+
 }
 
-/* TOOLBAR */
 
-.toolbar{
-background:#fff;
-border:1px solid var(--border);
-border-radius:12px;
-padding:16px;
-margin-bottom:18px;
-box-shadow:var(--shadow);
-display:flex;
-gap:12px
-}
-
-.search-box{
-flex:1
-}
-
-.search-box input{
-width:100%;
-padding:11px 13px;
-border:1px solid var(--border);
-border-radius:8px;
-outline:none;
-font-size:13px
-}
-
-.search-box input:focus{
-border-color:var(--green)
-}
-
-/* FORMULARIOS */
+/* =========================
+FORMS
+========================= */
 
 .form-panel,
-.movements-panel{
-display:none;
-background:#fff;
-border:1px solid var(--border);
-border-radius:12px;
-padding:22px;
-margin-bottom:18px;
-box-shadow:var(--shadow)
+.movements-panel,
+.production-panel,
+.recipe-panel,
+.cost-settings-panel{
+
+    display:none;
+
+    background:white;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:12px;
+
+    padding:22px;
+
+    margin-bottom:18px;
+
+    box-shadow:var(--shadow);
+
 }
+
 
 .form-panel.open,
-.movements-panel.open{
-display:block
+.movements-panel.open,
+.production-panel.open,
+.recipe-panel.open,
+.cost-settings-panel.open{
+
+    display:block;
+
 }
+
 
 .form-title{
-color:var(--green-dark);
-font-size:15px;
-font-weight:650;
-margin-bottom:18px
+
+    color:var(--green-dark);
+
+    font-size:16px;
+
+    font-weight:650;
+
+    margin-bottom:18px;
+
 }
+
 
 .form-grid{
-display:grid;
-grid-template-columns:2fr 1fr 1fr 1fr 1fr;
-gap:12px
+
+    display:grid;
+
+    grid-template-columns:
+        2fr 1fr 1fr 1fr 1fr 1fr;
+
+    gap:12px;
+
 }
 
+
 .field label{
-display:block;
-color:var(--muted);
-font-size:11px;
-margin-bottom:6px
+
+    display:block;
+
+    color:var(--muted);
+
+    font-size:11px;
+
+    margin-bottom:6px;
+
 }
+
 
 .field input,
 .field select,
 .field textarea{
-width:100%;
-padding:10px;
-background:#fff;
-border:1px solid var(--border);
-border-radius:8px;
-outline:none;
-font-size:13px
+
+    width:100%;
+
+    padding:10px;
+
+    background:white;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:8px;
+
+    outline:none;
+
+    font-size:13px;
+
 }
 
+
 .field textarea{
-resize:vertical;
-min-height:82px
+
+    resize:vertical;
+
+    min-height:80px;
+
 }
+
 
 .field input:focus,
 .field select:focus,
 .field textarea:focus{
-border-color:var(--green)
+
+    border-color:var(--green);
+
 }
+
 
 .form-actions{
-display:flex;
-gap:10px;
-margin-top:17px
+
+    display:flex;
+
+    gap:10px;
+
+    margin-top:17px;
+
+    flex-wrap:wrap;
+
 }
 
-/* TABLAS */
+
+/* =========================
+TOOLBAR
+========================= */
+
+.toolbar{
+
+    background:white;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:12px;
+
+    padding:16px;
+
+    margin-bottom:18px;
+
+    box-shadow:var(--shadow);
+
+    display:flex;
+
+    gap:12px;
+
+}
+
+
+.search-box{
+
+    flex:1;
+
+}
+
+
+.search-box input{
+
+    width:100%;
+
+    padding:
+        11px 13px;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:8px;
+
+    outline:none;
+
+    font-size:13px;
+
+}
+
+
+/* =========================
+TABLES
+========================= */
 
 .table-card{
-background:#fff;
-border:1px solid var(--border);
-border-radius:12px;
-overflow:hidden;
-box-shadow:var(--shadow)
+
+    background:white;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:12px;
+
+    overflow:hidden;
+
+    box-shadow:var(--shadow);
+
 }
+
 
 .table-wrapper{
-overflow-x:auto
+
+    overflow-x:auto;
+
 }
+
 
 table{
-width:100%;
-border-collapse:collapse
+
+    width:100%;
+
+    border-collapse:collapse;
+
 }
+
 
 th{
-padding:13px 18px;
-background:#f8f9f7;
-border-bottom:1px solid var(--border);
-color:var(--muted);
-text-align:left;
-font-size:10px;
-text-transform:uppercase;
-letter-spacing:.6px
+
+    padding:
+        13px 18px;
+
+    background:#f8f9f7;
+
+    border-bottom:
+        1px solid var(--border);
+
+    color:var(--muted);
+
+    text-align:left;
+
+    font-size:10px;
+
+    text-transform:uppercase;
+
+    letter-spacing:.6px;
+
 }
+
 
 td{
-padding:15px 18px;
-border-bottom:1px solid var(--border);
-font-size:13px
+
+    padding:
+        15px 18px;
+
+    border-bottom:
+        1px solid var(--border);
+
+    font-size:13px;
+
 }
+
 
 tbody tr:last-child td{
-border-bottom:0
+
+    border-bottom:0;
+
 }
+
 
 tbody tr:hover{
-background:#fbfcfa
+
+    background:#fbfcfa;
+
 }
+
 
 .product-name{
-color:var(--green-dark);
-font-weight:600
+
+    color:var(--green-dark);
+
+    font-weight:600;
+
 }
+
 
 .category{
-color:var(--muted);
-font-size:12px
+
+    color:var(--muted);
+
+    font-size:12px;
+
 }
 
-.stock-number{
-font-weight:650
-}
 
 .actions{
-display:flex;
-align-items:center;
-gap:10px;
-flex-wrap:wrap
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    flex-wrap:wrap;
+
 }
+
 
 .empty-state{
-padding:55px 20px;
-text-align:center;
-color:var(--muted)
+
+    padding:55px 20px;
+
+    text-align:center;
+
+    color:var(--muted);
+
 }
+
 
 .empty-state strong{
-display:block;
-color:var(--green-dark);
-margin-bottom:6px;
-font-size:14px
+
+    display:block;
+
+    color:var(--green-dark);
+
+    margin-bottom:6px;
+
 }
 
-/* MOVIMIENTOS */
+
+/* =========================
+MOVEMENTS
+========================= */
 
 .movements-header{
-display:flex;
-justify-content:space-between;
-align-items:center;
-gap:15px;
-margin-bottom:20px
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:15px;
+
+    margin-bottom:20px;
+
 }
+
 
 .movements-header h2{
-color:var(--green-dark);
-font-size:17px
+
+    color:var(--green-dark);
+
+    font-size:17px;
+
 }
+
 
 .movements-header p{
-color:var(--muted);
-font-size:11px;
-margin-top:5px
+
+    color:var(--muted);
+
+    font-size:11px;
+
+    margin-top:5px;
+
 }
+
 
 .movement-form{
-display:grid;
-grid-template-columns:1.5fr 1fr 1fr 1.5fr auto;
-gap:12px;
-align-items:end
+
+    display:grid;
+
+    grid-template-columns:
+        1.5fr 1fr 1fr 1.5fr auto;
+
+    gap:12px;
+
+    align-items:end;
+
 }
+
 
 .history-title{
-color:var(--green-dark);
-font-size:15px;
-font-weight:650;
-margin:25px 0 12px
+
+    color:var(--green-dark);
+
+    font-size:15px;
+
+    font-weight:650;
+
+    margin:
+        25px 0 12px;
+
 }
 
-.movement-type{
-font-weight:650
-}
-
-.movement-entry{
-color:var(--success)
-}
-
-.movement-exit{
-color:var(--danger)
-}
-
-.movement-adjustment{
-color:var(--warning)
-}
 
 .stock-preview{
-margin-top:15px;
-padding:12px 14px;
-background:var(--green-soft);
-border-radius:8px;
-color:var(--green-dark);
-font-size:12px
+
+    margin-top:15px;
+
+    padding:
+        12px 14px;
+
+    background:var(--green-soft);
+
+    border-radius:8px;
+
+    color:var(--green-dark);
+
+    font-size:12px;
+
 }
 
-/* PRODUCCIÓN */
 
-.production-summary{
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:16px;
-margin-bottom:18px
+/* =========================
+PRODUCTION
+========================= */
+
+.production-summary,
+.recipe-summary{
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(4,1fr);
+
+    gap:16px;
+
+    margin-bottom:18px;
+
 }
 
-.production-card{
-background:#fff;
-border:1px solid var(--border);
-border-radius:12px;
-padding:18px;
-box-shadow:var(--shadow)
+
+.production-card,
+.recipe-stat{
+
+    background:white;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:12px;
+
+    padding:18px;
+
+    box-shadow:var(--shadow);
+
 }
 
-.production-card .number{
-font-size:25px;
-font-weight:650;
-color:var(--green-dark)
+
+.production-card .number,
+.recipe-stat .number{
+
+    font-size:25px;
+
+    font-weight:650;
+
+    color:var(--green-dark);
+
 }
 
-.production-card .label{
-font-size:11px;
-color:var(--muted);
-margin-top:5px
+
+.production-card .label,
+.recipe-stat .label{
+
+    font-size:11px;
+
+    color:var(--muted);
+
+    margin-top:5px;
+
 }
 
-.production-panel{
-background:#fff;
-border:1px solid var(--border);
-border-radius:12px;
-padding:22px;
-margin-bottom:18px;
-box-shadow:var(--shadow)
-}
-
-.production-panel h2{
-font-size:16px;
-color:var(--green-dark);
-margin-bottom:17px
-}
 
 .production-form-grid{
-display:grid;
-grid-template-columns:1.5fr 1fr 1fr 1fr 1.5fr;
-gap:12px;
-align-items:end
+
+    display:grid;
+
+    grid-template-columns:
+        1.5fr 1fr 1fr 1fr 1.5fr;
+
+    gap:12px;
+
 }
+
 
 .production-filters{
-display:flex;
-gap:10px;
-flex-wrap:wrap
+
+    display:flex;
+
+    gap:10px;
+
+    flex-wrap:wrap;
+
 }
+
 
 .production-filters button.active{
-background:var(--green-dark);
-color:#fff;
-border-color:var(--green-dark)
+
+    background:var(--green-dark);
+
+    color:white;
+
 }
 
-.status-pending{
-background:var(--warning-soft);
-color:var(--warning)
-}
-
-.status-progress{
-background:var(--blue-soft);
-color:var(--blue)
-}
-
-.status-complete{
-background:var(--success-soft);
-color:var(--success)
-}
 
 .production-progress{
-width:100%;
-height:7px;
-background:#edf0ed;
-border-radius:20px;
-overflow:hidden;
-margin-top:8px
+
+    width:100%;
+
+    height:7px;
+
+    background:#edf0ed;
+
+    border-radius:20px;
+
+    overflow:hidden;
+
 }
+
 
 .production-progress span{
-display:block;
-height:100%;
-background:var(--green);
-border-radius:20px
+
+    display:block;
+
+    height:100%;
+
+    background:var(--green);
+
 }
 
-/* OTROS MÓDULOS */
+
+/* =========================
+COST SETTINGS
+========================= */
+
+.settings-grid{
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(5,1fr);
+
+    gap:12px;
+
+}
+
+
+.settings-note{
+
+    background:var(--green-soft);
+
+    color:var(--green-dark);
+
+    padding:12px 14px;
+
+    border-radius:8px;
+
+    margin-top:16px;
+
+    font-size:12px;
+
+    line-height:1.5;
+
+}
+
+
+/* =========================
+RECIPES
+========================= */
+
+.recipe-main-grid{
+
+    display:grid;
+
+    grid-template-columns:
+        2fr 1fr 1fr;
+
+    gap:12px;
+
+    margin-bottom:18px;
+
+}
+
+
+.recipe-percent-grid{
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(5,1fr);
+
+    gap:12px;
+
+    background:#fafbf9;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:10px;
+
+    padding:16px;
+
+    margin-top:15px;
+
+}
+
+
+.recipe-percent-title{
+
+    grid-column:1 / -1;
+
+    color:var(--green-dark);
+
+    font-size:13px;
+
+    font-weight:650;
+
+    margin-bottom:3px;
+
+}
+
+
+.recipe-ingredients-box{
+
+    border:
+        1px solid var(--border);
+
+    border-radius:10px;
+
+    overflow:hidden;
+
+    margin-top:18px;
+
+}
+
+
+.recipe-ingredients-header{
+
+    padding:14px 16px;
+
+    background:#f8f9f7;
+
+    border-bottom:
+        1px solid var(--border);
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+}
+
+
+.recipe-row{
+
+    display:grid;
+
+    grid-template-columns:
+        2fr 1fr 1fr 1fr auto;
+
+    gap:10px;
+
+    padding:12px 16px;
+
+    border-bottom:
+        1px solid var(--border);
+
+    align-items:end;
+
+}
+
+
+.recipe-row:last-child{
+
+    border-bottom:0;
+
+}
+
+
+.recipe-calculation{
+
+    margin-top:18px;
+
+}
+
+
+.cost-flow{
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(4,1fr);
+
+    gap:12px;
+
+}
+
+
+.cost-card{
+
+    background:#f8f9f7;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:9px;
+
+    padding:14px;
+
+}
+
+
+.cost-card.highlight{
+
+    background:var(--green-soft);
+
+    border-color:#cadfd4;
+
+}
+
+
+.cost-card.final{
+
+    background:var(--green-dark);
+
+    color:white;
+
+}
+
+
+.cost-card span{
+
+    display:block;
+
+    color:var(--muted);
+
+    font-size:10px;
+
+    text-transform:uppercase;
+
+    margin-bottom:6px;
+
+}
+
+
+.cost-card.final span{
+
+    color:
+        rgba(255,255,255,.65);
+
+}
+
+
+.cost-card strong{
+
+    display:block;
+
+    color:var(--green-dark);
+
+    font-size:18px;
+
+}
+
+
+.cost-card.final strong{
+
+    color:white;
+
+    font-size:22px;
+
+}
+
+
+.cost-breakdown{
+
+    margin-top:14px;
+
+    background:#fff;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:9px;
+
+    overflow:hidden;
+
+}
+
+
+.cost-breakdown-row{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    gap:20px;
+
+    padding:11px 14px;
+
+    border-bottom:
+        1px solid var(--border);
+
+    font-size:12px;
+
+}
+
+
+.cost-breakdown-row:last-child{
+
+    border-bottom:0;
+
+}
+
+
+.cost-breakdown-row strong{
+
+    color:var(--green-dark);
+
+}
+
+
+.cost-breakdown-row.total{
+
+    background:#f8f9f7;
+
+    font-weight:700;
+
+}
+
+
+.recipe-list{
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(2,1fr);
+
+    gap:16px;
+
+}
+
+
+.recipe-card{
+
+    background:white;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:12px;
+
+    box-shadow:var(--shadow);
+
+    overflow:hidden;
+
+}
+
+
+.recipe-card-header{
+
+    padding:18px;
+
+    border-bottom:
+        1px solid var(--border);
+
+    display:flex;
+
+    justify-content:space-between;
+
+    gap:15px;
+
+}
+
+
+.recipe-card-header h3{
+
+    color:var(--green-dark);
+
+    font-size:17px;
+
+}
+
+
+.recipe-card-header p{
+
+    color:var(--muted);
+
+    font-size:11px;
+
+    margin-top:5px;
+
+}
+
+
+.recipe-card-body{
+
+    padding:16px 18px;
+
+}
+
+
+.recipe-card-metrics{
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(3,1fr);
+
+    gap:8px;
+
+}
+
+
+.recipe-metric{
+
+    background:#f8f9f7;
+
+    padding:10px;
+
+    border-radius:8px;
+
+}
+
+
+.recipe-metric span{
+
+    display:block;
+
+    color:var(--muted);
+
+    font-size:9px;
+
+    text-transform:uppercase;
+
+}
+
+
+.recipe-metric strong{
+
+    display:block;
+
+    color:var(--green-dark);
+
+    font-size:14px;
+
+    margin-top:4px;
+
+}
+
+
+.recipe-card-footer{
+
+    padding:14px 18px;
+
+    border-top:
+        1px solid var(--border);
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    gap:10px;
+
+}
+
+
+.food-good{
+
+    color:var(--success)!important;
+
+}
+
+
+.food-warning{
+
+    color:var(--warning)!important;
+
+}
+
+
+.food-danger{
+
+    color:var(--danger)!important;
+
+}
+
+
+/* =========================
+OTHER MODULES
+========================= */
 
 .coming-soon{
-background:#fff;
-border:1px solid var(--border);
-border-radius:12px;
-padding:60px 30px;
-text-align:center;
-box-shadow:var(--shadow)
+
+    background:white;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:12px;
+
+    padding:60px 30px;
+
+    text-align:center;
+
+    box-shadow:var(--shadow);
+
 }
+
 
 .coming-soon h2{
-color:var(--green-dark);
-font-size:20px;
-margin-bottom:8px
+
+    color:var(--green-dark);
+
+    margin-bottom:8px;
+
 }
+
 
 .coming-soon p{
-color:var(--muted);
-font-size:13px
+
+    color:var(--muted);
+
+    font-size:13px;
+
 }
 
-/* RESPONSIVE */
+
+/* =========================
+RESPONSIVE
+========================= */
 
 @media(max-width:1100px){
 
-.stats,
-.production-summary{
-grid-template-columns:repeat(2,1fr)
+    .stats,
+    .production-summary,
+    .recipe-summary{
+
+        grid-template-columns:
+            repeat(2,1fr);
+
+    }
+
+
+    .dashboard-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+
+    .form-grid,
+    .production-form-grid,
+    .recipe-main-grid,
+    .settings-grid,
+    .recipe-percent-grid{
+
+        grid-template-columns:
+            repeat(2,1fr);
+
+    }
+
+
+    .movement-form{
+
+        grid-template-columns:
+            repeat(2,1fr);
+
+    }
+
+
+    .cost-flow{
+
+        grid-template-columns:
+            repeat(2,1fr);
+
+    }
+
+
+    .recipe-list{
+
+        grid-template-columns:1fr;
+
+    }
+
 }
 
-.dashboard-grid{
-grid-template-columns:1fr
-}
-
-.form-grid,
-.production-form-grid{
-grid-template-columns:repeat(2,1fr)
-}
-
-.movement-form{
-grid-template-columns:repeat(2,1fr)
-}
-
-}
 
 @media(max-width:750px){
 
-.sidebar{
-width:72px;
-padding:20px 9px
+    .sidebar{
+
+        width:72px;
+
+        padding:
+            20px 9px;
+
+    }
+
+
+    .brand-name{
+
+        font-size:18px;
+
+        letter-spacing:2px;
+
+    }
+
+
+    .brand-subtitle,
+    .nav-title,
+    .nav-item span,
+    .user-info{
+
+        display:none;
+
+    }
+
+
+    .nav-item{
+
+        text-align:center;
+
+    }
+
+
+    .main{
+
+        margin-left:72px;
+
+        width:
+            calc(100% - 72px);
+
+    }
+
+
+    .content{
+
+        padding:
+            22px 16px;
+
+    }
+
+
+    .page-header{
+
+        flex-direction:column;
+
+    }
+
+
+    .stats,
+    .production-summary,
+    .recipe-summary,
+    .form-grid,
+    .production-form-grid,
+    .recipe-main-grid,
+    .settings-grid,
+    .recipe-percent-grid,
+    .movement-form,
+    .cost-flow,
+    .recipe-row,
+    .recipe-card-metrics{
+
+        grid-template-columns:1fr;
+
+    }
+
+
+    .toolbar{
+
+        flex-direction:column;
+
+    }
+
 }
 
-.brand{
-padding-left:5px;
-padding-right:5px
-}
-
-.brand-name{
-font-size:18px;
-letter-spacing:2px
-}
-
-.brand-subtitle,
-.nav-title,
-.nav-item span,
-.user-info{
-display:none
-}
-
-.nav-item{
-text-align:center;
-padding:13px 5px
-}
-
-.main{
-margin-left:72px;
-width:calc(100% - 72px)
-}
-
-.topbar{
-padding:0 18px
-}
-
-.content{
-padding:22px 16px
-}
-
-.page-header{
-flex-direction:column
-}
-
-.stats,
-.production-summary{
-grid-template-columns:1fr
-}
-
-.form-grid,
-.production-form-grid,
-.movement-form{
-grid-template-columns:1fr
-}
-
-.toolbar{
-flex-direction:column
-}
-
-.movements-header{
-align-items:flex-start;
-flex-direction:column
-}
-
-}
 </style>
+
 </head>
+
 
 <body>
 
+
 <div class="app">
+
 
 <aside class="sidebar">
 
+
 <div class="brand">
-<div class="brand-name">KÜCHE</div>
-<div class="brand-subtitle">Gestión gastronómica</div>
+
+<div class="brand-name">
+KÜCHE
 </div>
+
+<div class="brand-subtitle">
+Gestión gastronómica
+</div>
+
+</div>
+
 
 <nav class="nav">
 
-<div class="nav-title">Principal</div>
 
-<button class="nav-item active" onclick="showPage('dashboard',this)">
+<div class="nav-title">
+Principal
+</div>
+
+
+<button
+class="nav-item active"
+onclick="showPage('dashboard',this)"
+>
 <span>Dashboard</span>
 </button>
 
-<button class="nav-item" onclick="showPage('inventory',this)">
+
+<button
+class="nav-item"
+onclick="showPage('inventory',this)"
+>
 <span>Inventario</span>
 </button>
 
-<button class="nav-item" onclick="showPage('production',this)">
+
+<button
+class="nav-item"
+onclick="showPage('production',this)"
+>
 <span>Producción</span>
 </button>
 
-<button class="nav-item" onclick="showPage('recipes',this)">
+
+<button
+class="nav-item"
+onclick="showPage('recipes',this)"
+>
 <span>Recetas y costos</span>
 </button>
 
-<button class="nav-item" onclick="showPage('temperatures',this)">
+
+<button
+class="nav-item"
+onclick="showPage('temperatures',this)"
+>
 <span>Temperaturas</span>
 </button>
 
-<div class="nav-title">Administración</div>
 
-<button class="nav-item" onclick="showPage('staff',this)">
+<div class="nav-title">
+Administración
+</div>
+
+
+<button
+class="nav-item"
+onclick="showPage('staff',this)"
+>
 <span>Personal</span>
 </button>
 
-<button class="nav-item" onclick="showPage('checklists',this)">
+
+<button
+class="nav-item"
+onclick="showPage('checklists',this)"
+>
 <span>Checklists</span>
 </button>
 
-<button class="nav-item" onclick="showPage('reports',this)">
+
+<button
+class="nav-item"
+onclick="showPage('reports',this)"
+>
 <span>Reportes</span>
 </button>
 
+
 </nav>
+
 
 <div class="sidebar-bottom">
 
@@ -924,17 +2096,28 @@ GA
 </div>
 
 <div class="user-info">
-<strong>Administrador</strong>
-<span>Cuenta principal</span>
-</div>
+
+<strong>
+Administrador
+</strong>
+
+<span>
+Cuenta principal
+</span>
 
 </div>
 
 </div>
+
+</div>
+
 
 </aside>
 
+
+
 <main class="main">
+
 
 <header class="topbar">
 
@@ -948,11 +2131,19 @@ Sistema operativo
 
 </header>
 
+
 <div class="content">
 
-<!-- DASHBOARD -->
 
-<section id="dashboard" class="page active">
+<!-- =========================
+DASHBOARD
+========================= -->
+
+<section
+id="dashboard"
+class="page active"
+>
+
 
 <div class="page-header">
 
@@ -968,13 +2159,18 @@ Información actual de tu establecimiento.
 
 </div>
 
-<button class="primary-button" onclick="openInventory()">
+<button
+class="primary-button"
+onclick="openInventory()"
+>
 Gestionar inventario
 </button>
 
 </div>
 
+
 <div class="stats">
+
 
 <div class="stat-card">
 
@@ -982,7 +2178,10 @@ Gestionar inventario
 Insumos registrados
 </div>
 
-<div class="stat-value" id="statProducts">
+<div
+class="stat-value"
+id="statProducts"
+>
 0
 </div>
 
@@ -992,13 +2191,17 @@ Total en inventario
 
 </div>
 
+
 <div class="stat-card">
 
 <div class="stat-label">
 Stock crítico
 </div>
 
-<div class="stat-value" id="statLow">
+<div
+class="stat-value"
+id="statLow"
+>
 0
 </div>
 
@@ -1008,21 +2211,6 @@ Requieren reposición
 
 </div>
 
-<div class="stat-card">
-
-<div class="stat-label">
-Movimientos
-</div>
-
-<div class="stat-value" id="statMovements">
-0
-</div>
-
-<div class="stat-detail">
-Movimientos registrados
-</div>
-
-</div>
 
 <div class="stat-card">
 
@@ -1030,7 +2218,10 @@ Movimientos registrados
 Producción hoy
 </div>
 
-<div class="stat-value" id="statProduction">
+<div
+class="stat-value"
+id="statProduction"
+>
 0
 </div>
 
@@ -1040,39 +2231,93 @@ Preparaciones planificadas
 
 </div>
 
+
+<div class="stat-card">
+
+<div class="stat-label">
+Recetas
 </div>
+
+<div
+class="stat-value"
+id="statRecipes"
+>
+0
+</div>
+
+<div class="stat-detail">
+Recetas costeadas
+</div>
+
+</div>
+
+
+</div>
+
 
 <div class="dashboard-grid">
 
-<div class="card">
-
-<div class="card-header">
-<h2>Alertas de inventario</h2>
-<span>Estado actual</span>
-</div>
-
-<div class="alert-list" id="dashboardAlerts"></div>
-
-</div>
 
 <div class="card">
 
 <div class="card-header">
-<h2>Actividad reciente</h2>
-<span>Últimos movimientos</span>
+
+<h2>
+Alertas de inventario
+</h2>
+
+<span>
+Estado actual
+</span>
+
 </div>
 
-<div class="activity" id="dashboardActivity"></div>
+<div
+class="alert-list"
+id="dashboardAlerts"
+></div>
 
 </div>
 
+
+<div class="card">
+
+<div class="card-header">
+
+<h2>
+Actividad reciente
+</h2>
+
+<span>
+Últimos movimientos
+</span>
+
 </div>
+
+<div
+class="activity"
+id="dashboardActivity"
+></div>
+
+</div>
+
+
+</div>
+
 
 </section>
 
-<!-- INVENTARIO -->
 
-<section id="inventory" class="page">
+
+<!-- =========================
+INVENTARIO
+========================= -->
+
+<section
+id="inventory"
+class="page"
+>
+
 
 <div class="page-header">
 
@@ -1083,18 +2328,31 @@ Inventario
 </h1>
 
 <p>
-Control de insumos y niveles de stock.
+Control de stock y costo unitario de tus insumos.
 </p>
 
 </div>
 
-<div style="display:flex;gap:10px;flex-wrap:wrap">
 
-<button class="secondary-button" onclick="openMovements()">
-🔄 Movimientos
+<div
+style="
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+"
+>
+
+<button
+class="secondary-button"
+onclick="openMovements()"
+>
+Movimientos
 </button>
 
-<button class="primary-button" onclick="newProduct()">
+<button
+class="primary-button"
+onclick="newProduct()"
+>
 + Nuevo insumo
 </button>
 
@@ -1102,18 +2360,28 @@ Control de insumos y niveles de stock.
 
 </div>
 
-<div id="inventoryForm" class="form-panel">
 
-<div id="formTitle" class="form-title">
+<div
+id="inventoryForm"
+class="form-panel"
+>
+
+
+<div
+id="formTitle"
+class="form-title"
+>
 Registrar nuevo insumo
 </div>
 
+
 <div class="form-grid">
+
 
 <div class="field">
 
 <label>
-Nombre del insumo
+Nombre
 </label>
 
 <input
@@ -1123,6 +2391,7 @@ placeholder="Ej. Carne molida"
 >
 
 </div>
+
 
 <div class="field">
 
@@ -1136,37 +2405,18 @@ Categoría
 Seleccionar
 </option>
 
-<option>
-Proteínas
-</option>
-
-<option>
-Lácteos
-</option>
-
-<option>
-Frutas y verduras
-</option>
-
-<option>
-Abarrotes
-</option>
-
-<option>
-Bebestibles
-</option>
-
-<option>
-Congelados
-</option>
-
-<option>
-Otros
-</option>
+<option>Proteínas</option>
+<option>Lácteos</option>
+<option>Frutas y verduras</option>
+<option>Abarrotes</option>
+<option>Bebestibles</option>
+<option>Congelados</option>
+<option>Otros</option>
 
 </select>
 
 </div>
+
 
 <div class="field">
 
@@ -1192,10 +2442,11 @@ Seleccionar
 
 </div>
 
+
 <div class="field">
 
 <label>
-Cantidad actual
+Stock actual
 </label>
 
 <input
@@ -1203,10 +2454,10 @@ id="quantity"
 type="number"
 min="0"
 step="0.01"
-placeholder="0"
 >
 
 </div>
+
 
 <div class="field">
 
@@ -1219,12 +2470,30 @@ id="minimum"
 type="number"
 min="0"
 step="0.01"
-placeholder="0"
 >
 
 </div>
 
+
+<div class="field">
+
+<label>
+Costo / unidad $
+</label>
+
+<input
+id="cost"
+type="number"
+min="0"
+step="1"
+placeholder="Ej. 8000"
+>
+
 </div>
+
+
+</div>
+
 
 <div class="form-actions">
 
@@ -1245,22 +2514,27 @@ Cancelar
 
 </div>
 
+
 </div>
 
-<!-- MOVIMIENTOS -->
 
-<div id="movementsPanel" class="movements-panel">
+
+<div
+id="movementsPanel"
+class="movements-panel"
+>
+
 
 <div class="movements-header">
 
 <div>
 
 <h2>
-🔄 Movimientos de inventario
+Movimientos de inventario
 </h2>
 
 <p>
-Registra entradas, salidas y ajustes de stock.
+Registra entradas, salidas y ajustes.
 </p>
 
 </div>
@@ -1274,7 +2548,9 @@ Cerrar
 
 </div>
 
+
 <div class="movement-form">
+
 
 <div class="field">
 
@@ -1288,12 +2564,13 @@ onchange="showMovementPreview()"
 >
 
 <option value="">
-Seleccionar insumo
+Seleccionar
 </option>
 
 </select>
 
 </div>
+
 
 <div class="field">
 
@@ -1307,20 +2584,21 @@ onchange="showMovementPreview()"
 >
 
 <option value="entrada">
-➕ Entrada
+Entrada
 </option>
 
 <option value="salida">
-➖ Salida
+Salida
 </option>
 
 <option value="ajuste">
-🔄 Ajuste
+Ajuste
 </option>
 
 </select>
 
 </div>
+
 
 <div class="field">
 
@@ -1331,13 +2609,12 @@ Cantidad
 <input
 id="movementQuantity"
 type="number"
-min="0"
 step="0.01"
-placeholder="0"
 oninput="showMovementPreview()"
 >
 
 </div>
+
 
 <div class="field">
 
@@ -1348,10 +2625,11 @@ Motivo
 <input
 id="movementReason"
 type="text"
-placeholder="Ej. Compra de proveedor"
+placeholder="Ej. Compra proveedor"
 >
 
 </div>
+
 
 <button
 class="primary-button"
@@ -1360,7 +2638,9 @@ onclick="registerMovement()"
 Registrar
 </button>
 
+
 </div>
+
 
 <div
 id="movementPreview"
@@ -1368,9 +2648,11 @@ class="stock-preview"
 style="display:none"
 ></div>
 
+
 <div class="history-title">
-Historial de movimientos
+Historial
 </div>
+
 
 <div class="table-card">
 
@@ -1381,17 +2663,26 @@ Historial de movimientos
 <thead>
 
 <tr>
+
 <th>Fecha</th>
+
 <th>Insumo</th>
-<th>Movimiento</th>
+
+<th>Tipo</th>
+
 <th>Cantidad</th>
+
 <th>Motivo</th>
-<th>Stock resultante</th>
+
+<th>Stock</th>
+
 </tr>
 
 </thead>
 
-<tbody id="movementTable"></tbody>
+<tbody
+id="movementTable"
+></tbody>
 
 </table>
 
@@ -1399,7 +2690,9 @@ Historial de movimientos
 
 </div>
 
+
 </div>
+
 
 <div class="toolbar">
 
@@ -1430,6 +2723,7 @@ Todos
 
 </div>
 
+
 <div class="table-card">
 
 <div class="table-wrapper">
@@ -1439,17 +2733,28 @@ Todos
 <thead>
 
 <tr>
+
 <th>Insumo</th>
+
 <th>Categoría</th>
-<th>Stock actual</th>
-<th>Stock mínimo</th>
+
+<th>Stock</th>
+
+<th>Mínimo</th>
+
+<th>Costo unitario</th>
+
 <th>Estado</th>
+
 <th>Acciones</th>
+
 </tr>
 
 </thead>
 
-<tbody id="inventoryTable"></tbody>
+<tbody
+id="inventoryTable"
+></tbody>
 
 </table>
 
@@ -1457,11 +2762,20 @@ Todos
 
 </div>
 
+
 </section>
 
-<!-- PRODUCCIÓN -->
 
-<section id="production" class="page">
+
+<!-- =========================
+PRODUCCIÓN
+========================= -->
+
+<section
+id="production"
+class="page"
+>
+
 
 <div class="page-header">
 
@@ -1472,7 +2786,7 @@ Producción
 </h1>
 
 <p>
-Planifica, ejecuta y controla las preparaciones de tu establecimiento.
+Planificación diaria de preparaciones.
 </p>
 
 </div>
@@ -1486,15 +2800,19 @@ onclick="newProduction()"
 
 </div>
 
+
 <div class="production-summary">
 
 <div class="production-card">
 
 <div class="label">
-Planificadas hoy
+Planificadas
 </div>
 
-<div class="number" id="prodPlanned">
+<div
+class="number"
+id="prodPlanned"
+>
 0
 </div>
 
@@ -1506,7 +2824,10 @@ Planificadas hoy
 Pendientes
 </div>
 
-<div class="number" id="prodPending">
+<div
+class="number"
+id="prodPending"
+>
 0
 </div>
 
@@ -1518,7 +2839,10 @@ Pendientes
 En proceso
 </div>
 
-<div class="number" id="prodProgress">
+<div
+class="number"
+id="prodProgress"
+>
 0
 </div>
 
@@ -1530,7 +2854,10 @@ En proceso
 Completadas
 </div>
 
-<div class="number" id="prodComplete">
+<div
+class="number"
+id="prodComplete"
+>
 0
 </div>
 
@@ -1538,15 +2865,19 @@ Completadas
 
 </div>
 
+
 <div
 id="productionForm"
 class="production-panel"
-style="display:none"
 >
 
-<h2 id="productionFormTitle">
+<div
+id="productionFormTitle"
+class="form-title"
+>
 Nueva producción
-</h2>
+</div>
+
 
 <div class="production-form-grid">
 
@@ -1559,7 +2890,6 @@ Preparación
 <input
 id="prepName"
 type="text"
-placeholder="Ej. Salsa de ajo"
 >
 
 </div>
@@ -1573,9 +2903,7 @@ Cantidad
 <input
 id="prepQuantity"
 type="number"
-min="0.01"
 step="0.01"
-placeholder="10"
 >
 
 </div>
@@ -1598,8 +2926,6 @@ Seleccionar
 <option>ml</option>
 <option>unidad</option>
 <option>porción</option>
-<option>bandeja</option>
-<option>caja</option>
 
 </select>
 
@@ -1614,7 +2940,6 @@ Responsable
 <input
 id="prepResponsible"
 type="text"
-placeholder="Ej. Cocina"
 >
 
 </div>
@@ -1622,7 +2947,7 @@ placeholder="Ej. Cocina"
 <div class="field">
 
 <label>
-Hora objetivo
+Hora
 </label>
 
 <input
@@ -1634,7 +2959,11 @@ type="time"
 
 </div>
 
-<div class="field" style="margin-top:12px">
+
+<div
+class="field"
+style="margin-top:12px"
+>
 
 <label>
 Observaciones
@@ -1642,10 +2971,10 @@ Observaciones
 
 <textarea
 id="prepNotes"
-placeholder="Detalles de la preparación, rendimiento, prioridad, etc."
 ></textarea>
 
 </div>
+
 
 <div class="form-actions">
 
@@ -1653,7 +2982,7 @@ placeholder="Detalles de la preparación, rendimiento, prioridad, etc."
 class="primary-button"
 onclick="saveProduction()"
 >
-Guardar producción
+Guardar
 </button>
 
 <button
@@ -1665,7 +2994,9 @@ Cancelar
 
 </div>
 
+
 </div>
+
 
 <div class="toolbar">
 
@@ -1674,41 +3005,42 @@ Cancelar
 <input
 id="productionSearch"
 type="text"
-placeholder="Buscar preparación..."
+placeholder="Buscar..."
 oninput="renderProduction()"
 >
 
 </div>
 
+
 <div class="production-filters">
 
 <button
-class="secondary-button active"
 id="filterAll"
+class="secondary-button active"
 onclick="setProductionFilter('todos')"
 >
 Todas
 </button>
 
 <button
-class="secondary-button"
 id="filterPending"
+class="secondary-button"
 onclick="setProductionFilter('pendiente')"
 >
 Pendientes
 </button>
 
 <button
-class="secondary-button"
 id="filterProgress"
+class="secondary-button"
 onclick="setProductionFilter('en_proceso')"
 >
 En proceso
 </button>
 
 <button
-class="secondary-button"
 id="filterComplete"
+class="secondary-button"
 onclick="setProductionFilter('completado')"
 >
 Completadas
@@ -1717,6 +3049,7 @@ Completadas
 </div>
 
 </div>
+
 
 <div class="table-card">
 
@@ -1727,18 +3060,28 @@ Completadas
 <thead>
 
 <tr>
+
 <th>Preparación</th>
+
 <th>Cantidad</th>
+
 <th>Responsable</th>
+
 <th>Hora</th>
+
 <th>Estado</th>
-<th>Progreso</th>
+
+<th>Avance</th>
+
 <th>Acciones</th>
+
 </tr>
 
 </thead>
 
-<tbody id="productionTable"></tbody>
+<tbody
+id="productionTable"
+></tbody>
 
 </table>
 
@@ -1746,11 +3089,20 @@ Completadas
 
 </div>
 
+
 </section>
 
-<!-- RESTO -->
 
-<section id="recipes" class="page">
+
+<!-- =========================
+RECETAS Y COSTOS
+========================= -->
+
+<section
+id="recipes"
+class="page"
+>
+
 
 <div class="page-header">
 
@@ -1761,35 +3113,791 @@ Recetas y costos
 </h1>
 
 <p>
-Control de recetas, rendimientos y costos.
+Costeo completo con materia prima, mano de obra, costos indirectos, utilidad e IVA.
 </p>
 
 </div>
 
+
+<div
+style="
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+"
+>
+
+<button
+class="secondary-button"
+onclick="toggleCostSettings()"
+>
+Configuración de costos
+</button>
+
+<button
+class="primary-button"
+onclick="newRecipe()"
+>
++ Nueva receta
+</button>
+
 </div>
 
-<div class="coming-soon">
+</div>
 
-<h2>
-Módulo en desarrollo
-</h2>
 
-<p>
-Aquí construiremos recetas, costos, food cost y márgenes.
-</p>
+
+<!-- CONFIGURACIÓN GENERAL -->
+
+<div
+id="costSettingsPanel"
+class="cost-settings-panel"
+>
+
+
+<div class="form-title">
+Configuración de costos predeterminada
+</div>
+
+
+<div class="settings-grid">
+
+
+<div class="field">
+
+<label>
+Mano de obra %
+</label>
+
+<input
+id="defaultLabor"
+type="number"
+min="0"
+step="0.1"
+>
 
 </div>
+
+
+<div class="field">
+
+<label>
+CID / CIF %
+</label>
+
+<input
+id="defaultIndirect"
+type="number"
+min="0"
+step="0.1"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Ganancia deseada %
+</label>
+
+<input
+id="defaultProfit"
+type="number"
+min="0"
+step="0.1"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+IVA %
+</label>
+
+<input
+id="defaultVat"
+type="number"
+min="0"
+step="0.1"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Método de ganancia
+</label>
+
+<select id="defaultProfitMethod">
+
+<option value="markup">
+Recargo sobre costo
+</option>
+
+<option value="margin">
+Margen sobre venta
+</option>
+
+</select>
+
+</div>
+
+
+</div>
+
+
+<div class="settings-note">
+
+Estos valores se cargarán automáticamente al crear una receta nueva. Después puedes cambiar los porcentajes individualmente dentro de cada receta.
+
+</div>
+
+
+<div class="form-actions">
+
+<button
+class="primary-button"
+onclick="saveCostSettings()"
+>
+Guardar configuración
+</button>
+
+<button
+class="secondary-button"
+onclick="toggleCostSettings()"
+>
+Cerrar
+</button>
+
+</div>
+
+
+</div>
+
+
+
+<div class="recipe-summary">
+
+
+<div class="recipe-stat">
+
+<div
+class="number"
+id="recipeTotalCount"
+>
+0
+</div>
+
+<div class="label">
+Recetas costeadas
+</div>
+
+</div>
+
+
+<div class="recipe-stat">
+
+<div
+class="number"
+id="recipeAverageCost"
+>
+$0
+</div>
+
+<div class="label">
+Costo real promedio
+</div>
+
+</div>
+
+
+<div class="recipe-stat">
+
+<div
+class="number"
+id="recipeAverageFoodCost"
+>
+0%
+</div>
+
+<div class="label">
+Food Cost promedio
+</div>
+
+</div>
+
+
+<div class="recipe-stat">
+
+<div
+class="number"
+id="recipeAverageMargin"
+>
+0%
+</div>
+
+<div class="label">
+Margen promedio
+</div>
+
+</div>
+
+
+</div>
+
+
+
+<!-- FORMULARIO RECETA -->
+
+<div
+id="recipeForm"
+class="recipe-panel"
+>
+
+
+<div
+id="recipeFormTitle"
+class="form-title"
+>
+Nueva receta
+</div>
+
+
+<div class="recipe-main-grid">
+
+
+<div class="field">
+
+<label>
+Nombre de receta
+</label>
+
+<input
+id="recipeName"
+type="text"
+placeholder="Ej. Hamburguesa clásica"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Categoría
+</label>
+
+<select id="recipeCategory">
+
+<option value="">
+Seleccionar
+</option>
+
+<option>Entrada</option>
+<option>Principal</option>
+<option>Hamburguesa</option>
+<option>Sandwich</option>
+<option>Postre</option>
+<option>Bebestible</option>
+<option>Salsa</option>
+<option>Preparación base</option>
+<option>Otro</option>
+
+</select>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Rendimiento / porciones
+</label>
+
+<input
+id="recipeYield"
+type="number"
+min="1"
+step="1"
+value="1"
+oninput="calculateRecipe()"
+>
+
+</div>
+
+
+</div>
+
+
+
+<div class="recipe-percent-grid">
+
+
+<div class="recipe-percent-title">
+Estructura de costos de esta receta
+</div>
+
+
+<div class="field">
+
+<label>
+Mano de obra %
+</label>
+
+<input
+id="recipeLabor"
+type="number"
+min="0"
+step="0.1"
+oninput="calculateRecipe()"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+CID / CIF %
+</label>
+
+<input
+id="recipeIndirect"
+type="number"
+min="0"
+step="0.1"
+oninput="calculateRecipe()"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Ganancia deseada %
+</label>
+
+<input
+id="recipeProfit"
+type="number"
+min="0"
+step="0.1"
+oninput="calculateRecipe()"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+IVA %
+</label>
+
+<input
+id="recipeVat"
+type="number"
+min="0"
+step="0.1"
+oninput="calculateRecipe()"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Método de ganancia
+</label>
+
+<select
+id="recipeProfitMethod"
+onchange="calculateRecipe()"
+>
+
+<option value="markup">
+Recargo sobre costo
+</option>
+
+<option value="margin">
+Margen sobre venta
+</option>
+
+</select>
+
+</div>
+
+
+</div>
+
+
+
+<div class="recipe-ingredients-box">
+
+
+<div class="recipe-ingredients-header">
+
+<strong>
+Ingredientes
+</strong>
+
+<button
+class="secondary-button"
+onclick="addRecipeIngredient()"
+>
++ Agregar ingrediente
+</button>
+
+</div>
+
+
+<div
+id="recipeIngredients"
+></div>
+
+
+</div>
+
+
+
+<div class="recipe-calculation">
+
+
+<div class="cost-flow">
+
+
+<div class="cost-card">
+
+<span>
+Materia prima
+</span>
+
+<strong
+id="recipeRawCost"
+>
+$0
+</strong>
+
+</div>
+
+
+<div class="cost-card">
+
+<span>
+Costo real
+</span>
+
+<strong
+id="recipeRealCost"
+>
+$0
+</strong>
+
+</div>
+
+
+<div class="cost-card highlight">
+
+<span>
+Precio neto sugerido
+</span>
+
+<strong
+id="recipeNetPrice"
+>
+$0
+</strong>
+
+</div>
+
+
+<div class="cost-card final">
+
+<span>
+Precio final con IVA
+</span>
+
+<strong
+id="recipeFinalPrice"
+>
+$0
+</strong>
+
+</div>
+
+
+</div>
+
+
+
+<div class="cost-breakdown">
+
+
+<div class="cost-breakdown-row">
+
+<span>
+Materia prima
+</span>
+
+<strong
+id="breakRaw"
+>
+$0
+</strong>
+
+</div>
+
+
+<div class="cost-breakdown-row">
+
+<span id="breakLaborLabel">
+Mano de obra
+</span>
+
+<strong
+id="breakLabor"
+>
+$0
+</strong>
+
+</div>
+
+
+<div class="cost-breakdown-row">
+
+<span id="breakIndirectLabel">
+CID / CIF
+</span>
+
+<strong
+id="breakIndirect"
+>
+$0
+</strong>
+
+</div>
+
+
+<div class="cost-breakdown-row total">
+
+<span>
+Costo real de producción
+</span>
+
+<strong
+id="breakReal"
+>
+$0
+</strong>
+
+</div>
+
+
+<div class="cost-breakdown-row">
+
+<span id="breakProfitLabel">
+Ganancia
+</span>
+
+<strong
+id="breakProfit"
+>
+$0
+</strong>
+
+</div>
+
+
+<div class="cost-breakdown-row">
+
+<span>
+Precio neto
+</span>
+
+<strong
+id="breakNet"
+>
+$0
+</strong>
+
+</div>
+
+
+<div class="cost-breakdown-row">
+
+<span id="breakVatLabel">
+IVA
+</span>
+
+<strong
+id="breakVat"
+>
+$0
+</strong>
+
+</div>
+
+
+<div class="cost-breakdown-row total">
+
+<span>
+Precio final sugerido
+</span>
+
+<strong
+id="breakFinal"
+>
+$0
+</strong>
+
+</div>
+
+
+<div class="cost-breakdown-row">
+
+<span>
+Costo por porción
+</span>
+
+<strong
+id="breakCostPortion"
+>
+$0
+</strong>
+
+</div>
+
+
+<div class="cost-breakdown-row">
+
+<span>
+Precio final por porción
+</span>
+
+<strong
+id="breakFinalPortion"
+>
+$0
+</strong>
+
+</div>
+
+
+<div class="cost-breakdown-row">
+
+<span>
+Food Cost sobre precio neto
+</span>
+
+<strong
+id="breakFoodCost"
+>
+0%
+</strong>
+
+</div>
+
+
+<div class="cost-breakdown-row">
+
+<span>
+Margen real sobre venta neta
+</span>
+
+<strong
+id="breakRealMargin"
+>
+0%
+</strong>
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+<div class="form-actions">
+
+<button
+class="primary-button"
+onclick="saveRecipe()"
+>
+Guardar receta
+</button>
+
+<button
+class="secondary-button"
+onclick="closeRecipeForm()"
+>
+Cancelar
+</button>
+
+</div>
+
+
+</div>
+
+
+
+<div class="toolbar">
+
+<div class="search-box">
+
+<input
+id="recipeSearch"
+type="text"
+placeholder="Buscar receta..."
+oninput="renderRecipes()"
+>
+
+</div>
+
+<button
+class="secondary-button"
+onclick="clearRecipeSearch()"
+>
+Todas
+</button>
+
+</div>
+
+
+<div
+id="recipeList"
+class="recipe-list"
+></div>
+
 
 </section>
 
-<section id="temperatures" class="page">
+
+
+<!-- =========================
+OTROS MÓDULOS
+========================= -->
+
+<section
+id="temperatures"
+class="page"
+>
 
 <div class="page-header">
 
 <div>
 
 <h1>
-Control de temperaturas
+Temperaturas
 </h1>
 
 <p>
@@ -1807,14 +3915,19 @@ Módulo en desarrollo
 </h2>
 
 <p>
-Aquí construiremos el control de refrigeradores, congeladores y cocción.
+Aquí construiremos refrigeración, congelación, cocción y acciones correctivas.
 </p>
 
 </div>
 
 </section>
 
-<section id="staff" class="page">
+
+
+<section
+id="staff"
+class="page"
+>
 
 <div class="page-header">
 
@@ -1839,14 +3952,19 @@ Módulo en desarrollo
 </h2>
 
 <p>
-Aquí construiremos empleados, cargos, turnos y horarios.
+Aquí construiremos trabajadores, cargos, horarios y asistencia.
 </p>
 
 </div>
 
 </section>
 
-<section id="checklists" class="page">
+
+
+<section
+id="checklists"
+class="page"
+>
 
 <div class="page-header">
 
@@ -1857,7 +3975,7 @@ Checklists
 </h1>
 
 <p>
-Control de tareas operativas y BPM.
+Control operacional y BPM.
 </p>
 
 </div>
@@ -1871,14 +3989,19 @@ Módulo en desarrollo
 </h2>
 
 <p>
-Aquí construiremos tareas diarias, semanales, apertura y cierre.
+Aquí construiremos apertura, cierre, limpieza y controles BPM.
 </p>
 
 </div>
 
 </section>
 
-<section id="reports" class="page">
+
+
+<section
+id="reports"
+class="page"
+>
 
 <div class="page-header">
 
@@ -1903,22 +4026,31 @@ Módulo en desarrollo
 </h2>
 
 <p>
-Aquí construiremos reportes operacionales y administrativos.
+Aquí construiremos análisis de inventario, producción, costos y rentabilidad.
 </p>
 
 </div>
 
 </section>
 
+
 </div>
+
 
 </main>
 
+
 </div>
+
+
 
 <script>
 
-/* DATOS */
+
+/* =====================================================
+DATA
+===================================================== */
+
 
 let inventory =
 JSON.parse(
@@ -1926,48 +4058,17 @@ localStorage.getItem("kucheInventory")
 ) || [];
 
 
-const oldInventory =
-JSON.parse(
-localStorage.getItem("kuche_inventario")
-) || [];
-
-
-if(
-inventory.length === 0 &&
-oldInventory.length > 0
-){
-
 inventory =
-oldInventory.map(item => ({
+inventory.map(
+product => ({
 
-id:
-item.id ||
-Date.now() +
-Math.random(),
+...product,
 
-name:
-item.nombre ||
-"Insumo",
+cost:
+Number(product.cost) || 0
 
-category:
-item.categoria ||
-"Otros",
-
-unit:
-item.unidad ||
-"unidad",
-
-quantity:
-Number(item.stock) || 0,
-
-minimum:
-Number(item.minimo) || 0
-
-}));
-
-saveInventory();
-
-}
+})
+);
 
 
 let movements =
@@ -1982,35 +4083,87 @@ localStorage.getItem("kucheProductions")
 ) || [];
 
 
-let editingId = null;
-
-let editingProductionId = null;
-
-let lowStockFilter = false;
-
-let productionFilter = "todos";
+let recipes =
+JSON.parse(
+localStorage.getItem("kucheRecipes")
+) || [];
 
 
-/* NAVEGACIÓN */
+let costSettings =
+JSON.parse(
+localStorage.getItem("kucheCostSettings")
+) || {
 
-function showPage(pageId,button){
+labor:
+20,
+
+indirect:
+10,
+
+profit:
+35,
+
+vat:
+19,
+
+profitMethod:
+"markup"
+
+};
+
+
+let editingId =
+null;
+
+
+let editingProductionId =
+null;
+
+
+let editingRecipeId =
+null;
+
+
+let lowStockFilter =
+false;
+
+
+let productionFilter =
+"todos";
+
+
+/* =====================================================
+NAVEGACIÓN
+===================================================== */
+
+
+function showPage(
+pageId,
+button
+){
 
 document
 .querySelectorAll(".page")
 .forEach(page => {
 
-page.classList.remove("active");
+page.classList.remove(
+"active"
+);
 
 });
 
 
 const page =
-document.getElementById(pageId);
+document.getElementById(
+pageId
+);
 
 
 if(page){
 
-page.classList.add("active");
+page.classList.add(
+"active"
+);
 
 }
 
@@ -2019,34 +4172,56 @@ document
 .querySelectorAll(".nav-item")
 .forEach(item => {
 
-item.classList.remove("active");
+item.classList.remove(
+"active"
+);
 
 });
 
 
 if(button){
 
-button.classList.add("active");
+button.classList.add(
+"active"
+);
 
 }
 
 
-if(pageId === "inventory"){
+if(
+pageId ===
+"inventory"
+){
 
 renderInventory();
 
-renderMovementHistory();
-
 loadMovementProducts();
+
+renderMovementHistory();
 
 }
 
 
-if(pageId === "production"){
+if(
+pageId ===
+"production"
+){
 
 renderProduction();
 
 updateProductionStats();
+
+}
+
+
+if(
+pageId ===
+"recipes"
+){
+
+renderRecipes();
+
+updateRecipeStats();
 
 }
 
@@ -2058,23 +4233,69 @@ updateDashboard();
 
 function openInventory(){
 
-const buttons =
-document.querySelectorAll(".nav-item");
-
-
 showPage(
 "inventory",
-buttons[1]
+document
+.querySelectorAll(".nav-item")[1]
 );
 
 }
 
 
-/* INVENTARIO */
+/* =====================================================
+STORAGE
+===================================================== */
+
+
+function saveInventory(){
+
+localStorage.setItem(
+"kucheInventory",
+JSON.stringify(inventory)
+);
+
+}
+
+
+function saveMovements(){
+
+localStorage.setItem(
+"kucheMovements",
+JSON.stringify(movements)
+);
+
+}
+
+
+function saveProductions(){
+
+localStorage.setItem(
+"kucheProductions",
+JSON.stringify(productions)
+);
+
+}
+
+
+function saveRecipes(){
+
+localStorage.setItem(
+"kucheRecipes",
+JSON.stringify(recipes)
+);
+
+}
+
+
+/* =====================================================
+INVENTORY
+===================================================== */
+
 
 function newProduct(){
 
-editingId = null;
+editingId =
+null;
 
 
 document
@@ -2089,26 +4310,23 @@ document
 "Guardar insumo";
 
 
-clearForm();
+clearProductForm();
 
 
 document
 .getElementById("inventoryForm")
 .classList.add("open");
 
-
-document
-.getElementById("productName")
-.focus();
-
 }
 
 
 function closeForm(){
 
-editingId = null;
+editingId =
+null;
 
-clearForm();
+
+clearProductForm();
 
 
 document
@@ -2118,17 +4336,36 @@ document
 }
 
 
-function clearForm(){
+function clearProductForm(){
 
-document.getElementById("productName").value = "";
+document.getElementById(
+"productName"
+).value = "";
 
-document.getElementById("category").value = "";
 
-document.getElementById("unit").value = "";
+document.getElementById(
+"category"
+).value = "";
 
-document.getElementById("quantity").value = "";
 
-document.getElementById("minimum").value = "";
+document.getElementById(
+"unit"
+).value = "";
+
+
+document.getElementById(
+"quantity"
+).value = "";
+
+
+document.getElementById(
+"minimum"
+).value = "";
+
+
+document.getElementById(
+"cost"
+).value = "";
 
 }
 
@@ -2138,8 +4375,7 @@ function saveProduct(){
 const name =
 document
 .getElementById("productName")
-.value
-.trim();
+.value.trim();
 
 
 const category =
@@ -2155,7 +4391,7 @@ document
 
 
 const quantity =
-parseFloat(
+Number(
 document
 .getElementById("quantity")
 .value
@@ -2163,9 +4399,17 @@ document
 
 
 const minimum =
-parseFloat(
+Number(
 document
 .getElementById("minimum")
+.value
+);
+
+
+const cost =
+Number(
+document
+.getElementById("cost")
 .value
 );
 
@@ -2175,11 +4419,12 @@ if(
 !category ||
 !unit ||
 isNaN(quantity) ||
-isNaN(minimum)
+isNaN(minimum) ||
+isNaN(cost)
 ){
 
 alert(
-"Completa todos los campos antes de guardar."
+"Completa todos los campos."
 );
 
 return;
@@ -2187,31 +4432,32 @@ return;
 }
 
 
-if(editingId !== null){
+if(
+editingId !==
+null
+){
 
 const product =
 inventory.find(
 item =>
-item.id === editingId
+item.id ===
+editingId
 );
 
 
 if(product){
 
-product.name =
-name;
-
-product.category =
-category;
-
-product.unit =
-unit;
-
-product.quantity =
-quantity;
-
-product.minimum =
-minimum;
+Object.assign(
+product,
+{
+name,
+category,
+unit,
+quantity,
+minimum,
+cost
+}
+);
 
 }
 
@@ -2221,17 +4467,15 @@ else{
 
 inventory.push({
 
-id:Date.now(),
+id:
+Date.now(),
 
-name:name,
-
-category:category,
-
-unit:unit,
-
-quantity:quantity,
-
-minimum:minimum
+name,
+category,
+unit,
+quantity,
+minimum,
+cost
 
 });
 
@@ -2245,6 +4489,10 @@ closeForm();
 renderInventory();
 
 loadMovementProducts();
+
+renderRecipes();
+
+updateRecipeStats();
 
 updateDashboard();
 
@@ -2283,44 +4531,45 @@ document
 "Guardar cambios";
 
 
-document
-.getElementById("productName")
-.value =
+document.getElementById(
+"productName"
+).value =
 product.name;
 
 
-document
-.getElementById("category")
-.value =
+document.getElementById(
+"category"
+).value =
 product.category;
 
 
-document
-.getElementById("unit")
-.value =
+document.getElementById(
+"unit"
+).value =
 product.unit;
 
 
-document
-.getElementById("quantity")
-.value =
+document.getElementById(
+"quantity"
+).value =
 product.quantity;
 
 
-document
-.getElementById("minimum")
-.value =
+document.getElementById(
+"minimum"
+).value =
 product.minimum;
+
+
+document.getElementById(
+"cost"
+).value =
+product.cost || 0;
 
 
 document
 .getElementById("inventoryForm")
 .classList.add("open");
-
-
-document
-.getElementById("productName")
-.focus();
 
 }
 
@@ -2343,7 +4592,7 @@ return;
 
 if(
 !confirm(
-'¿Quieres eliminar el insumo "' +
+'¿Eliminar "' +
 product.name +
 '"?'
 )
@@ -2372,39 +4621,11 @@ updateDashboard();
 }
 
 
-function saveInventory(){
-
-localStorage.setItem(
-"kucheInventory",
-JSON.stringify(inventory)
-);
-
-}
-
-
-function saveMovements(){
-
-localStorage.setItem(
-"kucheMovements",
-JSON.stringify(movements)
-);
-
-}
-
-
-function saveProductions(){
-
-localStorage.setItem(
-"kucheProductions",
-JSON.stringify(productions)
-);
-
-}
-
-
 function showLowStock(){
 
-lowStockFilter = true;
+lowStockFilter =
+true;
+
 
 renderInventory();
 
@@ -2413,14 +4634,14 @@ renderInventory();
 
 function showAllStock(){
 
-lowStockFilter = false;
+lowStockFilter =
+false;
+
 
 renderInventory();
 
 }
 
-
-/* TABLA INVENTARIO */
 
 function renderInventory(){
 
@@ -2432,54 +4653,50 @@ document.getElementById(
 
 const search =
 (
-document.getElementById("searchInput")
-?.value || ""
+document.getElementById(
+"searchInput"
+)?.value || ""
 )
-.trim()
 .toLowerCase();
 
 
-const products =
-inventory.filter(product => {
-
-const matchesSearch =
+let list =
+inventory.filter(
+product =>
 product.name
 .toLowerCase()
-.includes(search);
-
-
-const isLow =
-Number(product.quantity) <=
-Number(product.minimum);
-
-
-return (
-matchesSearch &&
-(
-!lowStockFilter ||
-isLow
-)
+.includes(search)
 );
 
-});
+
+if(lowStockFilter){
+
+list =
+list.filter(
+product =>
+Number(product.quantity) <=
+Number(product.minimum)
+);
+
+}
 
 
-if(products.length === 0){
+if(!list.length){
 
 table.innerHTML = `
 
 <tr>
 
-<td colspan="6">
+<td colspan="7">
 
 <div class="empty-state">
 
 <strong>
-No hay insumos para mostrar
+No hay insumos
 </strong>
 
 <span>
-Agrega un insumo o modifica el filtro.
+Registra tu primer insumo.
 </span>
 
 </div>
@@ -2496,10 +4713,9 @@ return;
 
 
 table.innerHTML =
-products
-.map(product => {
+list.map(product => {
 
-const isLow =
+const low =
 Number(product.quantity) <=
 Number(product.minimum);
 
@@ -2517,43 +4733,45 @@ ${escapeHTML(product.name)}
 </td>
 
 <td>
-
-<div class="category">
 ${escapeHTML(product.category)}
-</div>
-
 </td>
 
 <td>
 
-<span class="stock-number">
-
-${Number(product.quantity)}
-${escapeHTML(product.unit)}
-
-</span>
-
-</td>
-
-<td>
-
-${Number(product.minimum)}
+${product.quantity}
 ${escapeHTML(product.unit)}
 
 </td>
 
 <td>
 
-<span class="badge ${
-isLow
+${product.minimum}
+${escapeHTML(product.unit)}
+
+</td>
+
+<td>
+
+$${formatMoney(product.cost)}
+/
+${escapeHTML(product.unit)}
+
+</td>
+
+<td>
+
+<span
+class="badge ${
+low
 ? "badge-danger"
 : "badge-success"
-}">
+}"
+>
 
 ${
-isLow
+low
 ? "Stock crítico"
-: "Stock normal"
+: "Normal"
 }
 
 </span>
@@ -2593,71 +4811,26 @@ Eliminar
 
 `;
 
-})
-.join("");
+}).join("");
 
 }
 
 
-/* SEGURIDAD */
+/* =====================================================
+MOVEMENTS
+===================================================== */
 
-function escapeHTML(value){
-
-return String(value)
-
-.replaceAll(
-"&",
-"&amp;"
-)
-
-.replaceAll(
-"<",
-"&lt;"
-)
-
-.replaceAll(
-">",
-"&gt;"
-)
-
-.replaceAll(
-'"',
-"&quot;"
-)
-
-.replaceAll(
-"'",
-"&#039;"
-);
-
-}
-
-
-/* MOVIMIENTOS */
 
 function openMovements(){
 
-const panel =
-document.getElementById(
-"movementsPanel"
-);
-
-
-panel.classList.add("open");
+document
+.getElementById("movementsPanel")
+.classList.add("open");
 
 
 loadMovementProducts();
 
 renderMovementHistory();
-
-
-panel.scrollIntoView({
-
-behavior:"smooth",
-
-block:"start"
-
-});
 
 }
 
@@ -2679,30 +4852,21 @@ document.getElementById(
 );
 
 
-if(!selector){
-
-return;
-
-}
-
-
-const currentValue =
+const current =
 selector.value;
 
 
-selector.innerHTML = `
-
-<option value="">
-Seleccionar insumo
-</option>
-
-`;
+selector.innerHTML =
+'<option value="">Seleccionar</option>';
 
 
-inventory.forEach(product => {
+inventory.forEach(
+product => {
 
 const option =
-document.createElement("option");
+document.createElement(
+"option"
+);
 
 
 option.value =
@@ -2711,27 +4875,30 @@ product.id;
 
 option.textContent =
 product.name +
-" — Stock: " +
+" — " +
 product.quantity +
 " " +
 product.unit;
 
 
-selector.appendChild(option);
+selector.appendChild(
+option
+);
 
-});
+}
+);
 
 
 if(
 inventory.some(
 item =>
 String(item.id) ===
-String(currentValue)
+String(current)
 )
 ){
 
 selector.value =
-currentValue;
+current;
 
 }
 
@@ -2743,13 +4910,9 @@ function prepareMovement(id){
 openMovements();
 
 
-const selector =
-document.getElementById(
-"movementProduct"
-);
-
-
-selector.value =
+document
+.getElementById("movementProduct")
+.value =
 String(id);
 
 
@@ -2788,8 +4951,7 @@ document.getElementById(
 
 if(
 !productId ||
-!quantity ||
-quantity < 0
+!quantity
 ){
 
 preview.style.display =
@@ -2859,20 +5021,6 @@ ${newStock}
 ${escapeHTML(product.unit)}
 </strong>
 
-${
-newStock < 0
-? `
-<div style="
-color:#c94b4b;
-margin-top:6px;
-font-weight:600;
-">
-⚠ La salida no puede dejar el stock negativo.
-</div>
-`
-: ""
-}
-
 `;
 
 }
@@ -2903,28 +5051,16 @@ document
 const reason =
 document
 .getElementById("movementReason")
-.value
-.trim();
-
-
-if(!productId){
-
-alert(
-"Selecciona un insumo."
-);
-
-return;
-
-}
+.value.trim();
 
 
 if(
-isNaN(quantity) ||
+!productId ||
 quantity <= 0
 ){
 
 alert(
-"Ingresa una cantidad válida."
+"Selecciona un insumo e ingresa una cantidad."
 );
 
 return;
@@ -2942,40 +5078,38 @@ String(productId)
 
 if(!product){
 
-alert(
-"No se encontró el insumo."
-);
-
 return;
 
 }
 
 
-const oldStock =
+const previousStock =
 Number(product.quantity);
 
 
-let newStock =
-oldStock;
+let resultingStock =
+previousStock;
 
 
 if(type === "entrada"){
 
-newStock +=
+resultingStock +=
 quantity;
 
 }
 
 else if(type === "salida"){
 
-newStock -=
+resultingStock -=
 quantity;
 
 
-if(newStock < 0){
+if(
+resultingStock < 0
+){
 
 alert(
-"La salida no puede superar el stock disponible."
+"No existe stock suficiente."
 );
 
 return;
@@ -2986,10 +5120,14 @@ return;
 
 else{
 
-newStock =
+resultingStock =
 quantity;
 
 }
+
+
+product.quantity =
+resultingStock;
 
 
 movements.unshift({
@@ -3003,21 +5141,16 @@ product.id,
 productName:
 product.name,
 
-type:
 type,
 
-quantity:
 quantity,
 
 reason:
-reason ||
-"Sin motivo indicado",
+reason || "Sin motivo",
 
-previousStock:
-oldStock,
+previousStock,
 
-resultingStock:
-newStock,
+resultingStock,
 
 unit:
 product.unit,
@@ -3028,28 +5161,24 @@ new Date().toISOString()
 });
 
 
-product.quantity =
-newStock;
-
-
 saveInventory();
 
 saveMovements();
 
 
-document
-.getElementById("movementQuantity")
-.value = "";
+document.getElementById(
+"movementQuantity"
+).value = "";
 
 
-document
-.getElementById("movementReason")
-.value = "";
+document.getElementById(
+"movementReason"
+).value = "";
 
 
-document
-.getElementById("movementPreview")
-.style.display =
+document.getElementById(
+"movementPreview"
+).style.display =
 "none";
 
 
@@ -3060,11 +5189,6 @@ renderMovementHistory();
 loadMovementProducts();
 
 updateDashboard();
-
-
-alert(
-"Movimiento registrado correctamente."
-);
 
 }
 
@@ -3077,14 +5201,7 @@ document.getElementById(
 );
 
 
-if(!table){
-
-return;
-
-}
-
-
-if(movements.length === 0){
+if(!movements.length){
 
 table.innerHTML = `
 
@@ -3095,12 +5212,8 @@ table.innerHTML = `
 <div class="empty-state">
 
 <strong>
-No hay movimientos registrados
+No hay movimientos
 </strong>
-
-<span>
-Los movimientos de inventario aparecerán aquí.
-</span>
 
 </div>
 
@@ -3118,101 +5231,31 @@ return;
 table.innerHTML =
 movements
 .slice(0,100)
-.map(movement => {
-
-const date =
-new Date(
-movement.date
-);
-
-
-const formattedDate =
-date.toLocaleString(
-"es-CL",
-{
-day:"2-digit",
-month:"2-digit",
-year:"numeric",
-hour:"2-digit",
-minute:"2-digit"
-}
-);
-
-
-let label =
-"Ajuste";
-
-
-let className =
-"movement-adjustment";
-
-
-let sign =
-"";
-
-
-if(
-movement.type ===
-"entrada"
-){
-
-label =
-"Entrada";
-
-className =
-"movement-entry";
-
-sign =
-"+";
-
-}
-
-else if(
-movement.type ===
-"salida"
-){
-
-label =
-"Salida";
-
-className =
-"movement-exit";
-
-sign =
-"-";
-
-}
-
-
-return `
+.map(
+movement => `
 
 <tr>
 
 <td>
-${formattedDate}
+${new Date(
+movement.date
+).toLocaleString("es-CL")}
 </td>
 
 <td>
-
-<strong>
 ${escapeHTML(
 movement.productName
 )}
-</strong>
+</td>
 
+<td>
+${escapeHTML(
+movement.type
+)}
 </td>
 
 <td>
 
-<span class="movement-type ${className}">
-${label}
-</span>
-
-</td>
-
-<td>
-
-${sign}
 ${movement.quantity}
 ${escapeHTML(
 movement.unit
@@ -3221,38 +5264,64 @@ movement.unit
 </td>
 
 <td>
-
 ${escapeHTML(
 movement.reason
 )}
-
 </td>
 
 <td>
 
-<strong>
-
 ${movement.resultingStock}
-
 ${escapeHTML(
 movement.unit
 )}
-
-</strong>
 
 </td>
 
 </tr>
 
-`;
-
-})
+`
+)
 .join("");
 
 }
 
 
-/* PRODUCCIÓN */
+/* =====================================================
+PRODUCTION
+===================================================== */
+
+
+function saveProductions(){
+
+localStorage.setItem(
+"kucheProductions",
+JSON.stringify(productions)
+);
+
+}
+
+
+function getToday(){
+
+const date =
+new Date();
+
+
+return (
+date.getFullYear() +
+"-" +
+String(
+date.getMonth()+1
+).padStart(2,"0") +
+"-" +
+String(
+date.getDate()
+).padStart(2,"0")
+);
+
+}
+
 
 function newProduction(){
 
@@ -3260,22 +5329,23 @@ editingProductionId =
 null;
 
 
-document
-.getElementById(
+document.getElementById(
 "productionFormTitle"
-)
-.textContent =
+).textContent =
 "Nueva producción";
 
 
-document.getElementById(
-"prepName"
-).value = "";
-
-
-document.getElementById(
-"prepQuantity"
-).value = "";
+[
+"prepName",
+"prepQuantity",
+"prepResponsible",
+"prepTime",
+"prepNotes"
+]
+.forEach(
+id =>
+document.getElementById(id).value = ""
+);
 
 
 document.getElementById(
@@ -3283,34 +5353,9 @@ document.getElementById(
 ).value = "";
 
 
-document.getElementById(
-"prepResponsible"
-).value = "";
-
-
-document.getElementById(
-"prepTime"
-).value = "";
-
-
-document.getElementById(
-"prepNotes"
-).value = "";
-
-
 document
-.getElementById(
-"productionForm"
-)
-.style.display =
-"block";
-
-
-document
-.getElementById(
-"prepName"
-)
-.focus();
+.getElementById("productionForm")
+.classList.add("open");
 
 }
 
@@ -3322,11 +5367,8 @@ null;
 
 
 document
-.getElementById(
-"productionForm"
-)
-.style.display =
-"none";
+.getElementById("productionForm")
+.classList.remove("open");
 
 }
 
@@ -3334,56 +5376,52 @@ document
 function saveProduction(){
 
 const name =
-document
-.getElementById("prepName")
-.value
-.trim();
+document.getElementById(
+"prepName"
+).value.trim();
 
 
 const quantity =
 Number(
-document
-.getElementById("prepQuantity")
-.value
+document.getElementById(
+"prepQuantity"
+).value
 );
 
 
 const unit =
-document
-.getElementById("prepUnit")
-.value;
+document.getElementById(
+"prepUnit"
+).value;
 
 
 const responsible =
-document
-.getElementById("prepResponsible")
-.value
-.trim();
+document.getElementById(
+"prepResponsible"
+).value.trim();
 
 
 const time =
-document
-.getElementById("prepTime")
-.value;
+document.getElementById(
+"prepTime"
+).value;
 
 
 const notes =
-document
-.getElementById("prepNotes")
-.value
-.trim();
+document.getElementById(
+"prepNotes"
+).value.trim();
 
 
 if(
 !name ||
-!quantity ||
 quantity <= 0 ||
 !unit ||
 !responsible
 ){
 
 alert(
-"Completa preparación, cantidad, unidad y responsable."
+"Completa los campos obligatorios."
 );
 
 return;
@@ -3391,7 +5429,10 @@ return;
 }
 
 
-if(editingProductionId){
+if(
+editingProductionId !==
+null
+){
 
 const production =
 productions.find(
@@ -3403,23 +5444,17 @@ editingProductionId
 
 if(production){
 
-production.name =
-name;
-
-production.quantity =
-quantity;
-
-production.unit =
-unit;
-
-production.responsible =
-responsible;
-
-production.time =
-time;
-
-production.notes =
-notes;
+Object.assign(
+production,
+{
+name,
+quantity,
+unit,
+responsible,
+time,
+notes
+}
+);
 
 }
 
@@ -3435,22 +5470,11 @@ Date.now(),
 date:
 getToday(),
 
-name:
 name,
-
-quantity:
 quantity,
-
-unit:
 unit,
-
-responsible:
 responsible,
-
-time:
 time,
-
-notes:
 notes,
 
 status:
@@ -3477,125 +5501,6 @@ updateDashboard();
 }
 
 
-function getToday(){
-
-const date =
-new Date();
-
-
-return (
-date.getFullYear() +
-"-" +
-String(
-date.getMonth()+1
-).padStart(2,"0") +
-"-" +
-String(
-date.getDate()
-).padStart(2,"0")
-);
-
-}
-
-
-function productionStatusLabel(status){
-
-if(
-status ===
-"pendiente"
-){
-
-return "Pendiente";
-
-}
-
-
-if(
-status ===
-"en_proceso"
-){
-
-return "En proceso";
-
-}
-
-
-return "Completado";
-
-}
-
-
-function productionStatusClass(status){
-
-if(
-status ===
-"pendiente"
-){
-
-return "status-pending";
-
-}
-
-
-if(
-status ===
-"en_proceso"
-){
-
-return "status-progress";
-
-}
-
-
-return "status-complete";
-
-}
-
-
-function setProductionFilter(filter){
-
-productionFilter =
-filter;
-
-
-document
-.querySelectorAll(
-".production-filters button"
-)
-.forEach(button => {
-
-button.classList.remove(
-"active"
-);
-
-});
-
-
-const id =
-filter === "todos"
-? "filterAll"
-:
-filter === "pendiente"
-? "filterPending"
-:
-filter === "en_proceso"
-? "filterProgress"
-:
-"filterComplete";
-
-
-document
-.getElementById(id)
-.classList.add(
-"active"
-);
-
-
-renderProduction();
-
-}
-
-
 function editProduction(id){
 
 const production =
@@ -3616,75 +5521,51 @@ editingProductionId =
 id;
 
 
-document
-.getElementById(
+document.getElementById(
 "productionFormTitle"
-)
-.textContent =
+).textContent =
 "Editar producción";
 
 
-document
-.getElementById(
+document.getElementById(
 "prepName"
-)
-.value =
+).value =
 production.name;
 
 
-document
-.getElementById(
+document.getElementById(
 "prepQuantity"
-)
-.value =
+).value =
 production.quantity;
 
 
-document
-.getElementById(
+document.getElementById(
 "prepUnit"
-)
-.value =
+).value =
 production.unit;
 
 
-document
-.getElementById(
+document.getElementById(
 "prepResponsible"
-)
-.value =
+).value =
 production.responsible;
 
 
-document
-.getElementById(
+document.getElementById(
 "prepTime"
-)
-.value =
+).value =
 production.time || "";
 
 
-document
-.getElementById(
+document.getElementById(
 "prepNotes"
-)
-.value =
+).value =
 production.notes || "";
 
 
 document
-.getElementById(
-"productionForm"
-)
-.style.display =
-"block";
-
-
-document
-.getElementById(
-"prepName"
-)
-.focus();
+.getElementById("productionForm")
+.classList.add("open");
 
 }
 
@@ -3725,25 +5606,9 @@ updateDashboard();
 
 function deleteProduction(id){
 
-const production =
-productions.find(
-item =>
-item.id === id
-);
-
-
-if(!production){
-
-return;
-
-}
-
-
 if(
 !confirm(
-'¿Eliminar la producción "' +
-production.name +
-'"?'
+"¿Eliminar producción?"
 )
 ){
 
@@ -3770,6 +5635,51 @@ updateDashboard();
 }
 
 
+function setProductionFilter(filter){
+
+productionFilter =
+filter;
+
+
+document
+.querySelectorAll(
+".production-filters button"
+)
+.forEach(
+button =>
+button.classList.remove(
+"active"
+)
+);
+
+
+const map = {
+
+todos:
+"filterAll",
+
+pendiente:
+"filterPending",
+
+en_proceso:
+"filterProgress",
+
+completado:
+"filterComplete"
+
+};
+
+
+document
+.getElementById(map[filter])
+.classList.add("active");
+
+
+renderProduction();
+
+}
+
+
 function renderProduction(){
 
 const table =
@@ -3780,25 +5690,18 @@ document.getElementById(
 
 const search =
 (
-document
-.getElementById(
+document.getElementById(
 "productionSearch"
+)?.value || ""
 )
-?.value || ""
-)
-.trim()
 .toLowerCase();
-
-
-const today =
-getToday();
 
 
 let list =
 productions.filter(
 production =>
 production.date ===
-today &&
+getToday() &&
 production.name
 .toLowerCase()
 .includes(search)
@@ -3820,16 +5723,7 @@ productionFilter
 }
 
 
-list.sort(
-(a,b) =>
-(a.time || "99:99")
-.localeCompare(
-b.time || "99:99"
-)
-);
-
-
-if(list.length === 0){
+if(!list.length){
 
 table.innerHTML = `
 
@@ -3840,12 +5734,8 @@ table.innerHTML = `
 <div class="empty-state">
 
 <strong>
-No hay producciones para mostrar hoy
+No hay producciones
 </strong>
-
-<span>
-Crea una nueva producción para comenzar la planificación.
-</span>
 
 </div>
 
@@ -3861,8 +5751,8 @@ return;
 
 
 table.innerHTML =
-list
-.map(production => {
+list.map(
+production => {
 
 const progress =
 production.status ===
@@ -3874,6 +5764,18 @@ production.status ===
 ? 50
 :
 0;
+
+
+const label =
+production.status ===
+"completado"
+? "Completado"
+:
+production.status ===
+"en_proceso"
+? "En proceso"
+:
+"Pendiente";
 
 
 let action = "";
@@ -3915,21 +5817,6 @@ Completar
 
 }
 
-else{
-
-action = `
-
-<button
-class="secondary-button"
-onclick="changeProductionStatus(${production.id},'pendiente')"
->
-Reabrir
-</button>
-
-`;
-
-}
-
 
 return `
 
@@ -3938,84 +5825,49 @@ return `
 <td>
 
 <div class="product-name">
-
 ${escapeHTML(
 production.name
 )}
-
 </div>
 
-${
-production.notes
-? `
 <div class="category">
 ${escapeHTML(
-production.notes
+production.notes || ""
 )}
 </div>
-`
-: ""
-}
 
 </td>
 
 <td>
 
-<strong>
-
 ${production.quantity}
-
 ${escapeHTML(
 production.unit
 )}
 
-</strong>
-
 </td>
 
 <td>
-
 ${escapeHTML(
 production.responsible
 )}
-
 </td>
 
 <td>
-
 ${production.time || "—"}
-
 </td>
 
 <td>
-
-<span class="badge ${
-productionStatusClass(
-production.status
-)
-}">
-
-${productionStatusLabel(
-production.status
-)}
-
-</span>
-
+${label}
 </td>
 
-<td style="min-width:120px">
+<td>
 
 <div class="production-progress">
 
 <span
 style="width:${progress}%"
 ></span>
-
-</div>
-
-<div class="category">
-
-${progress}%
 
 </div>
 
@@ -4049,7 +5901,8 @@ Eliminar
 
 `;
 
-})
+}
+)
 .join("");
 
 }
@@ -4058,80 +5911,2046 @@ Eliminar
 function updateProductionStats(){
 
 const today =
-getToday();
-
-
-const list =
 productions.filter(
 production =>
 production.date ===
-today
+getToday()
 );
 
 
-document
-.getElementById(
+document.getElementById(
 "prodPlanned"
-)
-.textContent =
-list.length;
+).textContent =
+today.length;
 
 
-document
-.getElementById(
+document.getElementById(
 "prodPending"
-)
-.textContent =
-list.filter(
-production =>
-production.status ===
+).textContent =
+today.filter(
+item =>
+item.status ===
 "pendiente"
 ).length;
 
 
-document
-.getElementById(
+document.getElementById(
 "prodProgress"
-)
-.textContent =
-list.filter(
-production =>
-production.status ===
+).textContent =
+today.filter(
+item =>
+item.status ===
 "en_proceso"
 ).length;
 
 
-document
-.getElementById(
+document.getElementById(
 "prodComplete"
-)
-.textContent =
-list.filter(
-production =>
-production.status ===
+).textContent =
+today.filter(
+item =>
+item.status ===
 "completado"
 ).length;
 
 }
 
 
-/* DASHBOARD */
+/* =====================================================
+COST SETTINGS
+===================================================== */
+
+
+function toggleCostSettings(){
+
+const panel =
+document.getElementById(
+"costSettingsPanel"
+);
+
+
+panel.classList.toggle(
+"open"
+);
+
+
+if(
+panel.classList.contains(
+"open"
+)
+){
+
+loadCostSettingsFields();
+
+}
+
+}
+
+
+function loadCostSettingsFields(){
+
+document.getElementById(
+"defaultLabor"
+).value =
+costSettings.labor;
+
+
+document.getElementById(
+"defaultIndirect"
+).value =
+costSettings.indirect;
+
+
+document.getElementById(
+"defaultProfit"
+).value =
+costSettings.profit;
+
+
+document.getElementById(
+"defaultVat"
+).value =
+costSettings.vat;
+
+
+document.getElementById(
+"defaultProfitMethod"
+).value =
+costSettings.profitMethod;
+
+}
+
+
+function saveCostSettings(){
+
+costSettings = {
+
+labor:
+Number(
+document.getElementById(
+"defaultLabor"
+).value
+) || 0,
+
+indirect:
+Number(
+document.getElementById(
+"defaultIndirect"
+).value
+) || 0,
+
+profit:
+Number(
+document.getElementById(
+"defaultProfit"
+).value
+) || 0,
+
+vat:
+Number(
+document.getElementById(
+"defaultVat"
+).value
+) || 0,
+
+profitMethod:
+document.getElementById(
+"defaultProfitMethod"
+).value
+
+};
+
+
+localStorage.setItem(
+"kucheCostSettings",
+JSON.stringify(costSettings)
+);
+
+
+alert(
+"Configuración de costos guardada."
+);
+
+}
+
+
+/* =====================================================
+RECIPES
+===================================================== */
+
+
+function newRecipe(){
+
+editingRecipeId =
+null;
+
+
+document.getElementById(
+"recipeFormTitle"
+).textContent =
+"Nueva receta";
+
+
+document.getElementById(
+"recipeName"
+).value = "";
+
+
+document.getElementById(
+"recipeCategory"
+).value = "";
+
+
+document.getElementById(
+"recipeYield"
+).value = 1;
+
+
+document.getElementById(
+"recipeLabor"
+).value =
+costSettings.labor;
+
+
+document.getElementById(
+"recipeIndirect"
+).value =
+costSettings.indirect;
+
+
+document.getElementById(
+"recipeProfit"
+).value =
+costSettings.profit;
+
+
+document.getElementById(
+"recipeVat"
+).value =
+costSettings.vat;
+
+
+document.getElementById(
+"recipeProfitMethod"
+).value =
+costSettings.profitMethod;
+
+
+document.getElementById(
+"recipeIngredients"
+).innerHTML = "";
+
+
+document
+.getElementById("recipeForm")
+.classList.add("open");
+
+
+addRecipeIngredient();
+
+calculateRecipe();
+
+}
+
+
+function closeRecipeForm(){
+
+editingRecipeId =
+null;
+
+
+document
+.getElementById("recipeForm")
+.classList.remove("open");
+
+}
+
+
+function addRecipeIngredient(
+existing = null
+){
+
+const container =
+document.getElementById(
+"recipeIngredients"
+);
+
+
+const row =
+document.createElement(
+"div"
+);
+
+
+row.className =
+"recipe-row";
+
+
+row.innerHTML = `
+
+<div class="field">
+
+<label>
+Insumo
+</label>
+
+<select
+class="recipeIngredientSelect"
+>
+
+<option value="">
+Seleccionar insumo
+</option>
+
+</select>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Cantidad
+</label>
+
+<input
+class="recipeIngredientQuantity"
+type="number"
+min="0"
+step="0.0001"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Unidad
+</label>
+
+<input
+class="recipeIngredientUnit"
+type="text"
+disabled
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Costo
+</label>
+
+<input
+class="recipeIngredientCost"
+type="text"
+disabled
+value="$0"
+>
+
+</div>
+
+
+<button
+type="button"
+class="danger-button"
+>
+Eliminar
+</button>
+
+`;
+
+
+container.appendChild(
+row
+);
+
+
+const select =
+row.querySelector(
+".recipeIngredientSelect"
+);
+
+
+inventory.forEach(
+product => {
+
+const option =
+document.createElement(
+"option"
+);
+
+
+option.value =
+product.id;
+
+
+option.textContent =
+product.name +
+" — $" +
+formatMoney(
+product.cost
+) +
+"/" +
+product.unit;
+
+
+select.appendChild(
+option
+);
+
+}
+);
+
+
+const quantityInput =
+row.querySelector(
+".recipeIngredientQuantity"
+);
+
+
+const unitInput =
+row.querySelector(
+".recipeIngredientUnit"
+);
+
+
+select.addEventListener(
+"change",
+function(){
+
+const product =
+inventory.find(
+item =>
+String(item.id) ===
+String(select.value)
+);
+
+
+unitInput.value =
+product
+? product.unit
+: "";
+
+
+calculateRecipe();
+
+}
+);
+
+
+quantityInput.addEventListener(
+"input",
+calculateRecipe
+);
+
+
+row
+.querySelector(
+".danger-button"
+)
+.addEventListener(
+"click",
+function(){
+
+row.remove();
+
+calculateRecipe();
+
+}
+);
+
+
+if(existing){
+
+select.value =
+String(
+existing.productId
+);
+
+
+quantityInput.value =
+existing.quantity;
+
+
+const product =
+inventory.find(
+item =>
+String(item.id) ===
+String(existing.productId)
+);
+
+
+unitInput.value =
+product
+? product.unit
+: existing.unit || "";
+
+}
+
+
+calculateRecipe();
+
+}
+
+
+/* =====================================================
+CALCULATION ENGINE
+===================================================== */
+
+
+function getCurrentRecipeCalculation(){
+
+let rawCost =
+0;
+
+
+document
+.querySelectorAll(
+".recipe-row"
+)
+.forEach(
+row => {
+
+const productId =
+row
+.querySelector(
+".recipeIngredientSelect"
+)
+.value;
+
+
+const quantity =
+Number(
+row
+.querySelector(
+".recipeIngredientQuantity"
+)
+.value
+) || 0;
+
+
+const product =
+inventory.find(
+item =>
+String(item.id) ===
+String(productId)
+);
+
+
+const ingredientCost =
+product
+? quantity *
+Number(product.cost || 0)
+: 0;
+
+
+rawCost +=
+ingredientCost;
+
+
+row
+.querySelector(
+".recipeIngredientCost"
+)
+.value =
+"$" +
+formatMoney(
+ingredientCost
+);
+
+}
+);
+
+
+const laborPct =
+Number(
+document.getElementById(
+"recipeLabor"
+).value
+) || 0;
+
+
+const indirectPct =
+Number(
+document.getElementById(
+"recipeIndirect"
+).value
+) || 0;
+
+
+const profitPct =
+Number(
+document.getElementById(
+"recipeProfit"
+).value
+) || 0;
+
+
+const vatPct =
+Number(
+document.getElementById(
+"recipeVat"
+).value
+) || 0;
+
+
+const method =
+document.getElementById(
+"recipeProfitMethod"
+).value;
+
+
+const yieldValue =
+Math.max(
+1,
+Number(
+document.getElementById(
+"recipeYield"
+).value
+) || 1
+);
+
+
+/*
+Mano de obra y CID se calculan
+sobre materia prima.
+*/
+
+const laborAmount =
+rawCost *
+laborPct /
+100;
+
+
+const indirectAmount =
+rawCost *
+indirectPct /
+100;
+
+
+const realCost =
+rawCost +
+laborAmount +
+indirectAmount;
+
+
+let netPrice =
+0;
+
+
+let profitAmount =
+0;
+
+
+if(
+method ===
+"margin"
+){
+
+const marginRate =
+profitPct /
+100;
+
+
+if(
+marginRate >= 1
+){
+
+netPrice =
+0;
+
+profitAmount =
+0;
+
+}
+
+else{
+
+netPrice =
+realCost /
+(
+1 -
+marginRate
+);
+
+
+profitAmount =
+netPrice -
+realCost;
+
+}
+
+}
+
+else{
+
+profitAmount =
+realCost *
+profitPct /
+100;
+
+
+netPrice =
+realCost +
+profitAmount;
+
+}
+
+
+const vatAmount =
+netPrice *
+vatPct /
+100;
+
+
+const finalPrice =
+netPrice +
+vatAmount;
+
+
+const costPerPortion =
+realCost /
+yieldValue;
+
+
+const netPerPortion =
+netPrice /
+yieldValue;
+
+
+const finalPerPortion =
+finalPrice /
+yieldValue;
+
+
+const foodCost =
+netPrice > 0
+? rawCost /
+netPrice *
+100
+: 0;
+
+
+const realMargin =
+netPrice > 0
+? profitAmount /
+netPrice *
+100
+: 0;
+
+
+return {
+
+rawCost,
+
+laborPct,
+
+laborAmount,
+
+indirectPct,
+
+indirectAmount,
+
+realCost,
+
+profitPct,
+
+profitAmount,
+
+method,
+
+netPrice,
+
+vatPct,
+
+vatAmount,
+
+finalPrice,
+
+yieldValue,
+
+costPerPortion,
+
+netPerPortion,
+
+finalPerPortion,
+
+foodCost,
+
+realMargin
+
+};
+
+}
+
+
+function calculateRecipe(){
+
+const calc =
+getCurrentRecipeCalculation();
+
+
+document.getElementById(
+"recipeRawCost"
+).textContent =
+"$" +
+formatMoney(
+calc.rawCost
+);
+
+
+document.getElementById(
+"recipeRealCost"
+).textContent =
+"$" +
+formatMoney(
+calc.realCost
+);
+
+
+document.getElementById(
+"recipeNetPrice"
+).textContent =
+"$" +
+formatMoney(
+calc.netPrice
+);
+
+
+document.getElementById(
+"recipeFinalPrice"
+).textContent =
+"$" +
+formatMoney(
+calc.finalPrice
+);
+
+
+document.getElementById(
+"breakRaw"
+).textContent =
+"$" +
+formatMoney(
+calc.rawCost
+);
+
+
+document.getElementById(
+"breakLaborLabel"
+).textContent =
+"Mano de obra (" +
+calc.laborPct +
+"%)";
+
+
+document.getElementById(
+"breakLabor"
+).textContent =
+"$" +
+formatMoney(
+calc.laborAmount
+);
+
+
+document.getElementById(
+"breakIndirectLabel"
+).textContent =
+"CID / CIF (" +
+calc.indirectPct +
+"%)";
+
+
+document.getElementById(
+"breakIndirect"
+).textContent =
+"$" +
+formatMoney(
+calc.indirectAmount
+);
+
+
+document.getElementById(
+"breakReal"
+).textContent =
+"$" +
+formatMoney(
+calc.realCost
+);
+
+
+document.getElementById(
+"breakProfitLabel"
+).textContent =
+(
+calc.method ===
+"margin"
+? "Margen objetivo"
+: "Recargo de ganancia"
+) +
+" (" +
+calc.profitPct +
+"%)";
+
+
+document.getElementById(
+"breakProfit"
+).textContent =
+"$" +
+formatMoney(
+calc.profitAmount
+);
+
+
+document.getElementById(
+"breakNet"
+).textContent =
+"$" +
+formatMoney(
+calc.netPrice
+);
+
+
+document.getElementById(
+"breakVatLabel"
+).textContent =
+"IVA (" +
+calc.vatPct +
+"%)";
+
+
+document.getElementById(
+"breakVat"
+).textContent =
+"$" +
+formatMoney(
+calc.vatAmount
+);
+
+
+document.getElementById(
+"breakFinal"
+).textContent =
+"$" +
+formatMoney(
+calc.finalPrice
+);
+
+
+document.getElementById(
+"breakCostPortion"
+).textContent =
+"$" +
+formatMoney(
+calc.costPerPortion
+);
+
+
+document.getElementById(
+"breakFinalPortion"
+).textContent =
+"$" +
+formatMoney(
+calc.finalPerPortion
+);
+
+
+document.getElementById(
+"breakFoodCost"
+).textContent =
+calc.foodCost
+.toFixed(1) +
+"%";
+
+
+document.getElementById(
+"breakRealMargin"
+).textContent =
+calc.realMargin
+.toFixed(1) +
+"%";
+
+}
+
+
+/* =====================================================
+SAVE RECIPE
+===================================================== */
+
+
+function saveRecipe(){
+
+const name =
+document.getElementById(
+"recipeName"
+).value.trim();
+
+
+const category =
+document.getElementById(
+"recipeCategory"
+).value;
+
+
+const yieldValue =
+Number(
+document.getElementById(
+"recipeYield"
+).value
+);
+
+
+if(
+!name ||
+!category ||
+yieldValue <= 0
+){
+
+alert(
+"Completa nombre, categoría y rendimiento."
+);
+
+return;
+
+}
+
+
+const ingredients =
+[];
+
+
+document
+.querySelectorAll(
+".recipe-row"
+)
+.forEach(
+row => {
+
+const productId =
+row
+.querySelector(
+".recipeIngredientSelect"
+)
+.value;
+
+
+const quantity =
+Number(
+row
+.querySelector(
+".recipeIngredientQuantity"
+)
+.value
+);
+
+
+if(
+productId &&
+quantity > 0
+){
+
+const product =
+inventory.find(
+item =>
+String(item.id) ===
+String(productId)
+);
+
+
+if(product){
+
+ingredients.push({
+
+productId:
+product.id,
+
+productName:
+product.name,
+
+quantity,
+
+unit:
+product.unit
+
+});
+
+}
+
+}
+
+}
+);
+
+
+if(!ingredients.length){
+
+alert(
+"Agrega al menos un ingrediente."
+);
+
+return;
+
+}
+
+
+const calc =
+getCurrentRecipeCalculation();
+
+
+if(
+calc.method ===
+"margin" &&
+calc.profitPct >= 100
+){
+
+alert(
+"El margen sobre venta debe ser menor a 100%."
+);
+
+return;
+
+}
+
+
+const data = {
+
+id:
+editingRecipeId !==
+null
+? editingRecipeId
+: Date.now(),
+
+name,
+
+category,
+
+yield:
+yieldValue,
+
+ingredients,
+
+laborPct:
+calc.laborPct,
+
+indirectPct:
+calc.indirectPct,
+
+profitPct:
+calc.profitPct,
+
+vatPct:
+calc.vatPct,
+
+profitMethod:
+calc.method,
+
+rawCost:
+calc.rawCost,
+
+laborAmount:
+calc.laborAmount,
+
+indirectAmount:
+calc.indirectAmount,
+
+realCost:
+calc.realCost,
+
+profitAmount:
+calc.profitAmount,
+
+netPrice:
+calc.netPrice,
+
+vatAmount:
+calc.vatAmount,
+
+finalPrice:
+calc.finalPrice,
+
+costPerPortion:
+calc.costPerPortion,
+
+finalPerPortion:
+calc.finalPerPortion,
+
+foodCost:
+calc.foodCost,
+
+realMargin:
+calc.realMargin,
+
+updatedAt:
+new Date().toISOString()
+
+};
+
+
+if(
+editingRecipeId !==
+null
+){
+
+const index =
+recipes.findIndex(
+item =>
+item.id ===
+editingRecipeId
+);
+
+
+if(
+index !==
+-1
+){
+
+recipes[index] =
+data;
+
+}
+
+}
+
+else{
+
+recipes.unshift(
+data
+);
+
+}
+
+
+saveRecipes();
+
+closeRecipeForm();
+
+renderRecipes();
+
+updateRecipeStats();
+
+updateDashboard();
+
+}
+
+
+/* =====================================================
+EDIT RECIPE
+===================================================== */
+
+
+function editRecipe(id){
+
+const recipe =
+recipes.find(
+item =>
+item.id === id
+);
+
+
+if(!recipe){
+
+return;
+
+}
+
+
+editingRecipeId =
+id;
+
+
+document.getElementById(
+"recipeFormTitle"
+).textContent =
+"Editar receta";
+
+
+document.getElementById(
+"recipeName"
+).value =
+recipe.name;
+
+
+document.getElementById(
+"recipeCategory"
+).value =
+recipe.category;
+
+
+document.getElementById(
+"recipeYield"
+).value =
+recipe.yield;
+
+
+document.getElementById(
+"recipeLabor"
+).value =
+recipe.laborPct ??
+costSettings.labor;
+
+
+document.getElementById(
+"recipeIndirect"
+).value =
+recipe.indirectPct ??
+costSettings.indirect;
+
+
+document.getElementById(
+"recipeProfit"
+).value =
+recipe.profitPct ??
+costSettings.profit;
+
+
+document.getElementById(
+"recipeVat"
+).value =
+recipe.vatPct ??
+costSettings.vat;
+
+
+document.getElementById(
+"recipeProfitMethod"
+).value =
+recipe.profitMethod ||
+costSettings.profitMethod;
+
+
+document.getElementById(
+"recipeIngredients"
+).innerHTML = "";
+
+
+recipe.ingredients
+.forEach(
+ingredient => {
+
+addRecipeIngredient(
+ingredient
+);
+
+}
+);
+
+
+document
+.getElementById("recipeForm")
+.classList.add("open");
+
+
+calculateRecipe();
+
+}
+
+
+function deleteRecipe(id){
+
+const recipe =
+recipes.find(
+item =>
+item.id === id
+);
+
+
+if(!recipe){
+
+return;
+
+}
+
+
+if(
+!confirm(
+'¿Eliminar "' +
+recipe.name +
+'"?'
+)
+){
+
+return;
+
+}
+
+
+recipes =
+recipes.filter(
+item =>
+item.id !== id
+);
+
+
+saveRecipes();
+
+renderRecipes();
+
+updateRecipeStats();
+
+updateDashboard();
+
+}
+
+
+/* =====================================================
+RECALCULATE STORED RECIPES
+===================================================== */
+
+
+function calculateSavedRecipe(
+recipe
+){
+
+let rawCost =
+0;
+
+
+recipe.ingredients
+.forEach(
+ingredient => {
+
+const product =
+inventory.find(
+item =>
+String(item.id) ===
+String(
+ingredient.productId
+)
+);
+
+
+if(product){
+
+rawCost +=
+Number(
+ingredient.quantity
+) *
+Number(
+product.cost || 0
+);
+
+}
+
+}
+);
+
+
+const laborPct =
+Number(
+recipe.laborPct ??
+costSettings.labor
+);
+
+
+const indirectPct =
+Number(
+recipe.indirectPct ??
+costSettings.indirect
+);
+
+
+const profitPct =
+Number(
+recipe.profitPct ??
+costSettings.profit
+);
+
+
+const vatPct =
+Number(
+recipe.vatPct ??
+costSettings.vat
+);
+
+
+const method =
+recipe.profitMethod ||
+costSettings.profitMethod;
+
+
+const laborAmount =
+rawCost *
+laborPct /
+100;
+
+
+const indirectAmount =
+rawCost *
+indirectPct /
+100;
+
+
+const realCost =
+rawCost +
+laborAmount +
+indirectAmount;
+
+
+let profitAmount =
+0;
+
+
+let netPrice =
+0;
+
+
+if(
+method ===
+"margin" &&
+profitPct < 100
+){
+
+netPrice =
+realCost /
+(
+1 -
+profitPct /
+100
+);
+
+
+profitAmount =
+netPrice -
+realCost;
+
+}
+
+else{
+
+profitAmount =
+realCost *
+profitPct /
+100;
+
+
+netPrice =
+realCost +
+profitAmount;
+
+}
+
+
+const vatAmount =
+netPrice *
+vatPct /
+100;
+
+
+const finalPrice =
+netPrice +
+vatAmount;
+
+
+const yieldValue =
+Math.max(
+1,
+Number(
+recipe.yield
+)
+);
+
+
+const costPerPortion =
+realCost /
+yieldValue;
+
+
+const finalPerPortion =
+finalPrice /
+yieldValue;
+
+
+const foodCost =
+netPrice > 0
+? rawCost /
+netPrice *
+100
+: 0;
+
+
+const realMargin =
+netPrice > 0
+? profitAmount /
+netPrice *
+100
+: 0;
+
+
+return {
+
+...recipe,
+
+laborPct,
+
+indirectPct,
+
+profitPct,
+
+vatPct,
+
+profitMethod:
+method,
+
+rawCost,
+
+laborAmount,
+
+indirectAmount,
+
+realCost,
+
+profitAmount,
+
+netPrice,
+
+vatAmount,
+
+finalPrice,
+
+costPerPortion,
+
+finalPerPortion,
+
+foodCost,
+
+realMargin
+
+};
+
+}
+
+
+/* =====================================================
+RENDER RECIPES
+===================================================== */
+
+
+function renderRecipes(){
+
+recipes =
+recipes.map(
+calculateSavedRecipe
+);
+
+
+saveRecipes();
+
+
+const container =
+document.getElementById(
+"recipeList"
+);
+
+
+const search =
+(
+document.getElementById(
+"recipeSearch"
+)?.value || ""
+)
+.toLowerCase();
+
+
+const list =
+recipes.filter(
+recipe =>
+recipe.name
+.toLowerCase()
+.includes(search)
+);
+
+
+if(!list.length){
+
+container.innerHTML = `
+
+<div
+class="table-card"
+style="
+grid-column:1/-1;
+"
+>
+
+<div class="empty-state">
+
+<strong>
+No hay recetas costeadas
+</strong>
+
+<span>
+Crea tu primera receta.
+</span>
+
+</div>
+
+</div>
+
+`;
+
+return;
+
+}
+
+
+container.innerHTML =
+list.map(
+recipe => {
+
+
+const foodBadge =
+recipe.foodCost <=
+30
+? "badge-success"
+:
+recipe.foodCost <=
+40
+? "badge-warning"
+:
+"badge-danger";
+
+
+const methodText =
+recipe.profitMethod ===
+"margin"
+? "Margen sobre venta"
+: "Recargo sobre costo";
+
+
+return `
+
+<div class="recipe-card">
+
+
+<div class="recipe-card-header">
+
+<div>
+
+<h3>
+${escapeHTML(
+recipe.name
+)}
+</h3>
+
+<p>
+
+${escapeHTML(
+recipe.category
+)}
+
+·
+
+${recipe.yield}
+porciones
+
+</p>
+
+</div>
+
+<span
+class="badge ${foodBadge}"
+>
+
+Food Cost
+${recipe.foodCost.toFixed(1)}%
+
+</span>
+
+</div>
+
+
+<div class="recipe-card-body">
+
+
+<div class="recipe-card-metrics">
+
+
+<div class="recipe-metric">
+
+<span>
+Materia prima
+</span>
+
+<strong>
+$${formatMoney(
+recipe.rawCost
+)}
+</strong>
+
+</div>
+
+
+<div class="recipe-metric">
+
+<span>
+Costo real
+</span>
+
+<strong>
+$${formatMoney(
+recipe.realCost
+)}
+</strong>
+
+</div>
+
+
+<div class="recipe-metric">
+
+<span>
+Mano obra
+</span>
+
+<strong>
+${recipe.laborPct}%
+</strong>
+
+</div>
+
+
+<div class="recipe-metric">
+
+<span>
+CID / CIF
+</span>
+
+<strong>
+${recipe.indirectPct}%
+</strong>
+
+</div>
+
+
+<div class="recipe-metric">
+
+<span>
+Ganancia
+</span>
+
+<strong>
+${recipe.profitPct}%
+</strong>
+
+</div>
+
+
+<div class="recipe-metric">
+
+<span>
+IVA
+</span>
+
+<strong>
+${recipe.vatPct}%
+</strong>
+
+</div>
+
+
+<div class="recipe-metric">
+
+<span>
+Precio neto
+</span>
+
+<strong>
+$${formatMoney(
+recipe.netPrice
+)}
+</strong>
+
+</div>
+
+
+<div class="recipe-metric">
+
+<span>
+Precio final receta
+</span>
+
+<strong>
+$${formatMoney(
+recipe.finalPrice
+)}
+</strong>
+
+</div>
+
+
+<div class="recipe-metric">
+
+<span>
+Precio final / porción
+</span>
+
+<strong>
+$${formatMoney(
+recipe.finalPerPortion
+)}
+</strong>
+
+</div>
+
+
+</div>
+
+
+<div
+class="category"
+style="
+margin-top:12px;
+"
+>
+
+${methodText}
+
+· Margen real:
+${recipe.realMargin.toFixed(1)}%
+
+</div>
+
+
+</div>
+
+
+<div class="recipe-card-footer">
+
+<button
+class="secondary-button"
+onclick="editRecipe(${recipe.id})"
+>
+Editar
+</button>
+
+<button
+class="danger-button"
+onclick="deleteRecipe(${recipe.id})"
+>
+Eliminar
+</button>
+
+</div>
+
+
+</div>
+
+`;
+
+}
+)
+.join("");
+
+}
+
+
+function clearRecipeSearch(){
+
+document.getElementById(
+"recipeSearch"
+).value = "";
+
+
+renderRecipes();
+
+}
+
+
+function updateRecipeStats(){
+
+const total =
+recipes.length;
+
+
+const averageRealCost =
+total
+? recipes.reduce(
+(sum,recipe) =>
+sum +
+Number(
+recipe.costPerPortion || 0
+),
+0
+) /
+total
+: 0;
+
+
+const averageFood =
+total
+? recipes.reduce(
+(sum,recipe) =>
+sum +
+Number(
+recipe.foodCost || 0
+),
+0
+) /
+total
+: 0;
+
+
+const averageMargin =
+total
+? recipes.reduce(
+(sum,recipe) =>
+sum +
+Number(
+recipe.realMargin || 0
+),
+0
+) /
+total
+: 0;
+
+
+document.getElementById(
+"recipeTotalCount"
+).textContent =
+total;
+
+
+document.getElementById(
+"recipeAverageCost"
+).textContent =
+"$" +
+formatMoney(
+averageRealCost
+);
+
+
+document.getElementById(
+"recipeAverageFoodCost"
+).textContent =
+averageFood.toFixed(1) +
+"%";
+
+
+document.getElementById(
+"recipeAverageMargin"
+).textContent =
+averageMargin.toFixed(1) +
+"%";
+
+}
+
+
+/* =====================================================
+DASHBOARD
+===================================================== */
+
 
 function updateDashboard(){
 
-document
-.getElementById(
+document.getElementById(
 "statProducts"
-)
-.textContent =
+).textContent =
 inventory.length;
 
 
-document
-.getElementById(
+document.getElementById(
 "statLow"
-)
-.textContent =
+).textContent =
 inventory.filter(
 product =>
 Number(product.quantity) <=
@@ -4139,24 +7958,20 @@ Number(product.minimum)
 ).length;
 
 
-document
-.getElementById(
-"statMovements"
-)
-.textContent =
-movements.length;
-
-
-document
-.getElementById(
+document.getElementById(
 "statProduction"
-)
-.textContent =
+).textContent =
 productions.filter(
 production =>
 production.date ===
 getToday()
 ).length;
+
+
+document.getElementById(
+"statRecipes"
+).textContent =
+recipes.length;
 
 
 const alerts =
@@ -4165,7 +7980,7 @@ document.getElementById(
 );
 
 
-const lowProducts =
+const low =
 inventory.filter(
 product =>
 Number(product.quantity) <=
@@ -4173,7 +7988,7 @@ Number(product.minimum)
 );
 
 
-if(lowProducts.length === 0){
+if(!low.length){
 
 alerts.innerHTML = `
 
@@ -4186,7 +8001,7 @@ No existen alertas
 </div>
 
 <div class="alert-meta">
-Todos los insumos están sobre su stock mínimo.
+Todos los insumos están sobre su mínimo.
 </div>
 
 </div>
@@ -4204,20 +8019,19 @@ Normal
 else{
 
 alerts.innerHTML =
-lowProducts
+low
 .slice(0,5)
-.map(product => `
+.map(
+product => `
 
 <div class="alert-item">
 
 <div>
 
 <div class="alert-name">
-
 ${escapeHTML(
 product.name
 )}
-
 </div>
 
 <div class="alert-meta">
@@ -4228,7 +8042,7 @@ ${escapeHTML(
 product.unit
 )}
 
-· Mínimo:
+· mínimo:
 ${product.minimum}
 ${escapeHTML(
 product.unit
@@ -4244,7 +8058,8 @@ Reponer
 
 </div>
 
-`)
+`
+)
 .join("");
 
 }
@@ -4263,7 +8078,7 @@ document.getElementById(
 );
 
 
-if(movements.length === 0){
+if(!movements.length){
 
 activity.innerHTML = `
 
@@ -4289,46 +8104,19 @@ return;
 activity.innerHTML =
 movements
 .slice(0,5)
-.map(movement => {
-
-const date =
-new Date(
-movement.date
-);
-
-
-const formattedDate =
-date.toLocaleString(
-"es-CL",
-{
-day:"2-digit",
-month:"2-digit",
-hour:"2-digit",
-minute:"2-digit"
-}
-);
-
-
-const action =
-movement.type ===
-"entrada"
-? "Entrada de stock"
-:
-movement.type ===
-"salida"
-? "Salida de stock"
-:
-"Ajuste de stock";
-
-
-return `
+.map(
+movement => `
 
 <div class="activity-item">
 
 <div class="activity-title">
 
-${action}
+${escapeHTML(
+movement.type
+)}
+
 —
+
 ${escapeHTML(
 movement.productName
 )}
@@ -4342,22 +8130,82 @@ ${escapeHTML(
 movement.unit
 )}
 
-·
-${formattedDate}
-
 </div>
 
 </div>
 
-`;
-
-})
+`
+)
 .join("");
 
 }
 
 
-/* INICIO */
+/* =====================================================
+UTILITIES
+===================================================== */
+
+
+function formatMoney(value){
+
+return Number(
+value || 0
+)
+.toLocaleString(
+"es-CL",
+{
+maximumFractionDigits:0
+}
+);
+
+}
+
+
+function escapeHTML(value){
+
+return String(value)
+
+.replaceAll(
+"&",
+"&amp;"
+)
+
+.replaceAll(
+"<",
+"&lt;"
+)
+
+.replaceAll(
+">",
+"&gt;"
+)
+
+.replaceAll(
+'"',
+"&quot;"
+)
+
+.replaceAll(
+"'",
+"&#039;"
+);
+
+}
+
+
+/* =====================================================
+START
+===================================================== */
+
+
+saveInventory();
+
+
+localStorage.setItem(
+"kucheCostSettings",
+JSON.stringify(costSettings)
+);
+
 
 renderInventory();
 
@@ -4369,9 +8217,18 @@ renderProduction();
 
 updateProductionStats();
 
+renderRecipes();
+
+updateRecipeStats();
+
+loadCostSettingsFields();
+
 updateDashboard();
+
 
 </script>
 
+
 </body>
+
 </html>
