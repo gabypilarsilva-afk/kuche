@@ -7,673 +7,859 @@
 
 <style>
 :root{
-    --green-dark:#173f35;
-    --green:#24594b;
-    --green-soft:#e8f0ec;
-    --cream:#f6f3ec;
-    --white:#fff;
-    --text:#202825;
-    --muted:#78817d;
-    --border:#e3e7e3;
-    --danger:#c94b4b;
-    --danger-soft:#fbecec;
-    --warning:#b87921;
-    --warning-soft:#fff3dc;
-    --success:#34785a;
-    --success-soft:#e8f4ed;
-    --shadow:0 4px 18px rgba(23,63,53,.06);
+--green-dark:#173f35;
+--green:#24594b;
+--green-soft:#e8f0ec;
+--cream:#f6f3ec;
+--white:#fff;
+--text:#202825;
+--muted:#78817d;
+--border:#e3e7e3;
+--danger:#c94b4b;
+--danger-soft:#fbecec;
+--warning:#b87921;
+--warning-soft:#fff3dc;
+--success:#34785a;
+--success-soft:#e8f4ed;
+--blue:#416a91;
+--blue-soft:#edf3f8;
+--shadow:0 4px 18px rgba(23,63,53,.06)
 }
 
-*{box-sizing:border-box;margin:0;padding:0}
+*{
+box-sizing:border-box;
+margin:0;
+padding:0
+}
 
 body{
-    font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-    background:var(--cream);
-    color:var(--text);
+font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+background:var(--cream);
+color:var(--text)
 }
 
-button,input,select{font-family:inherit}
-button{cursor:pointer}
+button,input,select,textarea{
+font-family:inherit
+}
 
-.app{min-height:100vh;display:flex}
+button{
+cursor:pointer
+}
+
+.app{
+min-height:100vh;
+display:flex
+}
 
 /* SIDEBAR */
+
 .sidebar{
-    width:250px;
-    position:fixed;
-    top:0;bottom:0;left:0;
-    background:var(--green-dark);
-    color:#fff;
-    padding:26px 16px;
-    display:flex;
-    flex-direction:column;
-    z-index:100;
+width:250px;
+position:fixed;
+top:0;
+bottom:0;
+left:0;
+background:var(--green-dark);
+color:#fff;
+padding:26px 16px;
+display:flex;
+flex-direction:column;
+z-index:100
 }
 
 .brand{
-    padding:0 12px 28px;
-    border-bottom:1px solid rgba(255,255,255,.12);
+padding:0 12px 28px;
+border-bottom:1px solid rgba(255,255,255,.12)
 }
 
 .brand-name{
-    font-size:25px;
-    font-weight:700;
-    letter-spacing:4px;
+font-size:25px;
+font-weight:700;
+letter-spacing:4px
 }
 
 .brand-subtitle{
-    margin-top:6px;
-    font-size:11px;
-    color:rgba(255,255,255,.6);
+margin-top:6px;
+font-size:11px;
+color:rgba(255,255,255,.6)
 }
 
-.nav{margin-top:24px}
+.nav{
+margin-top:24px
+}
 
 .nav-title{
-    padding:0 12px 9px;
-    margin-top:18px;
-    font-size:10px;
-    text-transform:uppercase;
-    letter-spacing:1.3px;
-    color:rgba(255,255,255,.4);
+padding:0 12px 9px;
+margin-top:18px;
+font-size:10px;
+text-transform:uppercase;
+letter-spacing:1.3px;
+color:rgba(255,255,255,.4)
 }
 
-.nav-title:first-child{margin-top:0}
+.nav-title:first-child{
+margin-top:0
+}
 
 .nav-item{
-    width:100%;
-    border:0;
-    background:transparent;
-    color:rgba(255,255,255,.72);
-    padding:12px;
-    border-radius:8px;
-    text-align:left;
-    font-size:14px;
-    margin-bottom:4px;
-    transition:.2s;
+width:100%;
+border:0;
+background:transparent;
+color:rgba(255,255,255,.72);
+padding:12px;
+border-radius:8px;
+text-align:left;
+font-size:14px;
+margin-bottom:4px;
+transition:.2s
 }
 
 .nav-item:hover{
-    background:rgba(255,255,255,.08);
-    color:#fff;
+background:rgba(255,255,255,.08);
+color:#fff
 }
 
 .nav-item.active{
-    background:var(--green);
-    color:#fff;
+background:var(--green);
+color:#fff
 }
 
 .sidebar-bottom{
-    margin-top:auto;
-    padding-top:18px;
-    border-top:1px solid rgba(255,255,255,.12);
+margin-top:auto;
+padding-top:18px;
+border-top:1px solid rgba(255,255,255,.12)
 }
 
 .user-mini{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:8px 10px;
+display:flex;
+align-items:center;
+gap:10px;
+padding:8px 10px
 }
 
 .avatar{
-    width:34px;height:34px;
-    border-radius:50%;
-    background:#d8e5df;
-    color:var(--green-dark);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-weight:700;
-    font-size:12px;
+width:34px;
+height:34px;
+border-radius:50%;
+background:#d8e5df;
+color:var(--green-dark);
+display:flex;
+align-items:center;
+justify-content:center;
+font-weight:700;
+font-size:12px
 }
 
-.user-info strong{display:block;font-size:13px}
+.user-info strong{
+display:block;
+font-size:13px
+}
+
 .user-info span{
-    display:block;
-    margin-top:2px;
-    font-size:11px;
-    color:rgba(255,255,255,.5);
+display:block;
+margin-top:2px;
+font-size:11px;
+color:rgba(255,255,255,.5)
 }
 
 /* MAIN */
+
 .main{
-    margin-left:250px;
-    width:calc(100% - 250px);
-    min-height:100vh;
+margin-left:250px;
+width:calc(100% - 250px);
+min-height:100vh
 }
 
 .topbar{
-    height:72px;
-    background:#fff;
-    border-bottom:1px solid var(--border);
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:0 34px;
+height:72px;
+background:#fff;
+border-bottom:1px solid var(--border);
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:0 34px
 }
 
-.topbar-title{color:var(--muted);font-size:13px}
+.topbar-title{
+color:var(--muted);
+font-size:13px
+}
 
 .system-status{
-    padding:7px 11px;
-    border-radius:20px;
-    background:var(--success-soft);
-    color:var(--success);
-    font-size:11px;
-    font-weight:600;
+padding:7px 11px;
+border-radius:20px;
+background:var(--success-soft);
+color:var(--success);
+font-size:11px;
+font-weight:600
 }
 
 .content{
-    max-width:1450px;
-    padding:34px;
+max-width:1450px;
+padding:34px
 }
 
-.page{display:none}
-.page.active{display:block}
+.page{
+display:none
+}
+
+.page.active{
+display:block
+}
 
 .page-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:20px;
-    margin-bottom:28px;
+display:flex;
+justify-content:space-between;
+align-items:flex-start;
+gap:20px;
+margin-bottom:28px
 }
 
 .page-header h1{
-    color:var(--green-dark);
-    font-size:28px;
-    font-weight:650;
-    margin-bottom:6px;
+color:var(--green-dark);
+font-size:28px;
+font-weight:650;
+margin-bottom:6px
 }
 
 .page-header p{
-    color:var(--muted);
-    font-size:14px;
+color:var(--muted);
+font-size:14px
 }
 
 /* BOTONES */
+
 .primary-button{
-    border:0;
-    border-radius:8px;
-    padding:11px 17px;
-    background:var(--green-dark);
-    color:#fff;
-    font-size:13px;
-    font-weight:600;
+border:0;
+border-radius:8px;
+padding:11px 17px;
+background:var(--green-dark);
+color:#fff;
+font-size:13px;
+font-weight:600;
+transition:.2s
 }
 
-.primary-button:hover{background:var(--green)}
+.primary-button:hover{
+background:var(--green)
+}
 
 .secondary-button{
-    border:1px solid var(--border);
-    background:#fff;
-    color:var(--text);
-    padding:9px 13px;
-    border-radius:8px;
-    font-size:12px;
-    font-weight:600;
+border:1px solid var(--border);
+background:#fff;
+color:var(--text);
+padding:9px 13px;
+border-radius:8px;
+font-size:12px;
+font-weight:600
 }
 
-.secondary-button:hover{background:var(--cream)}
+.secondary-button:hover{
+background:var(--cream)
+}
 
 .danger-button{
-    border:0;
-    background:transparent;
-    color:var(--danger);
-    font-size:12px;
-    font-weight:600;
+border:0;
+background:transparent;
+color:var(--danger);
+font-size:12px;
+font-weight:600
 }
 
-/* CARDS */
+.danger-button:hover{
+text-decoration:underline
+}
+
+/* DASHBOARD */
+
 .stats{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:16px;
-    margin-bottom:26px;
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:16px;
+margin-bottom:26px
 }
 
 .stat-card{
-    background:#fff;
-    border:1px solid var(--border);
-    border-radius:12px;
-    padding:20px;
-    box-shadow:var(--shadow);
+background:#fff;
+border:1px solid var(--border);
+border-radius:12px;
+padding:20px;
+box-shadow:var(--shadow)
 }
 
-.stat-label{color:var(--muted);font-size:12px;margin-bottom:10px}
+.stat-label{
+color:var(--muted);
+font-size:12px;
+margin-bottom:10px
+}
 
 .stat-value{
-    color:var(--green-dark);
-    font-size:27px;
-    font-weight:650;
+color:var(--green-dark);
+font-size:27px;
+font-weight:650
 }
 
 .stat-detail{
-    color:var(--muted);
-    font-size:11px;
-    margin-top:7px;
+color:var(--muted);
+font-size:11px;
+margin-top:7px
 }
 
 .dashboard-grid{
-    display:grid;
-    grid-template-columns:1.4fr 1fr;
-    gap:20px;
+display:grid;
+grid-template-columns:1.4fr 1fr;
+gap:20px
 }
 
-.card,.table-card,.form-panel,.movements-panel{
-    background:#fff;
-    border:1px solid var(--border);
-    border-radius:12px;
-    box-shadow:var(--shadow);
+.card{
+background:#fff;
+border:1px solid var(--border);
+border-radius:12px;
+box-shadow:var(--shadow)
 }
 
 .card-header{
-    padding:20px;
-    border-bottom:1px solid var(--border);
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
+padding:20px;
+border-bottom:1px solid var(--border);
+display:flex;
+justify-content:space-between;
+align-items:center
 }
 
-.card-header h2{color:var(--green-dark);font-size:15px}
-.card-header span{color:var(--muted);font-size:11px}
+.card-header h2{
+color:var(--green-dark);
+font-size:15px
+}
 
-.alert-list{padding:6px 20px}
+.card-header span{
+color:var(--muted);
+font-size:11px
+}
+
+.alert-list{
+padding:6px 20px
+}
 
 .alert-item{
-    padding:15px 0;
-    border-bottom:1px solid var(--border);
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:20px;
+padding:15px 0;
+border-bottom:1px solid var(--border);
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:20px
 }
 
-.alert-item:last-child{border-bottom:0}
+.alert-item:last-child{
+border-bottom:0
+}
 
-.alert-name{font-size:13px;font-weight:600}
-.alert-meta{color:var(--muted);font-size:11px;margin-top:4px}
+.alert-name{
+font-size:13px;
+font-weight:600
+}
 
-.activity{padding:10px 20px}
+.alert-meta{
+color:var(--muted);
+font-size:11px;
+margin-top:4px
+}
+
+.activity{
+padding:10px 20px
+}
 
 .activity-item{
-    padding:14px 0;
-    border-bottom:1px solid var(--border);
+padding:14px 0;
+border-bottom:1px solid var(--border)
 }
 
-.activity-item:last-child{border-bottom:0}
-.activity-title{font-size:13px;font-weight:600}
-.activity-time{color:var(--muted);font-size:11px;margin-top:4px}
+.activity-item:last-child{
+border-bottom:0
+}
+
+.activity-title{
+font-size:13px;
+font-weight:600
+}
+
+.activity-time{
+color:var(--muted);
+font-size:11px;
+margin-top:4px
+}
 
 /* BADGES */
+
 .badge{
-    display:inline-block;
-    padding:6px 9px;
-    border-radius:20px;
-    font-size:10px;
-    font-weight:600;
-    white-space:nowrap;
+display:inline-block;
+padding:6px 9px;
+border-radius:20px;
+font-size:10px;
+font-weight:600;
+white-space:nowrap
 }
 
-.badge-success{background:var(--success-soft);color:var(--success)}
-.badge-danger{background:var(--danger-soft);color:var(--danger)}
-.badge-warning{background:var(--warning-soft);color:var(--warning)}
+.badge-success{
+background:var(--success-soft);
+color:var(--success)
+}
 
-/* FORMULARIOS */
+.badge-danger{
+background:var(--danger-soft);
+color:var(--danger)
+}
+
+.badge-warning{
+background:var(--warning-soft);
+color:var(--warning)
+}
+
+.badge-blue{
+background:var(--blue-soft);
+color:var(--blue)
+}
+
+/* TOOLBAR */
+
 .toolbar{
-    background:#fff;
-    border:1px solid var(--border);
-    border-radius:12px;
-    padding:16px;
-    margin-bottom:18px;
-    box-shadow:var(--shadow);
-    display:flex;
-    gap:12px;
+background:#fff;
+border:1px solid var(--border);
+border-radius:12px;
+padding:16px;
+margin-bottom:18px;
+box-shadow:var(--shadow);
+display:flex;
+gap:12px
 }
 
-.search-box{flex:1}
+.search-box{
+flex:1
+}
 
 .search-box input{
-    width:100%;
-    padding:11px 13px;
-    border:1px solid var(--border);
-    border-radius:8px;
-    outline:none;
-    font-size:13px;
+width:100%;
+padding:11px 13px;
+border:1px solid var(--border);
+border-radius:8px;
+outline:none;
+font-size:13px
 }
 
-.form-panel{
-    display:none;
-    padding:22px;
-    margin-bottom:18px;
+.search-box input:focus{
+border-color:var(--green)
 }
 
-.form-panel.open{display:block}
+/* FORMULARIOS */
+
+.form-panel,
+.movements-panel{
+display:none;
+background:#fff;
+border:1px solid var(--border);
+border-radius:12px;
+padding:22px;
+margin-bottom:18px;
+box-shadow:var(--shadow)
+}
+
+.form-panel.open,
+.movements-panel.open{
+display:block
+}
 
 .form-title{
-    color:var(--green-dark);
-    font-size:15px;
-    font-weight:650;
-    margin-bottom:18px;
+color:var(--green-dark);
+font-size:15px;
+font-weight:650;
+margin-bottom:18px
 }
 
 .form-grid{
-    display:grid;
-    grid-template-columns:2fr 1fr 1fr 1fr 1fr;
-    gap:12px;
+display:grid;
+grid-template-columns:2fr 1fr 1fr 1fr 1fr;
+gap:12px
 }
 
 .field label{
-    display:block;
-    color:var(--muted);
-    font-size:11px;
-    margin-bottom:6px;
+display:block;
+color:var(--muted);
+font-size:11px;
+margin-bottom:6px
 }
 
-.field input,.field select{
-    width:100%;
-    padding:10px;
-    background:#fff;
-    border:1px solid var(--border);
-    border-radius:8px;
-    outline:none;
-    font-size:13px;
+.field input,
+.field select,
+.field textarea{
+width:100%;
+padding:10px;
+background:#fff;
+border:1px solid var(--border);
+border-radius:8px;
+outline:none;
+font-size:13px
 }
 
-.field input:focus,.field select:focus{
-    border-color:var(--green);
+.field textarea{
+resize:vertical;
+min-height:82px
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus{
+border-color:var(--green)
 }
 
 .form-actions{
-    display:flex;
-    gap:10px;
-    margin-top:17px;
+display:flex;
+gap:10px;
+margin-top:17px
 }
 
 /* TABLAS */
-.table-card{overflow:hidden}
-.table-wrapper{overflow-x:auto}
+
+.table-card{
+background:#fff;
+border:1px solid var(--border);
+border-radius:12px;
+overflow:hidden;
+box-shadow:var(--shadow)
+}
+
+.table-wrapper{
+overflow-x:auto
+}
 
 table{
-    width:100%;
-    border-collapse:collapse;
+width:100%;
+border-collapse:collapse
 }
 
 th{
-    padding:13px 18px;
-    background:#f8f9f7;
-    border-bottom:1px solid var(--border);
-    color:var(--muted);
-    text-align:left;
-    font-size:10px;
-    text-transform:uppercase;
-    letter-spacing:.6px;
+padding:13px 18px;
+background:#f8f9f7;
+border-bottom:1px solid var(--border);
+color:var(--muted);
+text-align:left;
+font-size:10px;
+text-transform:uppercase;
+letter-spacing:.6px
 }
 
 td{
-    padding:15px 18px;
-    border-bottom:1px solid var(--border);
-    font-size:13px;
+padding:15px 18px;
+border-bottom:1px solid var(--border);
+font-size:13px
 }
 
-tbody tr:last-child td{border-bottom:0}
-tbody tr:hover{background:#fbfcfa}
+tbody tr:last-child td{
+border-bottom:0
+}
 
-.product-name{color:var(--green-dark);font-weight:600}
-.category{color:var(--muted);font-size:12px}
-.stock-number{font-weight:650}
+tbody tr:hover{
+background:#fbfcfa
+}
+
+.product-name{
+color:var(--green-dark);
+font-weight:600
+}
+
+.category{
+color:var(--muted);
+font-size:12px
+}
+
+.stock-number{
+font-weight:650
+}
 
 .actions{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    flex-wrap:wrap;
+display:flex;
+align-items:center;
+gap:10px;
+flex-wrap:wrap
 }
 
 .empty-state{
-    padding:55px 20px;
-    text-align:center;
-    color:var(--muted);
+padding:55px 20px;
+text-align:center;
+color:var(--muted)
 }
 
 .empty-state strong{
-    display:block;
-    color:var(--green-dark);
-    margin-bottom:6px;
-    font-size:14px;
+display:block;
+color:var(--green-dark);
+margin-bottom:6px;
+font-size:14px
 }
 
 /* MOVIMIENTOS */
-.movements-panel{
-    display:none;
-    padding:22px;
-    margin-bottom:18px;
-}
-
-.movements-panel.open{display:block}
 
 .movements-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:15px;
-    margin-bottom:20px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:15px;
+margin-bottom:20px
 }
 
 .movements-header h2{
-    color:var(--green-dark);
-    font-size:17px;
+color:var(--green-dark);
+font-size:17px
 }
 
 .movements-header p{
-    color:var(--muted);
-    font-size:11px;
-    margin-top:5px;
+color:var(--muted);
+font-size:11px;
+margin-top:5px
 }
 
 .movement-form{
-    display:grid;
-    grid-template-columns:1.5fr 1fr 1fr 1.5fr auto;
-    gap:12px;
-    align-items:end;
+display:grid;
+grid-template-columns:1.5fr 1fr 1fr 1.5fr auto;
+gap:12px;
+align-items:end
 }
 
 .history-title{
-    color:var(--green-dark);
-    font-size:15px;
-    font-weight:650;
-    margin:25px 0 12px;
+color:var(--green-dark);
+font-size:15px;
+font-weight:650;
+margin:25px 0 12px
 }
 
-.movement-type{font-weight:650}
-.movement-entry{color:var(--success)}
-.movement-exit{color:var(--danger)}
-.movement-adjustment{color:var(--warning)}
+.movement-type{
+font-weight:650
+}
+
+.movement-entry{
+color:var(--success)
+}
+
+.movement-exit{
+color:var(--danger)
+}
+
+.movement-adjustment{
+color:var(--warning)
+}
 
 .stock-preview{
-    margin-top:15px;
-    padding:12px 14px;
-    background:var(--green-soft);
-    border-radius:8px;
-    color:var(--green-dark);
-    font-size:12px;
+margin-top:15px;
+padding:12px 14px;
+background:var(--green-soft);
+border-radius:8px;
+color:var(--green-dark);
+font-size:12px
 }
 
 /* PRODUCCIÓN */
+
 .production-summary{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:16px;
-    margin-bottom:20px;
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:16px;
+margin-bottom:18px
 }
 
-.production-stat{
-    background:#fff;
-    border:1px solid var(--border);
-    border-radius:12px;
-    padding:18px;
-    box-shadow:var(--shadow);
+.production-card{
+background:#fff;
+border:1px solid var(--border);
+border-radius:12px;
+padding:18px;
+box-shadow:var(--shadow)
 }
 
-.production-stat span{
-    display:block;
-    color:var(--muted);
-    font-size:11px;
-    margin-bottom:8px;
+.production-card .number{
+font-size:25px;
+font-weight:650;
+color:var(--green-dark)
 }
 
-.production-stat strong{
-    color:var(--green-dark);
-    font-size:25px;
+.production-card .label{
+font-size:11px;
+color:var(--muted);
+margin-top:5px
 }
 
-.production-form{
-    background:#fff;
-    border:1px solid var(--border);
-    border-radius:12px;
-    padding:22px;
-    box-shadow:var(--shadow);
-    margin-bottom:20px;
+.production-panel{
+background:#fff;
+border:1px solid var(--border);
+border-radius:12px;
+padding:22px;
+margin-bottom:18px;
+box-shadow:var(--shadow)
 }
 
-.production-form h2{
-    color:var(--green-dark);
-    font-size:16px;
-    margin-bottom:18px;
+.production-panel h2{
+font-size:16px;
+color:var(--green-dark);
+margin-bottom:17px
 }
 
-.production-grid{
-    display:grid;
-    grid-template-columns:2fr 1fr 1fr 1fr 1.5fr;
-    gap:12px;
+.production-form-grid{
+display:grid;
+grid-template-columns:1.5fr 1fr 1fr 1fr 1.5fr;
+gap:12px;
+align-items:end
 }
 
-.production-table .status-select{
-    padding:7px 9px;
-    border:1px solid var(--border);
-    border-radius:7px;
-    font-size:11px;
-    background:#fff;
+.production-filters{
+display:flex;
+gap:10px;
+flex-wrap:wrap
 }
 
-.date-display{
-    color:var(--muted);
-    font-size:12px;
+.production-filters button.active{
+background:var(--green-dark);
+color:#fff;
+border-color:var(--green-dark)
+}
+
+.status-pending{
+background:var(--warning-soft);
+color:var(--warning)
+}
+
+.status-progress{
+background:var(--blue-soft);
+color:var(--blue)
+}
+
+.status-complete{
+background:var(--success-soft);
+color:var(--success)
 }
 
 .production-progress{
-    width:100%;
-    max-width:130px;
-    height:7px;
-    background:#edf0ed;
-    border-radius:10px;
-    overflow:hidden;
+width:100%;
+height:7px;
+background:#edf0ed;
+border-radius:20px;
+overflow:hidden;
+margin-top:8px
 }
 
 .production-progress span{
-    display:block;
-    height:100%;
-    background:var(--green);
-    border-radius:10px;
+display:block;
+height:100%;
+background:var(--green);
+border-radius:20px
 }
 
-/* OTROS */
+/* OTROS MÓDULOS */
+
 .coming-soon{
-    background:#fff;
-    border:1px solid var(--border);
-    border-radius:12px;
-    padding:60px 30px;
-    text-align:center;
-    box-shadow:var(--shadow);
+background:#fff;
+border:1px solid var(--border);
+border-radius:12px;
+padding:60px 30px;
+text-align:center;
+box-shadow:var(--shadow)
 }
 
 .coming-soon h2{
-    color:var(--green-dark);
-    font-size:20px;
-    margin-bottom:8px;
+color:var(--green-dark);
+font-size:20px;
+margin-bottom:8px
 }
 
 .coming-soon p{
-    color:var(--muted);
-    font-size:13px;
+color:var(--muted);
+font-size:13px
 }
 
 /* RESPONSIVE */
+
 @media(max-width:1100px){
-    .stats,.production-summary{
-        grid-template-columns:repeat(2,1fr);
-    }
 
-    .dashboard-grid{grid-template-columns:1fr}
+.stats,
+.production-summary{
+grid-template-columns:repeat(2,1fr)
+}
 
-    .form-grid,.production-grid{
-        grid-template-columns:repeat(2,1fr);
-    }
+.dashboard-grid{
+grid-template-columns:1fr
+}
 
-    .movement-form{
-        grid-template-columns:repeat(2,1fr);
-    }
+.form-grid,
+.production-form-grid{
+grid-template-columns:repeat(2,1fr)
+}
+
+.movement-form{
+grid-template-columns:repeat(2,1fr)
+}
+
 }
 
 @media(max-width:750px){
-    .sidebar{
-        width:72px;
-        padding:20px 9px;
-    }
 
-    .brand{
-        padding-left:5px;
-        padding-right:5px;
-    }
+.sidebar{
+width:72px;
+padding:20px 9px
+}
 
-    .brand-name{
-        font-size:18px;
-        letter-spacing:2px;
-    }
+.brand{
+padding-left:5px;
+padding-right:5px
+}
 
-    .brand-subtitle,
-    .nav-title,
-    .nav-item span,
-    .user-info{
-        display:none;
-    }
+.brand-name{
+font-size:18px;
+letter-spacing:2px
+}
 
-    .nav-item{
-        text-align:center;
-        padding:13px 5px;
-    }
+.brand-subtitle,
+.nav-title,
+.nav-item span,
+.user-info{
+display:none
+}
 
-    .main{
-        margin-left:72px;
-        width:calc(100% - 72px);
-    }
+.nav-item{
+text-align:center;
+padding:13px 5px
+}
 
-    .topbar{padding:0 18px}
-    .content{padding:22px 16px}
+.main{
+margin-left:72px;
+width:calc(100% - 72px)
+}
 
-    .page-header{
-        flex-direction:column;
-    }
+.topbar{
+padding:0 18px
+}
 
-    .stats,.production-summary{
-        grid-template-columns:1fr;
-    }
+.content{
+padding:22px 16px
+}
 
-    .form-grid,.production-grid{
-        grid-template-columns:1fr;
-    }
+.page-header{
+flex-direction:column
+}
 
-    .toolbar{flex-direction:column}
+.stats,
+.production-summary{
+grid-template-columns:1fr
+}
 
-    .movement-form{
-        grid-template-columns:1fr;
-    }
+.form-grid,
+.production-form-grid,
+.movement-form{
+grid-template-columns:1fr
+}
 
-    .movements-header{
-        align-items:flex-start;
-        flex-direction:column;
-    }
+.toolbar{
+flex-direction:column
+}
+
+.movements-header{
+align-items:flex-start;
+flex-direction:column
+}
+
 }
 </style>
 </head>
@@ -684,1747 +870,3505 @@ tbody tr:hover{background:#fbfcfa}
 
 <aside class="sidebar">
 
-    <div class="brand">
-        <div class="brand-name">KÜCHE</div>
-        <div class="brand-subtitle">Gestión gastronómica</div>
-    </div>
+<div class="brand">
+<div class="brand-name">KÜCHE</div>
+<div class="brand-subtitle">Gestión gastronómica</div>
+</div>
 
-    <nav class="nav">
+<nav class="nav">
 
-        <div class="nav-title">Principal</div>
+<div class="nav-title">Principal</div>
 
-        <button class="nav-item active" onclick="showPage('dashboard',this)">
-            <span>Dashboard</span>
-        </button>
+<button class="nav-item active" onclick="showPage('dashboard',this)">
+<span>Dashboard</span>
+</button>
 
-        <button class="nav-item" onclick="showPage('inventory',this)">
-            <span>Inventario</span>
-        </button>
+<button class="nav-item" onclick="showPage('inventory',this)">
+<span>Inventario</span>
+</button>
 
-        <button class="nav-item" onclick="showPage('production',this)">
-            <span>Producción</span>
-        </button>
+<button class="nav-item" onclick="showPage('production',this)">
+<span>Producción</span>
+</button>
 
-        <button class="nav-item" onclick="showPage('recipes',this)">
-            <span>Recetas y costos</span>
-        </button>
+<button class="nav-item" onclick="showPage('recipes',this)">
+<span>Recetas y costos</span>
+</button>
 
-        <button class="nav-item" onclick="showPage('temperatures',this)">
-            <span>Temperaturas</span>
-        </button>
+<button class="nav-item" onclick="showPage('temperatures',this)">
+<span>Temperaturas</span>
+</button>
 
-        <div class="nav-title">Administración</div>
+<div class="nav-title">Administración</div>
 
-        <button class="nav-item" onclick="showPage('staff',this)">
-            <span>Personal</span>
-        </button>
+<button class="nav-item" onclick="showPage('staff',this)">
+<span>Personal</span>
+</button>
 
-        <button class="nav-item" onclick="showPage('checklists',this)">
-            <span>Checklists</span>
-        </button>
+<button class="nav-item" onclick="showPage('checklists',this)">
+<span>Checklists</span>
+</button>
 
-        <button class="nav-item" onclick="showPage('reports',this)">
-            <span>Reportes</span>
-        </button>
+<button class="nav-item" onclick="showPage('reports',this)">
+<span>Reportes</span>
+</button>
 
-    </nav>
+</nav>
 
-    <div class="sidebar-bottom">
-        <div class="user-mini">
-            <div class="avatar">GA</div>
-            <div class="user-info">
-                <strong>Administrador</strong>
-                <span>Cuenta principal</span>
-            </div>
-        </div>
-    </div>
+<div class="sidebar-bottom">
+
+<div class="user-mini">
+
+<div class="avatar">
+GA
+</div>
+
+<div class="user-info">
+<strong>Administrador</strong>
+<span>Cuenta principal</span>
+</div>
+
+</div>
+
+</div>
 
 </aside>
 
 <main class="main">
 
 <header class="topbar">
-    <div class="topbar-title">Panel de gestión</div>
-    <div class="system-status">Sistema operativo</div>
+
+<div class="topbar-title">
+Panel de gestión
+</div>
+
+<div class="system-status">
+Sistema operativo
+</div>
+
 </header>
 
 <div class="content">
 
 <!-- DASHBOARD -->
+
 <section id="dashboard" class="page active">
 
-    <div class="page-header">
-        <div>
-            <h1>Resumen general</h1>
-            <p>Información actual de tu establecimiento.</p>
-        </div>
+<div class="page-header">
 
-        <button class="primary-button" onclick="openInventory()">
-            Gestionar inventario
-        </button>
-    </div>
+<div>
 
-    <div class="stats">
+<h1>
+Resumen general
+</h1>
 
-        <div class="stat-card">
-            <div class="stat-label">Insumos registrados</div>
-            <div class="stat-value" id="statProducts">0</div>
-            <div class="stat-detail">Total en inventario</div>
-        </div>
+<p>
+Información actual de tu establecimiento.
+</p>
 
-        <div class="stat-card">
-            <div class="stat-label">Stock crítico</div>
-            <div class="stat-value" id="statLow">0</div>
-            <div class="stat-detail">Requieren reposición</div>
-        </div>
+</div>
 
-        <div class="stat-card">
-            <div class="stat-label">Movimientos</div>
-            <div class="stat-value" id="statMovements">0</div>
-            <div class="stat-detail">Movimientos registrados</div>
-        </div>
+<button class="primary-button" onclick="openInventory()">
+Gestionar inventario
+</button>
 
-        <div class="stat-card">
-            <div class="stat-label">Producción pendiente</div>
-            <div class="stat-value" id="statProduction">0</div>
-            <div class="stat-detail">Preparaciones pendientes</div>
-        </div>
+</div>
 
-    </div>
+<div class="stats">
 
-    <div class="dashboard-grid">
+<div class="stat-card">
 
-        <div class="card">
+<div class="stat-label">
+Insumos registrados
+</div>
 
-            <div class="card-header">
-                <h2>Alertas de inventario</h2>
-                <span>Estado actual</span>
-            </div>
+<div class="stat-value" id="statProducts">
+0
+</div>
 
-            <div class="alert-list" id="dashboardAlerts"></div>
+<div class="stat-detail">
+Total en inventario
+</div>
 
-        </div>
+</div>
 
-        <div class="card">
+<div class="stat-card">
 
-            <div class="card-header">
-                <h2>Actividad reciente</h2>
-                <span>Últimos movimientos</span>
-            </div>
+<div class="stat-label">
+Stock crítico
+</div>
 
-            <div class="activity" id="dashboardActivity"></div>
+<div class="stat-value" id="statLow">
+0
+</div>
 
-        </div>
+<div class="stat-detail">
+Requieren reposición
+</div>
 
-    </div>
+</div>
+
+<div class="stat-card">
+
+<div class="stat-label">
+Movimientos
+</div>
+
+<div class="stat-value" id="statMovements">
+0
+</div>
+
+<div class="stat-detail">
+Movimientos registrados
+</div>
+
+</div>
+
+<div class="stat-card">
+
+<div class="stat-label">
+Producción hoy
+</div>
+
+<div class="stat-value" id="statProduction">
+0
+</div>
+
+<div class="stat-detail">
+Preparaciones planificadas
+</div>
+
+</div>
+
+</div>
+
+<div class="dashboard-grid">
+
+<div class="card">
+
+<div class="card-header">
+<h2>Alertas de inventario</h2>
+<span>Estado actual</span>
+</div>
+
+<div class="alert-list" id="dashboardAlerts"></div>
+
+</div>
+
+<div class="card">
+
+<div class="card-header">
+<h2>Actividad reciente</h2>
+<span>Últimos movimientos</span>
+</div>
+
+<div class="activity" id="dashboardActivity"></div>
+
+</div>
+
+</div>
 
 </section>
 
 <!-- INVENTARIO -->
+
 <section id="inventory" class="page">
 
-    <div class="page-header">
+<div class="page-header">
 
-        <div>
-            <h1>Inventario</h1>
-            <p>Control de insumos y niveles de stock.</p>
-        </div>
+<div>
 
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
+<h1>
+Inventario
+</h1>
 
-            <button class="secondary-button" onclick="openMovements()">
-                🔄 Movimientos
-            </button>
+<p>
+Control de insumos y niveles de stock.
+</p>
 
-            <button class="primary-button" onclick="newProduct()">
-                + Nuevo insumo
-            </button>
+</div>
 
-        </div>
+<div style="display:flex;gap:10px;flex-wrap:wrap">
 
-    </div>
+<button class="secondary-button" onclick="openMovements()">
+🔄 Movimientos
+</button>
 
-    <div id="inventoryForm" class="form-panel">
+<button class="primary-button" onclick="newProduct()">
++ Nuevo insumo
+</button>
 
-        <div id="formTitle" class="form-title">
-            Registrar nuevo insumo
-        </div>
+</div>
 
-        <div class="form-grid">
+</div>
 
-            <div class="field">
-                <label>Nombre del insumo</label>
-                <input id="productName" type="text" placeholder="Ej. Carne molida">
-            </div>
+<div id="inventoryForm" class="form-panel">
 
-            <div class="field">
-                <label>Categoría</label>
-                <select id="category">
-                    <option value="">Seleccionar</option>
-                    <option>Proteínas</option>
-                    <option>Lácteos</option>
-                    <option>Frutas y verduras</option>
-                    <option>Abarrotes</option>
-                    <option>Bebestibles</option>
-                    <option>Congelados</option>
-                    <option>Otros</option>
-                </select>
-            </div>
+<div id="formTitle" class="form-title">
+Registrar nuevo insumo
+</div>
 
-            <div class="field">
-                <label>Unidad</label>
-                <select id="unit">
-                    <option value="">Seleccionar</option>
-                    <option>kg</option>
-                    <option>g</option>
-                    <option>L</option>
-                    <option>ml</option>
-                    <option>unidad</option>
-                    <option>caja</option>
-                    <option>paquete</option>
-                </select>
-            </div>
+<div class="form-grid">
 
-            <div class="field">
-                <label>Cantidad actual</label>
-                <input id="quantity" type="number" min="0" step="0.01">
-            </div>
+<div class="field">
 
-            <div class="field">
-                <label>Stock mínimo</label>
-                <input id="minimum" type="number" min="0" step="0.01">
-            </div>
+<label>
+Nombre del insumo
+</label>
 
-        </div>
+<input
+id="productName"
+type="text"
+placeholder="Ej. Carne molida"
+>
 
-        <div class="form-actions">
+</div>
 
-            <button id="saveButton" class="primary-button" onclick="saveProduct()">
-                Guardar insumo
-            </button>
+<div class="field">
 
-            <button class="secondary-button" onclick="closeForm()">
-                Cancelar
-            </button>
+<label>
+Categoría
+</label>
 
-        </div>
+<select id="category">
 
-    </div>
+<option value="">
+Seleccionar
+</option>
 
-    <!-- MOVIMIENTOS -->
+<option>
+Proteínas
+</option>
 
-    <div id="movementsPanel" class="movements-panel">
+<option>
+Lácteos
+</option>
 
-        <div class="movements-header">
+<option>
+Frutas y verduras
+</option>
 
-            <div>
-                <h2>🔄 Movimientos de inventario</h2>
-                <p>Registra entradas, salidas y ajustes de stock.</p>
-            </div>
+<option>
+Abarrotes
+</option>
 
-            <button class="secondary-button" onclick="closeMovements()">
-                Cerrar
-            </button>
+<option>
+Bebestibles
+</option>
 
-        </div>
+<option>
+Congelados
+</option>
 
-        <div class="movement-form">
+<option>
+Otros
+</option>
 
-            <div class="field">
-                <label>Insumo</label>
-                <select id="movementProduct" onchange="showMovementPreview()">
-                    <option value="">Seleccionar insumo</option>
-                </select>
-            </div>
+</select>
 
-            <div class="field">
-                <label>Tipo</label>
-                <select id="movementType" onchange="showMovementPreview()">
-                    <option value="entrada">➕ Entrada</option>
-                    <option value="salida">➖ Salida</option>
-                    <option value="ajuste">🔄 Ajuste</option>
-                </select>
-            </div>
+</div>
 
-            <div class="field">
-                <label>Cantidad</label>
-                <input id="movementQuantity" type="number" min="0" step="0.01" oninput="showMovementPreview()">
-            </div>
+<div class="field">
 
-            <div class="field">
-                <label>Motivo</label>
-                <input id="movementReason" type="text" placeholder="Ej. Compra de proveedor">
-            </div>
+<label>
+Unidad
+</label>
 
-            <button class="primary-button" onclick="registerMovement()">
-                Registrar
-            </button>
+<select id="unit">
 
-        </div>
+<option value="">
+Seleccionar
+</option>
 
-        <div id="movementPreview" class="stock-preview" style="display:none"></div>
+<option>kg</option>
+<option>g</option>
+<option>L</option>
+<option>ml</option>
+<option>unidad</option>
+<option>caja</option>
+<option>paquete</option>
 
-        <div class="history-title">Historial de movimientos</div>
+</select>
 
-        <div class="table-card">
+</div>
 
-            <div class="table-wrapper">
+<div class="field">
 
-                <table>
+<label>
+Cantidad actual
+</label>
 
-                    <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Insumo</th>
-                        <th>Movimiento</th>
-                        <th>Cantidad</th>
-                        <th>Motivo</th>
-                        <th>Stock resultante</th>
-                    </tr>
-                    </thead>
+<input
+id="quantity"
+type="number"
+min="0"
+step="0.01"
+placeholder="0"
+>
 
-                    <tbody id="movementTable"></tbody>
+</div>
 
-                </table>
+<div class="field">
 
-            </div>
+<label>
+Stock mínimo
+</label>
 
-        </div>
+<input
+id="minimum"
+type="number"
+min="0"
+step="0.01"
+placeholder="0"
+>
 
-    </div>
+</div>
 
-    <div class="toolbar">
+</div>
 
-        <div class="search-box">
-            <input id="searchInput" type="text" placeholder="Buscar insumo..." oninput="renderInventory()">
-        </div>
+<div class="form-actions">
 
-        <button class="secondary-button" onclick="showLowStock()">
-            Stock crítico
-        </button>
+<button
+id="saveButton"
+class="primary-button"
+onclick="saveProduct()"
+>
+Guardar insumo
+</button>
 
-        <button class="secondary-button" onclick="showAllStock()">
-            Todos
-        </button>
+<button
+class="secondary-button"
+onclick="closeForm()"
+>
+Cancelar
+</button>
 
-    </div>
+</div>
 
-    <div class="table-card">
+</div>
 
-        <div class="table-wrapper">
+<!-- MOVIMIENTOS -->
 
-            <table>
+<div id="movementsPanel" class="movements-panel">
 
-                <thead>
-                <tr>
-                    <th>Insumo</th>
-                    <th>Categoría</th>
-                    <th>Stock actual</th>
-                    <th>Stock mínimo</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                </tr>
-                </thead>
+<div class="movements-header">
 
-                <tbody id="inventoryTable"></tbody>
+<div>
 
-            </table>
+<h2>
+🔄 Movimientos de inventario
+</h2>
 
-        </div>
+<p>
+Registra entradas, salidas y ajustes de stock.
+</p>
 
-    </div>
+</div>
+
+<button
+class="secondary-button"
+onclick="closeMovements()"
+>
+Cerrar
+</button>
+
+</div>
+
+<div class="movement-form">
+
+<div class="field">
+
+<label>
+Insumo
+</label>
+
+<select
+id="movementProduct"
+onchange="showMovementPreview()"
+>
+
+<option value="">
+Seleccionar insumo
+</option>
+
+</select>
+
+</div>
+
+<div class="field">
+
+<label>
+Tipo
+</label>
+
+<select
+id="movementType"
+onchange="showMovementPreview()"
+>
+
+<option value="entrada">
+➕ Entrada
+</option>
+
+<option value="salida">
+➖ Salida
+</option>
+
+<option value="ajuste">
+🔄 Ajuste
+</option>
+
+</select>
+
+</div>
+
+<div class="field">
+
+<label>
+Cantidad
+</label>
+
+<input
+id="movementQuantity"
+type="number"
+min="0"
+step="0.01"
+placeholder="0"
+oninput="showMovementPreview()"
+>
+
+</div>
+
+<div class="field">
+
+<label>
+Motivo
+</label>
+
+<input
+id="movementReason"
+type="text"
+placeholder="Ej. Compra de proveedor"
+>
+
+</div>
+
+<button
+class="primary-button"
+onclick="registerMovement()"
+>
+Registrar
+</button>
+
+</div>
+
+<div
+id="movementPreview"
+class="stock-preview"
+style="display:none"
+></div>
+
+<div class="history-title">
+Historial de movimientos
+</div>
+
+<div class="table-card">
+
+<div class="table-wrapper">
+
+<table>
+
+<thead>
+
+<tr>
+<th>Fecha</th>
+<th>Insumo</th>
+<th>Movimiento</th>
+<th>Cantidad</th>
+<th>Motivo</th>
+<th>Stock resultante</th>
+</tr>
+
+</thead>
+
+<tbody id="movementTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="toolbar">
+
+<div class="search-box">
+
+<input
+id="searchInput"
+type="text"
+placeholder="Buscar insumo..."
+oninput="renderInventory()"
+>
+
+</div>
+
+<button
+class="secondary-button"
+onclick="showLowStock()"
+>
+Stock crítico
+</button>
+
+<button
+class="secondary-button"
+onclick="showAllStock()"
+>
+Todos
+</button>
+
+</div>
+
+<div class="table-card">
+
+<div class="table-wrapper">
+
+<table>
+
+<thead>
+
+<tr>
+<th>Insumo</th>
+<th>Categoría</th>
+<th>Stock actual</th>
+<th>Stock mínimo</th>
+<th>Estado</th>
+<th>Acciones</th>
+</tr>
+
+</thead>
+
+<tbody id="inventoryTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
 
 </section>
 
 <!-- PRODUCCIÓN -->
+
 <section id="production" class="page">
 
-    <div class="page-header">
+<div class="page-header">
 
-        <div>
-            <h1>Producción</h1>
-            <p>Planifica y controla las preparaciones de tu establecimiento.</p>
-        </div>
+<div>
 
-        <button class="primary-button" onclick="openProductionForm()">
-            + Nueva producción
-        </button>
+<h1>
+Producción
+</h1>
 
-    </div>
+<p>
+Planifica, ejecuta y controla las preparaciones de tu establecimiento.
+</p>
 
-    <div class="production-summary">
+</div>
 
-        <div class="production-stat">
-            <span>Total planificado</span>
-            <strong id="productionTotal">0</strong>
-        </div>
+<button
+class="primary-button"
+onclick="newProduction()"
+>
++ Nueva producción
+</button>
 
-        <div class="production-stat">
-            <span>Pendientes</span>
-            <strong id="productionPending">0</strong>
-        </div>
+</div>
 
-        <div class="production-stat">
-            <span>En producción</span>
-            <strong id="productionWorking">0</strong>
-        </div>
+<div class="production-summary">
 
-        <div class="production-stat">
-            <span>Terminadas</span>
-            <strong id="productionDone">0</strong>
-        </div>
+<div class="production-card">
 
-    </div>
+<div class="label">
+Planificadas hoy
+</div>
 
-    <div id="productionForm" class="production-form" style="display:none">
+<div class="number" id="prodPlanned">
+0
+</div>
 
-        <h2>Registrar producción</h2>
+</div>
 
-        <div class="production-grid">
+<div class="production-card">
 
-            <div class="field">
-                <label>Preparación</label>
-                <input id="productionName" type="text" placeholder="Ej. Salsa de ajo">
-            </div>
+<div class="label">
+Pendientes
+</div>
 
-            <div class="field">
-                <label>Cantidad</label>
-                <input id="productionQuantity" type="number" min="0" step="0.01" placeholder="0">
-            </div>
+<div class="number" id="prodPending">
+0
+</div>
 
-            <div class="field">
-                <label>Unidad</label>
-                <select id="productionUnit">
-                    <option value="">Seleccionar</option>
-                    <option>kg</option>
-                    <option>g</option>
-                    <option>L</option>
-                    <option>ml</option>
-                    <option>unidad</option>
-                    <option>porción</option>
-                    <option>bandeja</option>
-                </select>
-            </div>
+</div>
 
-            <div class="field">
-                <label>Fecha</label>
-                <input id="productionDate" type="date">
-            </div>
+<div class="production-card">
 
-            <div class="field">
-                <label>Responsable</label>
-                <input id="productionResponsible" type="text" placeholder="Nombre">
-            </div>
+<div class="label">
+En proceso
+</div>
 
-        </div>
+<div class="number" id="prodProgress">
+0
+</div>
 
-        <div class="form-actions">
+</div>
 
-            <button class="primary-button" onclick="saveProduction()">
-                Guardar producción
-            </button>
+<div class="production-card">
 
-            <button class="secondary-button" onclick="closeProductionForm()">
-                Cancelar
-            </button>
+<div class="label">
+Completadas
+</div>
 
-        </div>
+<div class="number" id="prodComplete">
+0
+</div>
 
-    </div>
+</div>
 
-    <div class="table-card production-table">
+</div>
 
-        <div class="table-wrapper">
+<div
+id="productionForm"
+class="production-panel"
+style="display:none"
+>
 
-            <table>
+<h2 id="productionFormTitle">
+Nueva producción
+</h2>
 
-                <thead>
-                <tr>
-                    <th>Preparación</th>
-                    <th>Cantidad</th>
-                    <th>Fecha</th>
-                    <th>Responsable</th>
-                    <th>Estado</th>
-                    <th>Avance</th>
-                    <th>Acciones</th>
-                </tr>
-                </thead>
+<div class="production-form-grid">
 
-                <tbody id="productionTable"></tbody>
+<div class="field">
 
-            </table>
+<label>
+Preparación
+</label>
 
-        </div>
+<input
+id="prepName"
+type="text"
+placeholder="Ej. Salsa de ajo"
+>
 
-    </div>
+</div>
+
+<div class="field">
+
+<label>
+Cantidad
+</label>
+
+<input
+id="prepQuantity"
+type="number"
+min="0.01"
+step="0.01"
+placeholder="10"
+>
+
+</div>
+
+<div class="field">
+
+<label>
+Unidad
+</label>
+
+<select id="prepUnit">
+
+<option value="">
+Seleccionar
+</option>
+
+<option>kg</option>
+<option>g</option>
+<option>L</option>
+<option>ml</option>
+<option>unidad</option>
+<option>porción</option>
+<option>bandeja</option>
+<option>caja</option>
+
+</select>
+
+</div>
+
+<div class="field">
+
+<label>
+Responsable
+</label>
+
+<input
+id="prepResponsible"
+type="text"
+placeholder="Ej. Cocina"
+>
+
+</div>
+
+<div class="field">
+
+<label>
+Hora objetivo
+</label>
+
+<input
+id="prepTime"
+type="time"
+>
+
+</div>
+
+</div>
+
+<div class="field" style="margin-top:12px">
+
+<label>
+Observaciones
+</label>
+
+<textarea
+id="prepNotes"
+placeholder="Detalles de la preparación, rendimiento, prioridad, etc."
+></textarea>
+
+</div>
+
+<div class="form-actions">
+
+<button
+class="primary-button"
+onclick="saveProduction()"
+>
+Guardar producción
+</button>
+
+<button
+class="secondary-button"
+onclick="closeProductionForm()"
+>
+Cancelar
+</button>
+
+</div>
+
+</div>
+
+<div class="toolbar">
+
+<div class="search-box">
+
+<input
+id="productionSearch"
+type="text"
+placeholder="Buscar preparación..."
+oninput="renderProduction()"
+>
+
+</div>
+
+<div class="production-filters">
+
+<button
+class="secondary-button active"
+id="filterAll"
+onclick="setProductionFilter('todos')"
+>
+Todas
+</button>
+
+<button
+class="secondary-button"
+id="filterPending"
+onclick="setProductionFilter('pendiente')"
+>
+Pendientes
+</button>
+
+<button
+class="secondary-button"
+id="filterProgress"
+onclick="setProductionFilter('en_proceso')"
+>
+En proceso
+</button>
+
+<button
+class="secondary-button"
+id="filterComplete"
+onclick="setProductionFilter('completado')"
+>
+Completadas
+</button>
+
+</div>
+
+</div>
+
+<div class="table-card">
+
+<div class="table-wrapper">
+
+<table>
+
+<thead>
+
+<tr>
+<th>Preparación</th>
+<th>Cantidad</th>
+<th>Responsable</th>
+<th>Hora</th>
+<th>Estado</th>
+<th>Progreso</th>
+<th>Acciones</th>
+</tr>
+
+</thead>
+
+<tbody id="productionTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
 
 </section>
 
-<!-- RECETAS -->
+<!-- RESTO -->
+
 <section id="recipes" class="page">
 
-    <div class="page-header">
-        <div>
-            <h1>Recetas y costos</h1>
-            <p>Control de recetas, rendimientos y costos.</p>
-        </div>
-    </div>
+<div class="page-header">
 
-    <div class="coming-soon">
-        <h2>Módulo en desarrollo</h2>
-        <p>Aquí construiremos recetas, costos, food cost y márgenes.</p>
-    </div>
+<div>
+
+<h1>
+Recetas y costos
+</h1>
+
+<p>
+Control de recetas, rendimientos y costos.
+</p>
+
+</div>
+
+</div>
+
+<div class="coming-soon">
+
+<h2>
+Módulo en desarrollo
+</h2>
+
+<p>
+Aquí construiremos recetas, costos, food cost y márgenes.
+</p>
+
+</div>
 
 </section>
 
-<!-- TEMPERATURAS -->
 <section id="temperatures" class="page">
 
-    <div class="page-header">
-        <div>
-            <h1>Control de temperaturas</h1>
-            <p>Registro y seguimiento de temperaturas.</p>
-        </div>
-    </div>
+<div class="page-header">
 
-    <div class="coming-soon">
-        <h2>Módulo en desarrollo</h2>
-        <p>Aquí construiremos el control de refrigeradores, congeladores y cocción.</p>
-    </div>
+<div>
+
+<h1>
+Control de temperaturas
+</h1>
+
+<p>
+Registro y seguimiento de temperaturas.
+</p>
+
+</div>
+
+</div>
+
+<div class="coming-soon">
+
+<h2>
+Módulo en desarrollo
+</h2>
+
+<p>
+Aquí construiremos el control de refrigeradores, congeladores y cocción.
+</p>
+
+</div>
 
 </section>
 
-<!-- PERSONAL -->
 <section id="staff" class="page">
 
-    <div class="page-header">
-        <div>
-            <h1>Personal</h1>
-            <p>Gestión de trabajadores y turnos.</p>
-        </div>
-    </div>
+<div class="page-header">
 
-    <div class="coming-soon">
-        <h2>Módulo en desarrollo</h2>
-        <p>Aquí construiremos empleados, cargos, turnos y horarios.</p>
-    </div>
+<div>
+
+<h1>
+Personal
+</h1>
+
+<p>
+Gestión de trabajadores y turnos.
+</p>
+
+</div>
+
+</div>
+
+<div class="coming-soon">
+
+<h2>
+Módulo en desarrollo
+</h2>
+
+<p>
+Aquí construiremos empleados, cargos, turnos y horarios.
+</p>
+
+</div>
 
 </section>
 
-<!-- CHECKLISTS -->
 <section id="checklists" class="page">
 
-    <div class="page-header">
-        <div>
-            <h1>Checklists</h1>
-            <p>Control de tareas operativas y BPM.</p>
-        </div>
-    </div>
+<div class="page-header">
 
-    <div class="coming-soon">
-        <h2>Módulo en desarrollo</h2>
-        <p>Aquí construiremos tareas diarias, semanales, apertura y cierre.</p>
-    </div>
+<div>
+
+<h1>
+Checklists
+</h1>
+
+<p>
+Control de tareas operativas y BPM.
+</p>
+
+</div>
+
+</div>
+
+<div class="coming-soon">
+
+<h2>
+Módulo en desarrollo
+</h2>
+
+<p>
+Aquí construiremos tareas diarias, semanales, apertura y cierre.
+</p>
+
+</div>
 
 </section>
 
-<!-- REPORTES -->
 <section id="reports" class="page">
 
-    <div class="page-header">
-        <div>
-            <h1>Reportes</h1>
-            <p>Indicadores para la toma de decisiones.</p>
-        </div>
-    </div>
+<div class="page-header">
 
-    <div class="coming-soon">
-        <h2>Módulo en desarrollo</h2>
-        <p>Aquí construiremos reportes operacionales y administrativos.</p>
-    </div>
+<div>
+
+<h1>
+Reportes
+</h1>
+
+<p>
+Indicadores para la toma de decisiones.
+</p>
+
+</div>
+
+</div>
+
+<div class="coming-soon">
+
+<h2>
+Módulo en desarrollo
+</h2>
+
+<p>
+Aquí construiremos reportes operacionales y administrativos.
+</p>
+
+</div>
 
 </section>
 
 </div>
+
 </main>
+
 </div>
 
 <script>
 
-/* =====================================================
-DATOS
-===================================================== */
+/* DATOS */
 
 let inventory =
-    JSON.parse(localStorage.getItem("kucheInventory")) || [];
+JSON.parse(
+localStorage.getItem("kucheInventory")
+) || [];
+
+
+const oldInventory =
+JSON.parse(
+localStorage.getItem("kuche_inventario")
+) || [];
+
+
+if(
+inventory.length === 0 &&
+oldInventory.length > 0
+){
+
+inventory =
+oldInventory.map(item => ({
+
+id:
+item.id ||
+Date.now() +
+Math.random(),
+
+name:
+item.nombre ||
+"Insumo",
+
+category:
+item.categoria ||
+"Otros",
+
+unit:
+item.unidad ||
+"unidad",
+
+quantity:
+Number(item.stock) || 0,
+
+minimum:
+Number(item.minimo) || 0
+
+}));
+
+saveInventory();
+
+}
+
 
 let movements =
-    JSON.parse(localStorage.getItem("kucheMovements")) || [];
+JSON.parse(
+localStorage.getItem("kucheMovements")
+) || [];
+
 
 let productions =
-    JSON.parse(localStorage.getItem("kucheProductions")) || [];
+JSON.parse(
+localStorage.getItem("kucheProductions")
+) || [];
+
 
 let editingId = null;
+
+let editingProductionId = null;
+
 let lowStockFilter = false;
 
+let productionFilter = "todos";
 
-/* =====================================================
-NAVEGACIÓN
-===================================================== */
+
+/* NAVEGACIÓN */
 
 function showPage(pageId,button){
 
-    document.querySelectorAll(".page").forEach(page=>{
-        page.classList.remove("active");
-    });
+document
+.querySelectorAll(".page")
+.forEach(page => {
 
-    const page=document.getElementById(pageId);
+page.classList.remove("active");
 
-    if(page) page.classList.add("active");
+});
 
-    document.querySelectorAll(".nav-item").forEach(item=>{
-        item.classList.remove("active");
-    });
 
-    if(button) button.classList.add("active");
+const page =
+document.getElementById(pageId);
 
-    if(pageId==="inventory"){
-        renderInventory();
-        renderMovementHistory();
-        loadMovementProducts();
-    }
 
-    if(pageId==="production"){
-        renderProductions();
-    }
+if(page){
 
-    updateDashboard();
+page.classList.add("active");
+
 }
 
 
-/* =====================================================
-INVENTARIO
-===================================================== */
+document
+.querySelectorAll(".nav-item")
+.forEach(item => {
+
+item.classList.remove("active");
+
+});
+
+
+if(button){
+
+button.classList.add("active");
+
+}
+
+
+if(pageId === "inventory"){
+
+renderInventory();
+
+renderMovementHistory();
+
+loadMovementProducts();
+
+}
+
+
+if(pageId === "production"){
+
+renderProduction();
+
+updateProductionStats();
+
+}
+
+
+updateDashboard();
+
+}
+
 
 function openInventory(){
 
-    const buttons=document.querySelectorAll(".nav-item");
+const buttons =
+document.querySelectorAll(".nav-item");
 
-    showPage("inventory",buttons[1]);
+
+showPage(
+"inventory",
+buttons[1]
+);
+
 }
+
+
+/* INVENTARIO */
 
 function newProduct(){
 
-    editingId=null;
+editingId = null;
 
-    document.getElementById("formTitle").textContent=
-        "Registrar nuevo insumo";
 
-    document.getElementById("saveButton").textContent=
-        "Guardar insumo";
+document
+.getElementById("formTitle")
+.textContent =
+"Registrar nuevo insumo";
 
-    clearForm();
 
-    document.getElementById("inventoryForm")
-        .classList.add("open");
+document
+.getElementById("saveButton")
+.textContent =
+"Guardar insumo";
+
+
+clearForm();
+
+
+document
+.getElementById("inventoryForm")
+.classList.add("open");
+
+
+document
+.getElementById("productName")
+.focus();
+
 }
+
 
 function closeForm(){
 
-    editingId=null;
-    clearForm();
+editingId = null;
 
-    document.getElementById("inventoryForm")
-        .classList.remove("open");
+clearForm();
+
+
+document
+.getElementById("inventoryForm")
+.classList.remove("open");
+
 }
+
 
 function clearForm(){
 
-    document.getElementById("productName").value="";
-    document.getElementById("category").value="";
-    document.getElementById("unit").value="";
-    document.getElementById("quantity").value="";
-    document.getElementById("minimum").value="";
+document.getElementById("productName").value = "";
+
+document.getElementById("category").value = "";
+
+document.getElementById("unit").value = "";
+
+document.getElementById("quantity").value = "";
+
+document.getElementById("minimum").value = "";
+
 }
+
 
 function saveProduct(){
 
-    const name=document.getElementById("productName").value.trim();
-    const category=document.getElementById("category").value;
-    const unit=document.getElementById("unit").value;
-    const quantity=parseFloat(document.getElementById("quantity").value);
-    const minimum=parseFloat(document.getElementById("minimum").value);
+const name =
+document
+.getElementById("productName")
+.value
+.trim();
 
-    if(!name || !category || !unit || isNaN(quantity) || isNaN(minimum)){
-        alert("Completa todos los campos antes de guardar.");
-        return;
-    }
 
-    if(editingId!==null){
+const category =
+document
+.getElementById("category")
+.value;
 
-        const product=inventory.find(item=>item.id===editingId);
 
-        if(product){
-            product.name=name;
-            product.category=category;
-            product.unit=unit;
-            product.quantity=quantity;
-            product.minimum=minimum;
-        }
+const unit =
+document
+.getElementById("unit")
+.value;
 
-    }else{
 
-        inventory.push({
-            id:Date.now(),
-            name,
-            category,
-            unit,
-            quantity,
-            minimum
-        });
+const quantity =
+parseFloat(
+document
+.getElementById("quantity")
+.value
+);
 
-    }
 
-    saveInventory();
-    closeForm();
-    renderInventory();
-    loadMovementProducts();
-    updateDashboard();
+const minimum =
+parseFloat(
+document
+.getElementById("minimum")
+.value
+);
+
+
+if(
+!name ||
+!category ||
+!unit ||
+isNaN(quantity) ||
+isNaN(minimum)
+){
+
+alert(
+"Completa todos los campos antes de guardar."
+);
+
+return;
+
 }
+
+
+if(editingId !== null){
+
+const product =
+inventory.find(
+item =>
+item.id === editingId
+);
+
+
+if(product){
+
+product.name =
+name;
+
+product.category =
+category;
+
+product.unit =
+unit;
+
+product.quantity =
+quantity;
+
+product.minimum =
+minimum;
+
+}
+
+}
+
+else{
+
+inventory.push({
+
+id:Date.now(),
+
+name:name,
+
+category:category,
+
+unit:unit,
+
+quantity:quantity,
+
+minimum:minimum
+
+});
+
+}
+
+
+saveInventory();
+
+closeForm();
+
+renderInventory();
+
+loadMovementProducts();
+
+updateDashboard();
+
+}
+
 
 function editProduct(id){
 
-    const product=inventory.find(item=>item.id===id);
+const product =
+inventory.find(
+item =>
+item.id === id
+);
 
-    if(!product)return;
 
-    editingId=id;
+if(!product){
 
-    document.getElementById("formTitle").textContent=
-        "Editar insumo";
+return;
 
-    document.getElementById("saveButton").textContent=
-        "Guardar cambios";
-
-    document.getElementById("productName").value=product.name;
-    document.getElementById("category").value=product.category;
-    document.getElementById("unit").value=product.unit;
-    document.getElementById("quantity").value=product.quantity;
-    document.getElementById("minimum").value=product.minimum;
-
-    document.getElementById("inventoryForm")
-        .classList.add("open");
 }
+
+
+editingId =
+id;
+
+
+document
+.getElementById("formTitle")
+.textContent =
+"Editar insumo";
+
+
+document
+.getElementById("saveButton")
+.textContent =
+"Guardar cambios";
+
+
+document
+.getElementById("productName")
+.value =
+product.name;
+
+
+document
+.getElementById("category")
+.value =
+product.category;
+
+
+document
+.getElementById("unit")
+.value =
+product.unit;
+
+
+document
+.getElementById("quantity")
+.value =
+product.quantity;
+
+
+document
+.getElementById("minimum")
+.value =
+product.minimum;
+
+
+document
+.getElementById("inventoryForm")
+.classList.add("open");
+
+
+document
+.getElementById("productName")
+.focus();
+
+}
+
 
 function deleteProduct(id){
 
-    const product=inventory.find(item=>item.id===id);
+const product =
+inventory.find(
+item =>
+item.id === id
+);
 
-    if(!product)return;
 
-    if(!confirm('¿Quieres eliminar el insumo "'+product.name+'"?'))
-        return;
+if(!product){
 
-    inventory=inventory.filter(item=>item.id!==id);
+return;
 
-    saveInventory();
-    renderInventory();
-    loadMovementProducts();
-    updateDashboard();
 }
+
+
+if(
+!confirm(
+'¿Quieres eliminar el insumo "' +
+product.name +
+'"?'
+)
+){
+
+return;
+
+}
+
+
+inventory =
+inventory.filter(
+item =>
+item.id !== id
+);
+
+
+saveInventory();
+
+renderInventory();
+
+loadMovementProducts();
+
+updateDashboard();
+
+}
+
 
 function saveInventory(){
-    localStorage.setItem(
-        "kucheInventory",
-        JSON.stringify(inventory)
-    );
+
+localStorage.setItem(
+"kucheInventory",
+JSON.stringify(inventory)
+);
+
 }
 
-
-/* =====================================================
-TABLA INVENTARIO
-===================================================== */
-
-function showLowStock(){
-
-    lowStockFilter=true;
-    renderInventory();
-}
-
-function showAllStock(){
-
-    lowStockFilter=false;
-    renderInventory();
-}
-
-function renderInventory(){
-
-    const table=document.getElementById("inventoryTable");
-
-    const searchInput=document.getElementById("searchInput");
-
-    const search=searchInput
-        ? searchInput.value.trim().toLowerCase()
-        : "";
-
-    const products=inventory.filter(product=>{
-
-        const matchesSearch=product.name
-            .toLowerCase()
-            .includes(search);
-
-        const isLow=
-            Number(product.quantity)<=Number(product.minimum);
-
-        return matchesSearch && (!lowStockFilter || isLow);
-
-    });
-
-    if(products.length===0){
-
-        table.innerHTML=`
-            <tr>
-                <td colspan="6">
-                    <div class="empty-state">
-                        <strong>No hay insumos para mostrar</strong>
-                        <span>Agrega un insumo o modifica el filtro.</span>
-                    </div>
-                </td>
-            </tr>
-        `;
-
-        return;
-    }
-
-    table.innerHTML=products.map(product=>{
-
-        const isLow=
-            Number(product.quantity)<=Number(product.minimum);
-
-        return`
-            <tr>
-
-                <td>
-                    <div class="product-name">
-                        ${escapeHTML(product.name)}
-                    </div>
-                </td>
-
-                <td>
-                    <div class="category">
-                        ${escapeHTML(product.category)}
-                    </div>
-                </td>
-
-                <td>
-                    <span class="stock-number">
-                        ${product.quantity} ${escapeHTML(product.unit)}
-                    </span>
-                </td>
-
-                <td>
-                    ${product.minimum} ${escapeHTML(product.unit)}
-                </td>
-
-                <td>
-                    <span class="badge ${isLow?"badge-danger":"badge-success"}">
-                        ${isLow?"Stock crítico":"Stock normal"}
-                    </span>
-                </td>
-
-                <td>
-                    <div class="actions">
-
-                        <button
-                            class="secondary-button"
-                            onclick="editProduct(${product.id})">
-                            Editar
-                        </button>
-
-                        <button
-                            class="secondary-button"
-                            onclick="prepareMovement(${product.id})">
-                            Movimiento
-                        </button>
-
-                        <button
-                            class="danger-button"
-                            onclick="deleteProduct(${product.id})">
-                            Eliminar
-                        </button>
-
-                    </div>
-                </td>
-
-            </tr>
-        `;
-
-    }).join("");
-}
-
-
-/* =====================================================
-MOVIMIENTOS
-===================================================== */
-
-function openMovements(){
-
-    const panel=document.getElementById("movementsPanel");
-
-    panel.classList.add("open");
-
-    loadMovementProducts();
-    renderMovementHistory();
-
-    panel.scrollIntoView({
-        behavior:"smooth",
-        block:"start"
-    });
-}
-
-function closeMovements(){
-
-    document.getElementById("movementsPanel")
-        .classList.remove("open");
-}
-
-function loadMovementProducts(){
-
-    const selector=document.getElementById("movementProduct");
-
-    if(!selector)return;
-
-    const currentValue=selector.value;
-
-    selector.innerHTML=`
-        <option value="">Seleccionar insumo</option>
-    `;
-
-    inventory.forEach(product=>{
-
-        const option=document.createElement("option");
-
-        option.value=product.id;
-
-        option.textContent=
-            product.name+
-            " — Stock: "+
-            product.quantity+
-            " "+
-            product.unit;
-
-        selector.appendChild(option);
-    });
-
-    if(inventory.some(item=>String(item.id)===String(currentValue))){
-        selector.value=currentValue;
-    }
-}
-
-function prepareMovement(id){
-
-    openMovements();
-
-    const selector=document.getElementById("movementProduct");
-
-    selector.value=String(id);
-
-    showMovementPreview();
-}
-
-function showMovementPreview(){
-
-    const productId=document.getElementById("movementProduct").value;
-    const type=document.getElementById("movementType").value;
-    const quantity=Number(document.getElementById("movementQuantity").value);
-    const preview=document.getElementById("movementPreview");
-
-    if(!productId || !quantity || quantity<0){
-
-        preview.style.display="none";
-        return;
-    }
-
-    const product=inventory.find(
-        item=>String(item.id)===String(productId)
-    );
-
-    if(!product)return;
-
-    let newStock=Number(product.quantity);
-
-    if(type==="entrada")newStock+=quantity;
-    if(type==="salida")newStock-=quantity;
-    if(type==="ajuste")newStock=quantity;
-
-    preview.style.display="block";
-
-    preview.innerHTML=`
-        Stock actual:
-        <strong>${product.quantity} ${escapeHTML(product.unit)}</strong>
-        &nbsp;→&nbsp;
-        Nuevo stock:
-        <strong>${newStock} ${escapeHTML(product.unit)}</strong>
-        ${
-            newStock<0
-            ? `<div style="color:#c94b4b;margin-top:6px;font-weight:600">
-                ⚠ La salida no puede dejar el stock negativo.
-              </div>`
-            :""
-        }
-    `;
-}
-
-function registerMovement(){
-
-    const productId=document.getElementById("movementProduct").value;
-    const type=document.getElementById("movementType").value;
-    const quantity=Number(document.getElementById("movementQuantity").value);
-    const reason=document.getElementById("movementReason").value.trim();
-
-    if(!productId){
-        alert("Selecciona un insumo.");
-        return;
-    }
-
-    if(isNaN(quantity)||quantity<=0){
-        alert("Ingresa una cantidad válida.");
-        return;
-    }
-
-    const product=inventory.find(
-        item=>String(item.id)===String(productId)
-    );
-
-    if(!product){
-        alert("No se encontró el insumo.");
-        return;
-    }
-
-    const oldStock=Number(product.quantity);
-
-    let newStock=oldStock;
-
-    if(type==="entrada")
-        newStock=oldStock+quantity;
-
-    if(type==="salida"){
-
-        newStock=oldStock-quantity;
-
-        if(newStock<0){
-            alert("La salida no puede superar el stock disponible.");
-            return;
-        }
-    }
-
-    if(type==="ajuste")
-        newStock=quantity;
-
-    const movement={
-        id:Date.now(),
-        productId:product.id,
-        productName:product.name,
-        type,
-        quantity,
-        reason:reason||"Sin motivo indicado",
-        previousStock:oldStock,
-        resultingStock:newStock,
-        unit:product.unit,
-        date:new Date().toISOString()
-    };
-
-    product.quantity=newStock;
-
-    movements.unshift(movement);
-
-    saveInventory();
-    saveMovements();
-
-    document.getElementById("movementQuantity").value="";
-    document.getElementById("movementReason").value="";
-    document.getElementById("movementPreview").style.display="none";
-
-    renderInventory();
-    renderMovementHistory();
-    loadMovementProducts();
-    updateDashboard();
-
-    alert("Movimiento registrado correctamente.");
-}
 
 function saveMovements(){
 
-    localStorage.setItem(
-        "kucheMovements",
-        JSON.stringify(movements)
-    );
+localStorage.setItem(
+"kucheMovements",
+JSON.stringify(movements)
+);
+
 }
 
-function renderMovementHistory(){
-
-    const table=document.getElementById("movementTable");
-
-    if(!table)return;
-
-    if(movements.length===0){
-
-        table.innerHTML=`
-            <tr>
-                <td colspan="6">
-                    <div class="empty-state">
-                        <strong>No hay movimientos registrados</strong>
-                        <span>Los movimientos aparecerán aquí.</span>
-                    </div>
-                </td>
-            </tr>
-        `;
-
-        return;
-    }
-
-    table.innerHTML=movements.slice(0,100).map(movement=>{
-
-        const date=new Date(movement.date);
-
-        const formattedDate=date.toLocaleString(
-            "es-CL",
-            {
-                day:"2-digit",
-                month:"2-digit",
-                year:"numeric",
-                hour:"2-digit",
-                minute:"2-digit"
-            }
-        );
-
-        let label="Ajuste";
-        let className="movement-adjustment";
-        let sign="";
-
-        if(movement.type==="entrada"){
-            label="Entrada";
-            className="movement-entry";
-            sign="+";
-        }
-
-        if(movement.type==="salida"){
-            label="Salida";
-            className="movement-exit";
-            sign="-";
-        }
-
-        return`
-            <tr>
-
-                <td>${formattedDate}</td>
-
-                <td>
-                    <strong>
-                        ${escapeHTML(movement.productName)}
-                    </strong>
-                </td>
-
-                <td>
-                    <span class="movement-type ${className}">
-                        ${label}
-                    </span>
-                </td>
-
-                <td>
-                    ${sign}${movement.quantity}
-                    ${escapeHTML(movement.unit)}
-                </td>
-
-                <td>${escapeHTML(movement.reason)}</td>
-
-                <td>
-                    <strong>
-                        ${movement.resultingStock}
-                        ${escapeHTML(movement.unit)}
-                    </strong>
-                </td>
-
-            </tr>
-        `;
-
-    }).join("");
-}
-
-
-/* =====================================================
-PRODUCCIÓN
-===================================================== */
-
-function openProductionForm(){
-
-    document.getElementById("productionForm").style.display="block";
-
-    const dateInput=document.getElementById("productionDate");
-
-    if(!dateInput.value){
-
-        const today=new Date();
-
-        const localDate=
-            today.getFullYear()+"-"+
-            String(today.getMonth()+1).padStart(2,"0")+"-"+
-            String(today.getDate()).padStart(2,"0");
-
-        dateInput.value=localDate;
-    }
-
-    document.getElementById("productionName").focus();
-}
-
-function closeProductionForm(){
-
-    document.getElementById("productionForm").style.display="none";
-
-    document.getElementById("productionName").value="";
-    document.getElementById("productionQuantity").value="";
-    document.getElementById("productionUnit").value="";
-    document.getElementById("productionDate").value="";
-    document.getElementById("productionResponsible").value="";
-}
-
-function saveProduction(){
-
-    const name=document.getElementById("productionName").value.trim();
-    const quantity=Number(
-        document.getElementById("productionQuantity").value
-    );
-    const unit=document.getElementById("productionUnit").value;
-    const date=document.getElementById("productionDate").value;
-    const responsible=document.getElementById("productionResponsible").value.trim();
-
-    if(!name){
-        alert("Ingresa el nombre de la preparación.");
-        return;
-    }
-
-    if(!quantity || quantity<=0){
-        alert("Ingresa una cantidad válida.");
-        return;
-    }
-
-    if(!unit){
-        alert("Selecciona la unidad.");
-        return;
-    }
-
-    if(!date){
-        alert("Selecciona una fecha.");
-        return;
-    }
-
-    if(!responsible){
-        alert("Ingresa el responsable.");
-        return;
-    }
-
-    productions.push({
-
-        id:Date.now(),
-
-        name:name,
-
-        quantity:quantity,
-
-        unit:unit,
-
-        date:date,
-
-        responsible:responsible,
-
-        status:"pendiente",
-
-        createdAt:new Date().toISOString()
-
-    });
-
-    saveProductions();
-
-    closeProductionForm();
-
-    renderProductions();
-
-    updateDashboard();
-
-    alert("Producción registrada correctamente.");
-}
 
 function saveProductions(){
 
-    localStorage.setItem(
-        "kucheProductions",
-        JSON.stringify(productions)
-    );
-}
+localStorage.setItem(
+"kucheProductions",
+JSON.stringify(productions)
+);
 
-function updateProductionStatus(id,status){
-
-    const production=productions.find(
-        item=>item.id===id
-    );
-
-    if(!production)return;
-
-    production.status=status;
-
-    saveProductions();
-
-    renderProductions();
-
-    updateDashboard();
-}
-
-function deleteProduction(id){
-
-    const production=productions.find(
-        item=>item.id===id
-    );
-
-    if(!production)return;
-
-    if(!confirm(
-        '¿Quieres eliminar la producción de "'+
-        production.name+
-        '"?'
-    ))return;
-
-    productions=productions.filter(
-        item=>item.id!==id
-    );
-
-    saveProductions();
-
-    renderProductions();
-
-    updateDashboard();
-}
-
-function renderProductions(){
-
-    const table=document.getElementById("productionTable");
-
-    if(!table)return;
-
-    updateProductionStats();
-
-    if(productions.length===0){
-
-        table.innerHTML=`
-            <tr>
-                <td colspan="7">
-
-                    <div class="empty-state">
-
-                        <strong>
-                            No hay producciones planificadas
-                        </strong>
-
-                        <span>
-                            Comienza agregando una preparación.
-                        </span>
-
-                    </div>
-
-                </td>
-            </tr>
-        `;
-
-        return;
-    }
-
-    const ordered=[...productions].sort(
-        (a,b)=>a.date.localeCompare(b.date)
-    );
-
-    table.innerHTML=ordered.map(production=>{
-
-        let progress=0;
-
-        if(production.status==="pendiente")
-            progress=0;
-
-        if(production.status==="produccion")
-            progress=50;
-
-        if(production.status==="terminado")
-            progress=100;
-
-        let badge="badge-warning";
-        let label="Pendiente";
-
-        if(production.status==="produccion"){
-            badge="badge-warning";
-            label="En producción";
-        }
-
-        if(production.status==="terminado"){
-            badge="badge-success";
-            label="Terminado";
-        }
-
-        const dateParts=production.date.split("-");
-
-        const formattedDate=
-            dateParts[2]+"/"+
-            dateParts[1]+"/"+
-            dateParts[0];
-
-        return`
-            <tr>
-
-                <td>
-                    <div class="product-name">
-                        ${escapeHTML(production.name)}
-                    </div>
-                </td>
-
-                <td>
-                    <strong>
-                        ${production.quantity}
-                        ${escapeHTML(production.unit)}
-                    </strong>
-                </td>
-
-                <td>
-                    <span class="date-display">
-                        ${formattedDate}
-                    </span>
-                </td>
-
-                <td>
-                    ${escapeHTML(production.responsible)}
-                </td>
-
-                <td>
-
-                    <select
-                        class="status-select"
-                        onchange="updateProductionStatus(
-                            ${production.id},
-                            this.value
-                        )"
-                    >
-
-                        <option
-                            value="pendiente"
-                            ${production.status==="pendiente"?"selected":""}
-                        >
-                            Pendiente
-                        </option>
-
-                        <option
-                            value="produccion"
-                            ${production.status==="produccion"?"selected":""}
-                        >
-                            En producción
-                        </option>
-
-                        <option
-                            value="terminado"
-                            ${production.status==="terminado"?"selected":""}
-                        >
-                            Terminado
-                        </option>
-
-                    </select>
-
-                    <div style="margin-top:6px">
-                        <span class="badge ${badge}">
-                            ${label}
-                        </span>
-                    </div>
-
-                </td>
-
-                <td>
-
-                    <div class="production-progress">
-                        <span style="width:${progress}%"></span>
-                    </div>
-
-                    <div style="
-                        font-size:10px;
-                        color:var(--muted);
-                        margin-top:5px
-                    ">
-                        ${progress}%
-                    </div>
-
-                </td>
-
-                <td>
-
-                    <button
-                        class="danger-button"
-                        onclick="deleteProduction(${production.id})"
-                    >
-                        Eliminar
-                    </button>
-
-                </td>
-
-            </tr>
-        `;
-
-    }).join("");
-}
-
-function updateProductionStats(){
-
-    const total=productions.length;
-
-    const pending=productions.filter(
-        item=>item.status==="pendiente"
-    ).length;
-
-    const working=productions.filter(
-        item=>item.status==="produccion"
-    ).length;
-
-    const done=productions.filter(
-        item=>item.status==="terminado"
-    ).length;
-
-    document.getElementById("productionTotal").textContent=total;
-    document.getElementById("productionPending").textContent=pending;
-    document.getElementById("productionWorking").textContent=working;
-    document.getElementById("productionDone").textContent=done;
 }
 
 
-/* =====================================================
-DASHBOARD
-===================================================== */
+function showLowStock(){
 
-function updateDashboard(){
+lowStockFilter = true;
 
-    const total=inventory.length;
+renderInventory();
 
-    const lowStock=inventory.filter(
-        product=>
-            Number(product.quantity)<=
-            Number(product.minimum)
-    ).length;
-
-    const totalMovements=movements.length;
-
-    const pendingProduction=productions.filter(
-        item=>item.status!=="terminado"
-    ).length;
-
-    document.getElementById("statProducts").textContent=total;
-    document.getElementById("statLow").textContent=lowStock;
-    document.getElementById("statMovements").textContent=totalMovements;
-    document.getElementById("statProduction").textContent=pendingProduction;
-
-    const alerts=document.getElementById("dashboardAlerts");
-
-    const lowProducts=inventory.filter(
-        product=>
-            Number(product.quantity)<=
-            Number(product.minimum)
-    );
-
-    if(lowProducts.length===0){
-
-        alerts.innerHTML=`
-            <div class="alert-item">
-
-                <div>
-                    <div class="alert-name">
-                        No existen alertas
-                    </div>
-
-                    <div class="alert-meta">
-                        Todos los insumos están sobre su stock mínimo.
-                    </div>
-                </div>
-
-                <span class="badge badge-success">
-                    Normal
-                </span>
-
-            </div>
-        `;
-
-    }else{
-
-        alerts.innerHTML=lowProducts.slice(0,5).map(product=>`
-
-            <div class="alert-item">
-
-                <div>
-
-                    <div class="alert-name">
-                        ${escapeHTML(product.name)}
-                    </div>
-
-                    <div class="alert-meta">
-                        Stock:
-                        ${product.quantity}
-                        ${escapeHTML(product.unit)}
-                        · Mínimo:
-                        ${product.minimum}
-                        ${escapeHTML(product.unit)}
-                    </div>
-
-                </div>
-
-                <span class="badge badge-danger">
-                    Reponer
-                </span>
-
-            </div>
-
-        `).join("");
-    }
-
-    renderDashboardActivity();
-}
-
-function renderDashboardActivity(){
-
-    const activity=
-        document.getElementById("dashboardActivity");
-
-    if(movements.length===0 && productions.length===0){
-
-        activity.innerHTML=`
-
-            <div class="activity-item">
-
-                <div class="activity-title">
-                    Sistema iniciado
-                </div>
-
-                <div class="activity-time">
-                    KÜCHE está listo para gestionar tu operación.
-                </div>
-
-            </div>
-
-            <div class="activity-item">
-
-                <div class="activity-title">
-                    Producción disponible
-                </div>
-
-                <div class="activity-time">
-                    Puedes comenzar a planificar preparaciones.
-                </div>
-
-            </div>
-        `;
-
-        return;
-    }
-
-    const activities=[];
-
-    movements.slice(0,3).forEach(movement=>{
-
-        activities.push({
-
-            date:new Date(movement.date),
-
-            html:`
-                <div class="activity-title">
-                    ${
-                        movement.type==="entrada"
-                        ?"Entrada de stock"
-                        :
-                        movement.type==="salida"
-                        ?"Salida de stock"
-                        :
-                        "Ajuste de stock"
-                    }
-                    —
-                    ${escapeHTML(movement.productName)}
-                </div>
-
-                <div class="activity-time">
-                    ${movement.quantity}
-                    ${escapeHTML(movement.unit)}
-                </div>
-            `
-        });
-
-    });
-
-    productions.slice(-3).forEach(production=>{
-
-        activities.push({
-
-            date:new Date(production.createdAt),
-
-            html:`
-                <div class="activity-title">
-                    Producción —
-                    ${escapeHTML(production.name)}
-                </div>
-
-                <div class="activity-time">
-                    ${production.quantity}
-                    ${escapeHTML(production.unit)}
-                    ·
-                    ${production.status==="terminado"
-                        ?"Terminada"
-                        :
-                        production.status==="produccion"
-                        ?"En producción"
-                        :
-                        "Pendiente"
-                    }
-                </div>
-            `
-        });
-
-    });
-
-    activities.sort(
-        (a,b)=>b.date-a.date
-    );
-
-    activity.innerHTML=activities
-        .slice(0,5)
-        .map(item=>`
-            <div class="activity-item">
-                ${item.html}
-            </div>
-        `)
-        .join("");
 }
 
 
-/* =====================================================
-SEGURIDAD
-===================================================== */
+function showAllStock(){
+
+lowStockFilter = false;
+
+renderInventory();
+
+}
+
+
+/* TABLA INVENTARIO */
+
+function renderInventory(){
+
+const table =
+document.getElementById(
+"inventoryTable"
+);
+
+
+const search =
+(
+document.getElementById("searchInput")
+?.value || ""
+)
+.trim()
+.toLowerCase();
+
+
+const products =
+inventory.filter(product => {
+
+const matchesSearch =
+product.name
+.toLowerCase()
+.includes(search);
+
+
+const isLow =
+Number(product.quantity) <=
+Number(product.minimum);
+
+
+return (
+matchesSearch &&
+(
+!lowStockFilter ||
+isLow
+)
+);
+
+});
+
+
+if(products.length === 0){
+
+table.innerHTML = `
+
+<tr>
+
+<td colspan="6">
+
+<div class="empty-state">
+
+<strong>
+No hay insumos para mostrar
+</strong>
+
+<span>
+Agrega un insumo o modifica el filtro.
+</span>
+
+</div>
+
+</td>
+
+</tr>
+
+`;
+
+return;
+
+}
+
+
+table.innerHTML =
+products
+.map(product => {
+
+const isLow =
+Number(product.quantity) <=
+Number(product.minimum);
+
+
+return `
+
+<tr>
+
+<td>
+
+<div class="product-name">
+${escapeHTML(product.name)}
+</div>
+
+</td>
+
+<td>
+
+<div class="category">
+${escapeHTML(product.category)}
+</div>
+
+</td>
+
+<td>
+
+<span class="stock-number">
+
+${Number(product.quantity)}
+${escapeHTML(product.unit)}
+
+</span>
+
+</td>
+
+<td>
+
+${Number(product.minimum)}
+${escapeHTML(product.unit)}
+
+</td>
+
+<td>
+
+<span class="badge ${
+isLow
+? "badge-danger"
+: "badge-success"
+}">
+
+${
+isLow
+? "Stock crítico"
+: "Stock normal"
+}
+
+</span>
+
+</td>
+
+<td>
+
+<div class="actions">
+
+<button
+class="secondary-button"
+onclick="editProduct(${product.id})"
+>
+Editar
+</button>
+
+<button
+class="secondary-button"
+onclick="prepareMovement(${product.id})"
+>
+Movimiento
+</button>
+
+<button
+class="danger-button"
+onclick="deleteProduct(${product.id})"
+>
+Eliminar
+</button>
+
+</div>
+
+</td>
+
+</tr>
+
+`;
+
+})
+.join("");
+
+}
+
+
+/* SEGURIDAD */
 
 function escapeHTML(value){
 
-    return String(value)
+return String(value)
 
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
+.replaceAll(
+"&",
+"&amp;"
+)
+
+.replaceAll(
+"<",
+"&lt;"
+)
+
+.replaceAll(
+">",
+"&gt;"
+)
+
+.replaceAll(
+'"',
+"&quot;"
+)
+
+.replaceAll(
+"'",
+"&#039;"
+);
+
 }
 
 
-/* =====================================================
-INICIO
-===================================================== */
+/* MOVIMIENTOS */
+
+function openMovements(){
+
+const panel =
+document.getElementById(
+"movementsPanel"
+);
+
+
+panel.classList.add("open");
+
+
+loadMovementProducts();
+
+renderMovementHistory();
+
+
+panel.scrollIntoView({
+
+behavior:"smooth",
+
+block:"start"
+
+});
+
+}
+
+
+function closeMovements(){
+
+document
+.getElementById("movementsPanel")
+.classList.remove("open");
+
+}
+
+
+function loadMovementProducts(){
+
+const selector =
+document.getElementById(
+"movementProduct"
+);
+
+
+if(!selector){
+
+return;
+
+}
+
+
+const currentValue =
+selector.value;
+
+
+selector.innerHTML = `
+
+<option value="">
+Seleccionar insumo
+</option>
+
+`;
+
+
+inventory.forEach(product => {
+
+const option =
+document.createElement("option");
+
+
+option.value =
+product.id;
+
+
+option.textContent =
+product.name +
+" — Stock: " +
+product.quantity +
+" " +
+product.unit;
+
+
+selector.appendChild(option);
+
+});
+
+
+if(
+inventory.some(
+item =>
+String(item.id) ===
+String(currentValue)
+)
+){
+
+selector.value =
+currentValue;
+
+}
+
+}
+
+
+function prepareMovement(id){
+
+openMovements();
+
+
+const selector =
+document.getElementById(
+"movementProduct"
+);
+
+
+selector.value =
+String(id);
+
+
+showMovementPreview();
+
+}
+
+
+function showMovementPreview(){
+
+const productId =
+document
+.getElementById("movementProduct")
+.value;
+
+
+const type =
+document
+.getElementById("movementType")
+.value;
+
+
+const quantity =
+Number(
+document
+.getElementById("movementQuantity")
+.value
+);
+
+
+const preview =
+document.getElementById(
+"movementPreview"
+);
+
+
+if(
+!productId ||
+!quantity ||
+quantity < 0
+){
+
+preview.style.display =
+"none";
+
+return;
+
+}
+
+
+const product =
+inventory.find(
+item =>
+String(item.id) ===
+String(productId)
+);
+
+
+if(!product){
+
+return;
+
+}
+
+
+let newStock =
+Number(product.quantity);
+
+
+if(type === "entrada"){
+
+newStock += quantity;
+
+}
+
+else if(type === "salida"){
+
+newStock -= quantity;
+
+}
+
+else{
+
+newStock =
+quantity;
+
+}
+
+
+preview.style.display =
+"block";
+
+
+preview.innerHTML = `
+
+Stock actual:
+<strong>
+${product.quantity}
+${escapeHTML(product.unit)}
+</strong>
+
+&nbsp;→&nbsp;
+
+Nuevo stock:
+<strong>
+${newStock}
+${escapeHTML(product.unit)}
+</strong>
+
+${
+newStock < 0
+? `
+<div style="
+color:#c94b4b;
+margin-top:6px;
+font-weight:600;
+">
+⚠ La salida no puede dejar el stock negativo.
+</div>
+`
+: ""
+}
+
+`;
+
+}
+
+
+function registerMovement(){
+
+const productId =
+document
+.getElementById("movementProduct")
+.value;
+
+
+const type =
+document
+.getElementById("movementType")
+.value;
+
+
+const quantity =
+Number(
+document
+.getElementById("movementQuantity")
+.value
+);
+
+
+const reason =
+document
+.getElementById("movementReason")
+.value
+.trim();
+
+
+if(!productId){
+
+alert(
+"Selecciona un insumo."
+);
+
+return;
+
+}
+
+
+if(
+isNaN(quantity) ||
+quantity <= 0
+){
+
+alert(
+"Ingresa una cantidad válida."
+);
+
+return;
+
+}
+
+
+const product =
+inventory.find(
+item =>
+String(item.id) ===
+String(productId)
+);
+
+
+if(!product){
+
+alert(
+"No se encontró el insumo."
+);
+
+return;
+
+}
+
+
+const oldStock =
+Number(product.quantity);
+
+
+let newStock =
+oldStock;
+
+
+if(type === "entrada"){
+
+newStock +=
+quantity;
+
+}
+
+else if(type === "salida"){
+
+newStock -=
+quantity;
+
+
+if(newStock < 0){
+
+alert(
+"La salida no puede superar el stock disponible."
+);
+
+return;
+
+}
+
+}
+
+else{
+
+newStock =
+quantity;
+
+}
+
+
+movements.unshift({
+
+id:
+Date.now(),
+
+productId:
+product.id,
+
+productName:
+product.name,
+
+type:
+type,
+
+quantity:
+quantity,
+
+reason:
+reason ||
+"Sin motivo indicado",
+
+previousStock:
+oldStock,
+
+resultingStock:
+newStock,
+
+unit:
+product.unit,
+
+date:
+new Date().toISOString()
+
+});
+
+
+product.quantity =
+newStock;
+
+
+saveInventory();
+
+saveMovements();
+
+
+document
+.getElementById("movementQuantity")
+.value = "";
+
+
+document
+.getElementById("movementReason")
+.value = "";
+
+
+document
+.getElementById("movementPreview")
+.style.display =
+"none";
+
 
 renderInventory();
-loadMovementProducts();
+
 renderMovementHistory();
-renderProductions();
+
+loadMovementProducts();
+
+updateDashboard();
+
+
+alert(
+"Movimiento registrado correctamente."
+);
+
+}
+
+
+function renderMovementHistory(){
+
+const table =
+document.getElementById(
+"movementTable"
+);
+
+
+if(!table){
+
+return;
+
+}
+
+
+if(movements.length === 0){
+
+table.innerHTML = `
+
+<tr>
+
+<td colspan="6">
+
+<div class="empty-state">
+
+<strong>
+No hay movimientos registrados
+</strong>
+
+<span>
+Los movimientos de inventario aparecerán aquí.
+</span>
+
+</div>
+
+</td>
+
+</tr>
+
+`;
+
+return;
+
+}
+
+
+table.innerHTML =
+movements
+.slice(0,100)
+.map(movement => {
+
+const date =
+new Date(
+movement.date
+);
+
+
+const formattedDate =
+date.toLocaleString(
+"es-CL",
+{
+day:"2-digit",
+month:"2-digit",
+year:"numeric",
+hour:"2-digit",
+minute:"2-digit"
+}
+);
+
+
+let label =
+"Ajuste";
+
+
+let className =
+"movement-adjustment";
+
+
+let sign =
+"";
+
+
+if(
+movement.type ===
+"entrada"
+){
+
+label =
+"Entrada";
+
+className =
+"movement-entry";
+
+sign =
+"+";
+
+}
+
+else if(
+movement.type ===
+"salida"
+){
+
+label =
+"Salida";
+
+className =
+"movement-exit";
+
+sign =
+"-";
+
+}
+
+
+return `
+
+<tr>
+
+<td>
+${formattedDate}
+</td>
+
+<td>
+
+<strong>
+${escapeHTML(
+movement.productName
+)}
+</strong>
+
+</td>
+
+<td>
+
+<span class="movement-type ${className}">
+${label}
+</span>
+
+</td>
+
+<td>
+
+${sign}
+${movement.quantity}
+${escapeHTML(
+movement.unit
+)}
+
+</td>
+
+<td>
+
+${escapeHTML(
+movement.reason
+)}
+
+</td>
+
+<td>
+
+<strong>
+
+${movement.resultingStock}
+
+${escapeHTML(
+movement.unit
+)}
+
+</strong>
+
+</td>
+
+</tr>
+
+`;
+
+})
+.join("");
+
+}
+
+
+/* PRODUCCIÓN */
+
+function newProduction(){
+
+editingProductionId =
+null;
+
+
+document
+.getElementById(
+"productionFormTitle"
+)
+.textContent =
+"Nueva producción";
+
+
+document.getElementById(
+"prepName"
+).value = "";
+
+
+document.getElementById(
+"prepQuantity"
+).value = "";
+
+
+document.getElementById(
+"prepUnit"
+).value = "";
+
+
+document.getElementById(
+"prepResponsible"
+).value = "";
+
+
+document.getElementById(
+"prepTime"
+).value = "";
+
+
+document.getElementById(
+"prepNotes"
+).value = "";
+
+
+document
+.getElementById(
+"productionForm"
+)
+.style.display =
+"block";
+
+
+document
+.getElementById(
+"prepName"
+)
+.focus();
+
+}
+
+
+function closeProductionForm(){
+
+editingProductionId =
+null;
+
+
+document
+.getElementById(
+"productionForm"
+)
+.style.display =
+"none";
+
+}
+
+
+function saveProduction(){
+
+const name =
+document
+.getElementById("prepName")
+.value
+.trim();
+
+
+const quantity =
+Number(
+document
+.getElementById("prepQuantity")
+.value
+);
+
+
+const unit =
+document
+.getElementById("prepUnit")
+.value;
+
+
+const responsible =
+document
+.getElementById("prepResponsible")
+.value
+.trim();
+
+
+const time =
+document
+.getElementById("prepTime")
+.value;
+
+
+const notes =
+document
+.getElementById("prepNotes")
+.value
+.trim();
+
+
+if(
+!name ||
+!quantity ||
+quantity <= 0 ||
+!unit ||
+!responsible
+){
+
+alert(
+"Completa preparación, cantidad, unidad y responsable."
+);
+
+return;
+
+}
+
+
+if(editingProductionId){
+
+const production =
+productions.find(
+item =>
+item.id ===
+editingProductionId
+);
+
+
+if(production){
+
+production.name =
+name;
+
+production.quantity =
+quantity;
+
+production.unit =
+unit;
+
+production.responsible =
+responsible;
+
+production.time =
+time;
+
+production.notes =
+notes;
+
+}
+
+}
+
+else{
+
+productions.push({
+
+id:
+Date.now(),
+
+date:
+getToday(),
+
+name:
+name,
+
+quantity:
+quantity,
+
+unit:
+unit,
+
+responsible:
+responsible,
+
+time:
+time,
+
+notes:
+notes,
+
+status:
+"pendiente",
+
+createdAt:
+new Date().toISOString()
+
+});
+
+}
+
+
+saveProductions();
+
+closeProductionForm();
+
+renderProduction();
+
+updateProductionStats();
+
+updateDashboard();
+
+}
+
+
+function getToday(){
+
+const date =
+new Date();
+
+
+return (
+date.getFullYear() +
+"-" +
+String(
+date.getMonth()+1
+).padStart(2,"0") +
+"-" +
+String(
+date.getDate()
+).padStart(2,"0")
+);
+
+}
+
+
+function productionStatusLabel(status){
+
+if(
+status ===
+"pendiente"
+){
+
+return "Pendiente";
+
+}
+
+
+if(
+status ===
+"en_proceso"
+){
+
+return "En proceso";
+
+}
+
+
+return "Completado";
+
+}
+
+
+function productionStatusClass(status){
+
+if(
+status ===
+"pendiente"
+){
+
+return "status-pending";
+
+}
+
+
+if(
+status ===
+"en_proceso"
+){
+
+return "status-progress";
+
+}
+
+
+return "status-complete";
+
+}
+
+
+function setProductionFilter(filter){
+
+productionFilter =
+filter;
+
+
+document
+.querySelectorAll(
+".production-filters button"
+)
+.forEach(button => {
+
+button.classList.remove(
+"active"
+);
+
+});
+
+
+const id =
+filter === "todos"
+? "filterAll"
+:
+filter === "pendiente"
+? "filterPending"
+:
+filter === "en_proceso"
+? "filterProgress"
+:
+"filterComplete";
+
+
+document
+.getElementById(id)
+.classList.add(
+"active"
+);
+
+
+renderProduction();
+
+}
+
+
+function editProduction(id){
+
+const production =
+productions.find(
+item =>
+item.id === id
+);
+
+
+if(!production){
+
+return;
+
+}
+
+
+editingProductionId =
+id;
+
+
+document
+.getElementById(
+"productionFormTitle"
+)
+.textContent =
+"Editar producción";
+
+
+document
+.getElementById(
+"prepName"
+)
+.value =
+production.name;
+
+
+document
+.getElementById(
+"prepQuantity"
+)
+.value =
+production.quantity;
+
+
+document
+.getElementById(
+"prepUnit"
+)
+.value =
+production.unit;
+
+
+document
+.getElementById(
+"prepResponsible"
+)
+.value =
+production.responsible;
+
+
+document
+.getElementById(
+"prepTime"
+)
+.value =
+production.time || "";
+
+
+document
+.getElementById(
+"prepNotes"
+)
+.value =
+production.notes || "";
+
+
+document
+.getElementById(
+"productionForm"
+)
+.style.display =
+"block";
+
+
+document
+.getElementById(
+"prepName"
+)
+.focus();
+
+}
+
+
+function changeProductionStatus(
+id,
+status
+){
+
+const production =
+productions.find(
+item =>
+item.id === id
+);
+
+
+if(!production){
+
+return;
+
+}
+
+
+production.status =
+status;
+
+
+saveProductions();
+
+renderProduction();
+
+updateProductionStats();
+
+updateDashboard();
+
+}
+
+
+function deleteProduction(id){
+
+const production =
+productions.find(
+item =>
+item.id === id
+);
+
+
+if(!production){
+
+return;
+
+}
+
+
+if(
+!confirm(
+'¿Eliminar la producción "' +
+production.name +
+'"?'
+)
+){
+
+return;
+
+}
+
+
+productions =
+productions.filter(
+item =>
+item.id !== id
+);
+
+
+saveProductions();
+
+renderProduction();
+
+updateProductionStats();
+
+updateDashboard();
+
+}
+
+
+function renderProduction(){
+
+const table =
+document.getElementById(
+"productionTable"
+);
+
+
+const search =
+(
+document
+.getElementById(
+"productionSearch"
+)
+?.value || ""
+)
+.trim()
+.toLowerCase();
+
+
+const today =
+getToday();
+
+
+let list =
+productions.filter(
+production =>
+production.date ===
+today &&
+production.name
+.toLowerCase()
+.includes(search)
+);
+
+
+if(
+productionFilter !==
+"todos"
+){
+
+list =
+list.filter(
+production =>
+production.status ===
+productionFilter
+);
+
+}
+
+
+list.sort(
+(a,b) =>
+(a.time || "99:99")
+.localeCompare(
+b.time || "99:99"
+)
+);
+
+
+if(list.length === 0){
+
+table.innerHTML = `
+
+<tr>
+
+<td colspan="7">
+
+<div class="empty-state">
+
+<strong>
+No hay producciones para mostrar hoy
+</strong>
+
+<span>
+Crea una nueva producción para comenzar la planificación.
+</span>
+
+</div>
+
+</td>
+
+</tr>
+
+`;
+
+return;
+
+}
+
+
+table.innerHTML =
+list
+.map(production => {
+
+const progress =
+production.status ===
+"completado"
+? 100
+:
+production.status ===
+"en_proceso"
+? 50
+:
+0;
+
+
+let action = "";
+
+
+if(
+production.status ===
+"pendiente"
+){
+
+action = `
+
+<button
+class="secondary-button"
+onclick="changeProductionStatus(${production.id},'en_proceso')"
+>
+Iniciar
+</button>
+
+`;
+
+}
+
+else if(
+production.status ===
+"en_proceso"
+){
+
+action = `
+
+<button
+class="secondary-button"
+onclick="changeProductionStatus(${production.id},'completado')"
+>
+Completar
+</button>
+
+`;
+
+}
+
+else{
+
+action = `
+
+<button
+class="secondary-button"
+onclick="changeProductionStatus(${production.id},'pendiente')"
+>
+Reabrir
+</button>
+
+`;
+
+}
+
+
+return `
+
+<tr>
+
+<td>
+
+<div class="product-name">
+
+${escapeHTML(
+production.name
+)}
+
+</div>
+
+${
+production.notes
+? `
+<div class="category">
+${escapeHTML(
+production.notes
+)}
+</div>
+`
+: ""
+}
+
+</td>
+
+<td>
+
+<strong>
+
+${production.quantity}
+
+${escapeHTML(
+production.unit
+)}
+
+</strong>
+
+</td>
+
+<td>
+
+${escapeHTML(
+production.responsible
+)}
+
+</td>
+
+<td>
+
+${production.time || "—"}
+
+</td>
+
+<td>
+
+<span class="badge ${
+productionStatusClass(
+production.status
+)
+}">
+
+${productionStatusLabel(
+production.status
+)}
+
+</span>
+
+</td>
+
+<td style="min-width:120px">
+
+<div class="production-progress">
+
+<span
+style="width:${progress}%"
+></span>
+
+</div>
+
+<div class="category">
+
+${progress}%
+
+</div>
+
+</td>
+
+<td>
+
+<div class="actions">
+
+${action}
+
+<button
+class="secondary-button"
+onclick="editProduction(${production.id})"
+>
+Editar
+</button>
+
+<button
+class="danger-button"
+onclick="deleteProduction(${production.id})"
+>
+Eliminar
+</button>
+
+</div>
+
+</td>
+
+</tr>
+
+`;
+
+})
+.join("");
+
+}
+
+
+function updateProductionStats(){
+
+const today =
+getToday();
+
+
+const list =
+productions.filter(
+production =>
+production.date ===
+today
+);
+
+
+document
+.getElementById(
+"prodPlanned"
+)
+.textContent =
+list.length;
+
+
+document
+.getElementById(
+"prodPending"
+)
+.textContent =
+list.filter(
+production =>
+production.status ===
+"pendiente"
+).length;
+
+
+document
+.getElementById(
+"prodProgress"
+)
+.textContent =
+list.filter(
+production =>
+production.status ===
+"en_proceso"
+).length;
+
+
+document
+.getElementById(
+"prodComplete"
+)
+.textContent =
+list.filter(
+production =>
+production.status ===
+"completado"
+).length;
+
+}
+
+
+/* DASHBOARD */
+
+function updateDashboard(){
+
+document
+.getElementById(
+"statProducts"
+)
+.textContent =
+inventory.length;
+
+
+document
+.getElementById(
+"statLow"
+)
+.textContent =
+inventory.filter(
+product =>
+Number(product.quantity) <=
+Number(product.minimum)
+).length;
+
+
+document
+.getElementById(
+"statMovements"
+)
+.textContent =
+movements.length;
+
+
+document
+.getElementById(
+"statProduction"
+)
+.textContent =
+productions.filter(
+production =>
+production.date ===
+getToday()
+).length;
+
+
+const alerts =
+document.getElementById(
+"dashboardAlerts"
+);
+
+
+const lowProducts =
+inventory.filter(
+product =>
+Number(product.quantity) <=
+Number(product.minimum)
+);
+
+
+if(lowProducts.length === 0){
+
+alerts.innerHTML = `
+
+<div class="alert-item">
+
+<div>
+
+<div class="alert-name">
+No existen alertas
+</div>
+
+<div class="alert-meta">
+Todos los insumos están sobre su stock mínimo.
+</div>
+
+</div>
+
+<span class="badge badge-success">
+Normal
+</span>
+
+</div>
+
+`;
+
+}
+
+else{
+
+alerts.innerHTML =
+lowProducts
+.slice(0,5)
+.map(product => `
+
+<div class="alert-item">
+
+<div>
+
+<div class="alert-name">
+
+${escapeHTML(
+product.name
+)}
+
+</div>
+
+<div class="alert-meta">
+
+Stock:
+${product.quantity}
+${escapeHTML(
+product.unit
+)}
+
+· Mínimo:
+${product.minimum}
+${escapeHTML(
+product.unit
+)}
+
+</div>
+
+</div>
+
+<span class="badge badge-danger">
+Reponer
+</span>
+
+</div>
+
+`)
+.join("");
+
+}
+
+
+renderDashboardActivity();
+
+}
+
+
+function renderDashboardActivity(){
+
+const activity =
+document.getElementById(
+"dashboardActivity"
+);
+
+
+if(movements.length === 0){
+
+activity.innerHTML = `
+
+<div class="activity-item">
+
+<div class="activity-title">
+Sistema iniciado
+</div>
+
+<div class="activity-time">
+KÜCHE está listo para gestionar tu operación.
+</div>
+
+</div>
+
+`;
+
+return;
+
+}
+
+
+activity.innerHTML =
+movements
+.slice(0,5)
+.map(movement => {
+
+const date =
+new Date(
+movement.date
+);
+
+
+const formattedDate =
+date.toLocaleString(
+"es-CL",
+{
+day:"2-digit",
+month:"2-digit",
+hour:"2-digit",
+minute:"2-digit"
+}
+);
+
+
+const action =
+movement.type ===
+"entrada"
+? "Entrada de stock"
+:
+movement.type ===
+"salida"
+? "Salida de stock"
+:
+"Ajuste de stock";
+
+
+return `
+
+<div class="activity-item">
+
+<div class="activity-title">
+
+${action}
+—
+${escapeHTML(
+movement.productName
+)}
+
+</div>
+
+<div class="activity-time">
+
+${movement.quantity}
+${escapeHTML(
+movement.unit
+)}
+
+·
+${formattedDate}
+
+</div>
+
+</div>
+
+`;
+
+})
+.join("");
+
+}
+
+
+/* INICIO */
+
+renderInventory();
+
+loadMovementProducts();
+
+renderMovementHistory();
+
+renderProduction();
+
+updateProductionStats();
+
 updateDashboard();
 
 </script>
