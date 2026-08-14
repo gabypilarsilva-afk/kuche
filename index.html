@@ -418,6 +418,27 @@ margin-bottom:18px;box-shadow:var(--shadow);display:flex;gap:12px;align-items:en
 @media(max-width:1100px){.report-summary{grid-template-columns:repeat(2,1fr)}.report-grid{grid-template-columns:1fr}}
 @media(max-width:750px){.report-summary{grid-template-columns:1fr}.report-controls{align-items:stretch}.report-controls .field{min-width:100%}.report-kpis{grid-template-columns:1fr}}
 
+
+/* CONFIGURACIÓN */
+.config-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-bottom:18px}
+.config-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow)}
+.config-card.full{grid-column:1/-1}
+.config-card h3{color:var(--green-dark);font-size:16px;margin-bottom:5px}
+.config-card>p{font-size:11px;color:var(--muted);margin-bottom:18px;line-height:1.5}
+.config-form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.config-form-grid.three{grid-template-columns:repeat(3,1fr)}
+.config-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.config-danger{border:1px solid #f0caca;background:var(--danger-soft)}
+.config-danger h3{color:var(--danger)}
+.config-info-row{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid var(--border);font-size:12px}
+.config-info-row:last-child{border-bottom:0}
+.config-info-row span{color:var(--muted)}
+.config-info-row strong{color:var(--green-dark);text-align:right}
+.file-input-wrap{margin-top:12px;padding:14px;border:1px dashed var(--border);border-radius:10px;background:#fafbf9}
+.file-input-wrap input{width:100%;font-size:12px}
+@media(max-width:1100px){.config-form-grid.three{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:750px){.config-grid,.config-form-grid,.config-form-grid.three{grid-template-columns:1fr}.config-card.full{grid-column:auto}}
+
 .coming-soon{background:#fff;border:1px solid var(--border);border-radius:12px;padding:60px 30px;text-align:center;box-shadow:var(--shadow)}
 .coming-soon h2{color:var(--green-dark);margin-bottom:8px}
 .coming-soon p{font-size:13px;color:var(--muted)}
@@ -467,7 +488,7 @@ grid-template-columns:1fr
 
 <div class="brand">
 <div class="brand-name">KÜCHE</div>
-<div class="brand-subtitle">Gestión gastronómica</div>
+<div class="brand-subtitle" id="brandSubtitle">Gestión gastronómica</div>
 </div>
 
 <nav class="nav">
@@ -508,14 +529,18 @@ grid-template-columns:1fr
 <span>Reportes</span>
 </button>
 
+<button class="nav-item" onclick="showPage('settings',this)">
+<span>Configuración</span>
+</button>
+
 </nav>
 
 <div class="sidebar-bottom">
 <div class="user-mini">
 <div class="avatar">GA</div>
 <div class="user-info">
-<strong>Administrador</strong>
-<span>Cuenta principal</span>
+<strong id="sidebarAdminName">Administrador</strong>
+<span id="sidebarBusinessName">Cuenta principal</span>
 </div>
 </div>
 </div>
@@ -525,7 +550,7 @@ grid-template-columns:1fr
 <main class="main">
 
 <header class="topbar">
-<div class="topbar-title">Panel de gestión</div>
+<div class="topbar-title" id="topbarTitle">Panel de gestión</div>
 <div class="system-status">Sistema operativo</div>
 </header>
 
@@ -2068,6 +2093,87 @@ Cerrar
 
 </section>
 
+<!-- CONFIGURACIÓN -->
+
+<section id="settings" class="page">
+
+<div class="page-header">
+<div>
+<h1>Configuración</h1>
+<p>Datos del establecimiento, parámetros generales y respaldo del sistema.</p>
+</div>
+<button class="primary-button" onclick="saveAllSettings()">Guardar cambios</button>
+</div>
+
+<div class="config-grid">
+
+<div class="config-card">
+<h3>Establecimiento</h3>
+<p>Información general que identifica esta cuenta de KÜCHE.</p>
+<div class="config-form-grid">
+<div class="field"><label>Nombre del establecimiento</label><input id="settingsBusinessName" type="text" placeholder="Ej. Mi restaurante"></div>
+<div class="field"><label>RUT</label><input id="settingsBusinessRut" type="text" placeholder="Ej. 76.123.456-7"></div>
+<div class="field"><label>Dirección</label><input id="settingsBusinessAddress" type="text"></div>
+<div class="field"><label>Administrador principal</label><input id="settingsAdminName" type="text"></div>
+</div>
+</div>
+
+<div class="config-card">
+<h3>Operación general</h3>
+<p>Valores predeterminados utilizados al crear nuevos registros.</p>
+<div class="config-form-grid">
+<div class="field"><label>Hora habitual de apertura</label><input id="settingsOpenTime" type="time"></div>
+<div class="field"><label>Hora habitual de cierre</label><input id="settingsCloseTime" type="time"></div>
+<div class="field"><label>Colación predeterminada (min)</label><input id="settingsDefaultBreak" type="number" min="0"></div>
+<div class="field"><label>Valor hora normal predeterminado ($)</label><input id="settingsDefaultHourlyRate" type="number" min="0"></div>
+<div class="field"><label>Multiplicador feriado</label><input id="settingsHolidayMultiplier" type="number" min="1" step="0.1" placeholder="Ej. 1.5"></div>
+<div class="field"><label>Moneda</label><select id="settingsCurrency"><option value="CLP">CLP - Peso chileno</option><option value="USD">USD - Dólar</option><option value="EUR">EUR - Euro</option></select></div>
+</div>
+</div>
+
+<div class="config-card full">
+<h3>Parámetros financieros</h3>
+<p>Estos valores se sincronizan con la configuración predeterminada de Recetas y Costos.</p>
+<div class="config-form-grid three">
+<div class="field"><label>Mano de obra %</label><input id="settingsLabor" type="number" step="0.1"></div>
+<div class="field"><label>CID / CIF %</label><input id="settingsIndirect" type="number" step="0.1"></div>
+<div class="field"><label>Ganancia %</label><input id="settingsProfit" type="number" step="0.1"></div>
+<div class="field"><label>IVA %</label><input id="settingsVat" type="number" step="0.1"></div>
+<div class="field"><label>Método de ganancia</label><select id="settingsProfitMethod"><option value="markup">Recargo sobre costo</option><option value="margin">Margen sobre venta</option></select></div>
+</div>
+</div>
+
+<div class="config-card">
+<h3>Equipos y personal</h3>
+<p>Resumen de recursos configurados actualmente.</p>
+<div class="config-info-row"><span>Equipos de temperatura</span><strong id="settingsEquipmentCount">0</strong></div>
+<div class="config-info-row"><span>Trabajadores registrados</span><strong id="settingsStaffCount">0</strong></div>
+<div class="config-info-row"><span>Trabajadores activos</span><strong id="settingsActiveStaffCount">0</strong></div>
+<div class="config-actions">
+<button class="secondary-button" onclick="goToModule('temperatures')">Gestionar equipos</button>
+<button class="secondary-button" onclick="goToModule('staff')">Gestionar personal</button>
+</div>
+</div>
+
+<div class="config-card">
+<h3>Respaldo de información</h3>
+<p>Exporta una copia completa de todos los datos guardados en este navegador o restaúrala más adelante.</p>
+<div class="config-actions"><button class="primary-button" onclick="exportBackup()">Exportar respaldo</button></div>
+<div class="file-input-wrap">
+<div class="field"><label>Importar archivo de respaldo (.json)</label><input id="backupFileInput" type="file" accept="application/json,.json" onchange="importBackupFile(event)"></div>
+</div>
+</div>
+
+<div class="config-card full config-danger">
+<h3>Restablecer datos</h3>
+<p>Elimina los datos de KÜCHE guardados en este navegador. Esta acción no se puede deshacer si no tienes un respaldo.</p>
+<div class="config-actions"><button class="danger-button" onclick="resetKucheData()">Borrar todos los datos de KÜCHE</button></div>
+</div>
+
+</div>
+
+</section>
+
 </div>
 </main>
 </div>
@@ -2122,6 +2228,20 @@ indirect:10,
 profit:35,
 vat:19,
 profitMethod:"markup"
+};
+
+let appSettings =
+JSON.parse(localStorage.getItem("kucheAppSettings")) || {
+businessName:"",
+businessRut:"",
+businessAddress:"",
+adminName:"Administrador",
+openTime:"13:00",
+closeTime:"21:00",
+defaultBreak:30,
+defaultHourlyRate:0,
+holidayMultiplier:1.5,
+currency:"CLP"
 };
 
 let checklists =
@@ -2449,6 +2569,12 @@ if(pageId==="reports"){
 initializeReportDates();
 
 renderReports();
+
+}
+
+if(pageId==="settings"){
+
+loadSettingsForm();
 
 }
 
@@ -5532,6 +5658,11 @@ clearStaffForm();
 
 staffJoinDate.value=getToday();
 
+staffStart.value=appSettings.openTime||"";
+staffEnd.value=appSettings.closeTime||"";
+staffHourlyRate.value=Number(appSettings.defaultHourlyRate)||0;
+staffHolidayRate.value=Math.round((Number(appSettings.defaultHourlyRate)||0)*(Number(appSettings.holidayMultiplier)||1));
+
 staffPanel.classList.add("open");
 
 }
@@ -5969,7 +6100,7 @@ attendanceDate.value=getToday();
 attendanceStart.value="";
 attendanceEnd.value="";
 attendanceStatus.value="presente";
-attendanceBreak.value=0;
+attendanceBreak.value=Number(appSettings.defaultBreak)||0;
 attendanceHoliday.checked=false;
 attendanceNotes.value="";
 
@@ -8421,6 +8552,184 @@ URL.revokeObjectURL(url);
 
 
 /* =====================================================
+CONFIGURACIÓN
+===================================================== */
+
+function saveAppSettings(){
+localStorage.setItem("kucheAppSettings",JSON.stringify(appSettings));
+}
+
+function loadSettingsForm(){
+const fields={
+settingsBusinessName:appSettings.businessName||"",
+settingsBusinessRut:appSettings.businessRut||"",
+settingsBusinessAddress:appSettings.businessAddress||"",
+settingsAdminName:appSettings.adminName||"Administrador",
+settingsOpenTime:appSettings.openTime||"13:00",
+settingsCloseTime:appSettings.closeTime||"21:00",
+settingsDefaultBreak:Number(appSettings.defaultBreak)||0,
+settingsDefaultHourlyRate:Number(appSettings.defaultHourlyRate)||0,
+settingsHolidayMultiplier:Number(appSettings.holidayMultiplier)||1.5,
+settingsCurrency:appSettings.currency||"CLP",
+settingsLabor:Number(costSettings.labor)||0,
+settingsIndirect:Number(costSettings.indirect)||0,
+settingsProfit:Number(costSettings.profit)||0,
+settingsVat:Number(costSettings.vat)||0,
+settingsProfitMethod:costSettings.profitMethod||"markup"
+};
+Object.entries(fields).forEach(([id,value])=>{
+const el=document.getElementById(id);
+if(el) el.value=value;
+});
+const eq=document.getElementById("settingsEquipmentCount");
+const st=document.getElementById("settingsStaffCount");
+const ac=document.getElementById("settingsActiveStaffCount");
+if(eq) eq.textContent=temperatureEquipment.length;
+if(st) st.textContent=staff.length;
+if(ac) ac.textContent=staff.filter(worker=>worker.status==="activo").length;
+applyBrandSettings();
+}
+
+function saveAllSettings(){
+const getValue=id=>document.getElementById(id)?.value??"";
+appSettings={
+...appSettings,
+businessName:getValue("settingsBusinessName").trim(),
+businessRut:getValue("settingsBusinessRut").trim(),
+businessAddress:getValue("settingsBusinessAddress").trim(),
+adminName:getValue("settingsAdminName").trim()||"Administrador",
+openTime:getValue("settingsOpenTime")||"13:00",
+closeTime:getValue("settingsCloseTime")||"21:00",
+defaultBreak:Math.max(0,Number(getValue("settingsDefaultBreak"))||0),
+defaultHourlyRate:Math.max(0,Number(getValue("settingsDefaultHourlyRate"))||0),
+holidayMultiplier:Math.max(1,Number(getValue("settingsHolidayMultiplier"))||1),
+currency:getValue("settingsCurrency")||"CLP"
+};
+costSettings={
+labor:Number(getValue("settingsLabor"))||0,
+indirect:Number(getValue("settingsIndirect"))||0,
+profit:Number(getValue("settingsProfit"))||0,
+vat:Number(getValue("settingsVat"))||0,
+profitMethod:getValue("settingsProfitMethod")||"markup"
+};
+saveAppSettings();
+localStorage.setItem("kucheCostSettings",JSON.stringify(costSettings));
+loadCostSettingsFields();
+applyBrandSettings();
+loadSettingsForm();
+alert("Configuración guardada correctamente.");
+}
+
+function applyBrandSettings(){
+const business=appSettings.businessName?.trim();
+const admin=appSettings.adminName?.trim()||"Administrador";
+const subtitle=document.getElementById("brandSubtitle");
+const adminEl=document.getElementById("sidebarAdminName");
+const businessEl=document.getElementById("sidebarBusinessName");
+const topbar=document.getElementById("topbarTitle");
+if(subtitle) subtitle.textContent=business||"Gestión gastronómica";
+if(adminEl) adminEl.textContent=admin;
+if(businessEl) businessEl.textContent=business||"Cuenta principal";
+if(topbar) topbar.textContent=business?"Panel de gestión · "+business:"Panel de gestión";
+}
+
+function goToModule(pageId){
+const buttons=Array.from(document.querySelectorAll(".nav-item"));
+const button=buttons.find(btn=>String(btn.getAttribute("onclick")||"").includes("'"+pageId+"'"));
+showPage(pageId,button||null);
+}
+
+function getKucheBackupData(){
+return{
+version:1,
+exportedAt:new Date().toISOString(),
+appSettings,
+costSettings,
+inventory,
+movements,
+productions,
+recipes,
+temperatureEquipment,
+temperatureRecords,
+staff,
+attendance,
+checklists,
+checklistRecords
+};
+}
+
+function exportBackup(){
+const data=getKucheBackupData();
+const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json;charset=utf-8"});
+const url=URL.createObjectURL(blob);
+const link=document.createElement("a");
+link.href=url;
+const business=(appSettings.businessName||"kuche").replace(/[^a-z0-9áéíóúñ_-]+/gi,"_");
+link.download="respaldo_"+business+"_"+getToday()+".json";
+document.body.appendChild(link);
+link.click();
+link.remove();
+URL.revokeObjectURL(url);
+}
+
+function importBackupFile(event){
+const file=event.target.files?.[0];
+if(!file) return;
+const reader=new FileReader();
+reader.onload=function(){
+try{
+const data=JSON.parse(reader.result);
+if(!data||typeof data!=="object") throw new Error("Formato inválido");
+const keys=["inventory","movements","productions","recipes","temperatureEquipment","temperatureRecords","staff","attendance","checklists","checklistRecords"];
+const hasData=keys.some(key=>Array.isArray(data[key]))||data.appSettings||data.costSettings;
+if(!hasData) throw new Error("El archivo no parece ser un respaldo de KÜCHE");
+if(!confirm("¿Importar este respaldo? Los datos actuales de KÜCHE serán reemplazados.")){
+event.target.value="";
+return;
+}
+if(data.appSettings) localStorage.setItem("kucheAppSettings",JSON.stringify(data.appSettings));
+if(data.costSettings) localStorage.setItem("kucheCostSettings",JSON.stringify(data.costSettings));
+const map={
+inventory:"kucheInventory",
+movements:"kucheMovements",
+productions:"kucheProductions",
+recipes:"kucheRecipes",
+temperatureEquipment:"kucheTemperatureEquipment",
+temperatureRecords:"kucheTemperatureRecords",
+staff:"kucheStaff",
+attendance:"kucheAttendance",
+checklists:"kucheChecklists",
+checklistRecords:"kucheChecklistRecords"
+};
+Object.entries(map).forEach(([source,key])=>{
+if(Array.isArray(data[source])) localStorage.setItem(key,JSON.stringify(data[source]));
+});
+alert("Respaldo importado correctamente. KÜCHE se recargará ahora.");
+location.reload();
+}catch(error){
+alert("No se pudo importar el respaldo: "+error.message);
+event.target.value="";
+}
+};
+reader.readAsText(file,"utf-8");
+}
+
+function resetKucheData(){
+const first=confirm("¿Seguro que quieres borrar TODOS los datos de KÜCHE guardados en este navegador?");
+if(!first) return;
+const typed=prompt('Para confirmar, escribe exactamente: BORRAR');
+if(typed!=="BORRAR"){
+alert("Restablecimiento cancelado.");
+return;
+}
+Object.keys(localStorage)
+.filter(key=>key.toLowerCase().startsWith("kuche"))
+.forEach(key=>localStorage.removeItem(key));
+alert("Datos eliminados. KÜCHE se reiniciará.");
+location.reload();
+}
+
+/* =====================================================
 DASHBOARD
 ===================================================== */
 
@@ -8832,6 +9141,10 @@ INICIO
 ===================================================== */
 
 initializeFixedChecklists();
+
+saveAppSettings();
+
+applyBrandSettings();
 
 saveInventory();
 
