@@ -562,6 +562,14 @@ COMPRAS / MERMAS / VENTAS / IA
 @media(max-width:1100px){.pos-workspace{grid-template-columns:1fr}.pos-order-card{position:static}.pos-kpi-grid,.cash-hero{grid-template-columns:repeat(2,1fr)}.payment-grid{grid-template-columns:repeat(2,1fr)}.cash-grid{grid-template-columns:1fr}}
 @media(max-width:750px){.pos-kpi-grid,.cash-hero,.payment-grid{grid-template-columns:1fr}.pos-catalog-controls,.cash-movement-grid{grid-template-columns:1fr}.pos-product-grid{grid-template-columns:1fr 1fr}.pos-order-actions button{min-width:100%}}
 
+
+/* =====================================================
+   KDS — PANTALLA COCINA / BAR
+===================================================== */
+.kds-toolbar{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:16px}.kds-toolbar .field{min-width:190px}.kds-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}.kds-stat{background:white;border:1px solid var(--line);border-radius:14px;padding:14px}.kds-stat span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}.kds-stat strong{display:block;font-size:24px;margin-top:5px}.kds-board{display:grid;grid-template-columns:repeat(3,minmax(260px,1fr));gap:14px;align-items:start}.kds-column{background:#f7f6f1;border:1px solid var(--line);border-radius:16px;padding:12px;min-height:320px}.kds-column-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.kds-column-title h3{margin:0;font-size:14px}.kds-count{font-size:10px;border-radius:999px;padding:4px 8px;background:white;border:1px solid var(--line);font-weight:800}.kds-ticket{background:white;border:1px solid var(--line);border-radius:14px;padding:13px;margin-bottom:10px;box-shadow:0 2px 8px rgba(27,45,38,.04)}.kds-ticket.urgent{border-color:#d8897e;box-shadow:0 0 0 2px rgba(168,77,67,.08)}.kds-ticket.ready{border-color:#8ab29c}.kds-ticket-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.kds-ticket-table{font-weight:900;font-size:16px}.kds-ticket-meta{font-size:10px;color:var(--muted);margin-top:3px}.kds-elapsed{font-size:11px;font-weight:800;white-space:nowrap}.kds-item{display:grid;grid-template-columns:1fr auto;gap:10px;padding:9px 0;border-top:1px solid #eee}.kds-item:first-of-type{margin-top:9px}.kds-item-name{font-size:13px;font-weight:800}.kds-item-note{font-size:11px;color:var(--danger);margin-top:3px;font-weight:600}.kds-item-status{font-size:9px;text-transform:uppercase;letter-spacing:.05em;border-radius:999px;padding:3px 6px;display:inline-block;margin-top:4px}.kds-status-new{background:#fff0ce;color:#7f5d15}.kds-status-preparing{background:#e3edf7;color:#315a79}.kds-status-ready{background:#dfeee5;color:#2f6a4c}.kds-status-delivered{background:#ededed;color:#666}.kds-ticket-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.kds-ticket-actions button{padding:7px 9px;font-size:10px}.pos-ready-banner{display:none;border:1px solid #8ab29c;background:#eef7f1;border-radius:13px;padding:11px 13px;margin:10px 0;font-size:12px;cursor:pointer}.pos-ready-banner.show{display:block}.pos-ready-banner strong{color:var(--ok)}.kds-mini-status{display:inline-flex;align-items:center;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;border-radius:999px;padding:3px 6px;margin-left:5px}.kds-sync-note{font-size:11px;color:var(--muted);background:#f8f7f3;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:14px}
+@media(max-width:1150px){.kds-board{grid-template-columns:1fr}.kds-stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.kds-stats{grid-template-columns:1fr}.kds-toolbar{display:grid;grid-template-columns:1fr}.kds-toolbar .field{min-width:0}}
+
 </style>
 </head>
 
@@ -619,6 +627,7 @@ COMPRAS / MERMAS / VENTAS / IA
 <button class="nav-item" onclick="showPage('reconciliation',this)"><span>Conciliación stock</span></button>
 <button class="nav-item" onclick="showPage('reservations',this)"><span>Reservas</span></button>
 <button class="nav-item" onclick="showPage('commandas',this)"><span>Mesas y comandas</span></button>
+<button class="nav-item" onclick="showPage('kds',this)"><span>Cocina / Bar KDS</span></button>
 <button class="nav-item" onclick="showPage('cash',this)"><span>Caja y cierre de turno</span></button>
 <button class="nav-item" onclick="showPage('traceability',this)"><span>Vencimientos y trazabilidad</span></button>
 
@@ -2272,6 +2281,7 @@ Cerrar
   <div class="stat-card"><div class="stat-label">Sin stock</div><div class="stat-value" id="posOutCount">0</div><div class="stat-detail">Requieren PIN para comandar</div></div>
 </div>
 <div id="posStockBanner" class="pos-stock-banner"></div>
+<div id="posReadyBanner" class="pos-ready-banner" onclick="renderPOS()"></div>
 <div class="card"><div class="card-header"><h2>Mesas</h2><span>Selecciona una mesa para abrir o continuar su comanda</span></div><div id="posTablesGrid" class="pos-table-grid"></div></div>
 <div class="pos-workspace" style="margin-top:16px">
   <div class="pos-catalog-card">
@@ -2287,9 +2297,10 @@ Cerrar
       <div id="posCart"></div>
       <div class="pos-total-box"><div class="pos-total-line"><span>Subtotal</span><strong id="posSubtotal">$0</strong></div><div class="pos-total-line grand"><span>Total</span><strong id="posTotal">$0</strong></div></div>
       <div class="pos-order-actions">
-        <button class="secondary-button" onclick="printCurrentPOSOrder('Cocina')">Cocina</button>
-        <button class="secondary-button" onclick="printCurrentPOSOrder('Bar')">Bar</button>
-        <button class="secondary-button" onclick="printCurrentPOSOrder('all')">Todo</button>
+        <button class="primary-button" onclick="sendCurrentPOSOrderToKDS('all')">Enviar a producción</button>
+        <button class="secondary-button" onclick="printCurrentPOSOrder('Cocina')">Imprimir Cocina</button>
+        <button class="secondary-button" onclick="printCurrentPOSOrder('Bar')">Imprimir Bar</button>
+        <button class="secondary-button" onclick="printCurrentPOSOrder('all')">Imprimir todo</button>
         <button class="primary-button" onclick="openPOSPayment()">Cobrar mesa</button>
       </div>
       <button class="danger-button" style="width:100%;margin-top:8px" onclick="cancelCurrentPOSOrder()">Cancelar comanda</button>
@@ -2317,6 +2328,33 @@ Cerrar
   <div class="form-actions"><button class="primary-button" onclick="finalizePOSPayment()">Cerrar cuenta y registrar venta</button><button class="secondary-button" onclick="closePOSPayment()">Cancelar</button></div>
 </div>
 <div class="card admin-sensitive" style="margin-top:16px"><div class="card-header"><h2>Autorizaciones de excepción</h2><span>Uso de PIN para comandar sin stock o modificar comandas enviadas</span></div><div class="table-wrapper"><table><thead><tr><th>Fecha</th><th>Trabajador</th><th>Acción</th><th>Producto / mesa</th><th>Motivo</th></tr></thead><tbody id="posAuditBody"></tbody></table></div></div>
+</section>
+
+
+<!-- KDS COCINA / BAR -->
+<section id="kds" class="page">
+<div class="page-header">
+  <div><h1>Cocina / Bar KDS</h1><p>Comandas digitales por estación: nuevas, en preparación, listas y entregadas.</p></div>
+  <button class="secondary-button" onclick="renderKDS()">Actualizar</button>
+</div>
+<div class="kds-sync-note"><strong>Actualización operativa:</strong> esta pantalla se actualiza automáticamente en el navegador y también entre pestañas del mismo navegador. La sincronización entre celulares, tablets y computadores diferentes se habilitará al conectar la base de datos en la siguiente etapa.</div>
+<div class="kds-stats">
+  <div class="kds-stat"><span>Nuevas</span><strong id="kdsNewCount">0</strong></div>
+  <div class="kds-stat"><span>En preparación</span><strong id="kdsPreparingCount">0</strong></div>
+  <div class="kds-stat"><span>Listas</span><strong id="kdsReadyCount">0</strong></div>
+  <div class="kds-stat"><span>Tiempo promedio</span><strong id="kdsAvgTime">0 min</strong></div>
+</div>
+<div class="kds-toolbar">
+  <div class="field"><label>Estación</label><select id="kdsStationFilter" onchange="renderKDS()"></select></div>
+  <div class="field"><label>Vista</label><select id="kdsViewFilter" onchange="renderKDS()"><option value="active">Activas</option><option value="all">Incluir entregadas</option></select></div>
+  <button class="secondary-button" onclick="markAllKDSReady()">Marcar estación lista</button>
+</div>
+<div class="kds-board">
+  <div class="kds-column"><div class="kds-column-title"><h3>Nuevas</h3><span class="kds-count" id="kdsNewBadge">0</span></div><div id="kdsNewColumn"></div></div>
+  <div class="kds-column"><div class="kds-column-title"><h3>En preparación</h3><span class="kds-count" id="kdsPreparingBadge">0</span></div><div id="kdsPreparingColumn"></div></div>
+  <div class="kds-column"><div class="kds-column-title"><h3>Listas para entregar</h3><span class="kds-count" id="kdsReadyBadge">0</span></div><div id="kdsReadyColumn"></div></div>
+</div>
+<div id="kdsDeliveredBox" class="card" style="margin-top:16px;display:none"><div class="card-header"><h2>Entregadas</h2><span>Historial reciente</span></div><div id="kdsDeliveredList"></div></div>
 </section>
 
 <!-- CAJA Y CIERRE DE TURNO -->
@@ -3104,6 +3142,7 @@ if(pageId==="assistant"){
 generateAIAnalysis();
 }
 if(pageId==="commandas"){renderPOS();}
+if(pageId==="kds"){renderKDS();}
 if(pageId==="cash"){renderCash();}
 
 
@@ -9909,13 +9948,143 @@ function closeCashRegister(){const reg=getActiveCashRegister();if(!reg)return;co
 function renderCash(){const ws=document.getElementById("cashWorkspace");if(!ws)return;const reg=getActiveCashRegister();if(!reg){ws.innerHTML=`<div class="cash-box"><h2>Abrir caja</h2><p style="color:var(--muted);font-size:12px">Registra el dinero físico con el que comienza este turno. Las ventas cobradas desde Comandas se agregarán automáticamente.</p><div class="field" style="max-width:300px"><label>Fondo inicial $</label><input id="cashOpeningInput" type="number" min="0" value="0"></div><button class="primary-button" style="margin-top:10px" onclick="openCashRegister()">Abrir caja</button></div>`;renderCashHistory();return;}const s=getCashSummary(reg);ws.innerHTML=`<div class="cash-hero"><div class="cash-card"><span>Fondo inicial</span><strong>$${formatMoney(reg.openingCash)}</strong></div><div class="cash-card"><span>Ventas POS</span><strong>$${formatMoney(s.saleTotal)}</strong></div><div class="cash-card"><span>Propinas</span><strong>$${formatMoney(s.tipTotal)}</strong></div><div class="cash-card"><span>Movimientos</span><strong>${s.moves.length}</strong></div><div class="cash-card"><span>Efectivo esperado</span><strong>$${formatMoney(s.expectedCash)}</strong></div></div><div class="cash-grid"><div class="cash-box"><h2>Conciliación del turno</h2><div class="config-info-row"><span>Efectivo ventas</span><strong>$${formatMoney(s.by.efectivo)}</strong></div><div class="config-info-row"><span>Débito</span><strong>$${formatMoney(s.by.debito)}</strong></div><div class="config-info-row"><span>Crédito</span><strong>$${formatMoney(s.by.credito)}</strong></div><div class="config-info-row"><span>Transferencias</span><strong>$${formatMoney(s.by.transferencia)}</strong></div><div class="config-info-row"><span>Entradas de caja</span><strong>+$${formatMoney(s.entries)}</strong></div><div class="config-info-row"><span>Gastos / retiros / devoluciones</span><strong>−$${formatMoney(s.outputs)}</strong></div><button class="primary-button" style="margin-top:14px" onclick="openCashCloseForm()">Cerrar y cuadrar caja</button></div><div class="cash-box"><h2>Movimiento de efectivo</h2><div class="cash-movement-grid"><div class="field"><label>Tipo</label><select id="cashMovementType"><option value="gasto">Gasto</option><option value="retiro">Retiro</option><option value="entrada">Entrada</option><option value="devolucion">Devolución</option></select></div><div class="field"><label>Monto $</label><input id="cashMovementAmount" type="number" min="0"></div><div class="field"><label>Motivo</label><input id="cashMovementReason" type="text" placeholder="Ej. compra urgente"></div><button class="secondary-button" onclick="addCashMovement()">Registrar</button></div><div style="margin-top:12px">${s.moves.slice(0,8).map(m=>`<div class="config-info-row"><span>${escapeHTML(m.type)} · ${escapeHTML(m.reason)}</span><strong>${m.type==='entrada'?'+':'−'}$${formatMoney(m.amount)}</strong></div>`).join('')||'<div class="category">Sin movimientos manuales</div>'}</div></div></div><div id="cashCloseBox" class="cash-box" style="display:none;margin-top:14px"><h2>Cierre de caja</h2><div class="payment-grid"><div class="field"><label>Efectivo contado $</label><input id="cashCounted" type="number" min="0" value="${Math.round(s.expectedCash)}" oninput="updateCashClosePreview()"></div><div class="field"><label>Débito declarado $</label><input id="cashDeclaredDebit" type="number" min="0" value="${Math.round(s.by.debito+s.tips.debito)}" oninput="updateCashClosePreview()"></div><div class="field"><label>Crédito declarado $</label><input id="cashDeclaredCredit" type="number" min="0" value="${Math.round(s.by.credito+s.tips.credito)}" oninput="updateCashClosePreview()"></div><div class="field"><label>Transferencias declaradas $</label><input id="cashDeclaredTransfer" type="number" min="0" value="${Math.round(s.by.transferencia+s.tips.transferencia)}" oninput="updateCashClosePreview()"></div></div><div id="cashClosePreview" class="payment-check"></div><button class="primary-button" style="margin-top:10px" onclick="closeCashRegister()">Confirmar cierre</button></div>`;renderCashHistory();}
 function renderCashHistory(){const body=document.getElementById("cashHistoryBody");if(!body)return;let list=cashRegisters;if(currentSession?.role==="worker")list=list.filter(r=>String(r.workerId)===String(currentSession.workerId));body.innerHTML=list.slice(0,40).map(r=>{const s=r.status==='closed'?null:getCashSummary(r);const sale=r.status==='closed'?Number(r.saleTotal||0):Number(s?.saleTotal||0),tips=r.status==='closed'?Number(r.tipTotal||0):Number(s?.tipTotal||0),expected=r.status==='closed'?Number(r.expectedCash||0):Number(s?.expectedCash||0),counted=r.status==='closed'?Number(r.countedCash||0):0,diff=r.status==='closed'?Number(r.differences?.cash||0):0;return `<tr><td>${formatDate(r.date)}<div class="category">${r.status==='open'?'Abierta':'Cerrada'}</div></td><td><strong>${escapeHTML(r.workerName)}</strong></td><td>$${formatMoney(r.openingCash)}</td><td>$${formatMoney(sale)}</td><td>$${formatMoney(tips)}</td><td>$${formatMoney(expected)}</td><td>${r.status==='closed'?'$'+formatMoney(counted):'—'}</td><td class="${diff<0?'cash-diff-negative':diff>0?'cash-diff-positive':''}">${r.status==='closed'?(diff>=0?'+':'')+'$'+formatMoney(diff):'—'}</td></tr>`}).join('')||'<tr><td colspan="8"><div class="empty-state">Sin cajas registradas.</div></td></tr>';}
 
+
+/* =====================================================
+   KDS — COCINA / BAR EN TIEMPO REAL LOCAL
+===================================================== */
+function normalizeKDSData(){
+ let changed=false;
+ posOrders.forEach(order=>(order.items||[]).forEach(item=>{
+   if(!item.kdsStatus){item.kdsStatus=item.sentAt?"new":"draft";changed=true;}
+ }));
+ if(changed)savePOSOrders();
+}
+function getKDSStatusLabel(status){return {draft:"Sin enviar",new:"Nueva",preparing:"Preparando",ready:"Lista",delivered:"Entregada"}[status]||status;}
+function getKDSStatusClass(status){return "kds-status-"+(status||"draft");}
+function getKDSWorkerStations(){
+ if(currentSession?.role!=="worker")return null;
+ const role=normalizeRole(getCurrentWorker()?.role);
+ if(role.includes("jefe de cocina")||role.includes("cocinero")||role.includes("ayudante"))return ["Cocina"];
+ if(role.includes("barista"))return ["Cafetería","Bar"];
+ if(role.includes("bartender")||role.includes("barman")||role.includes("bar"))return ["Bar"];
+ if(role.includes("repostero")||role.includes("pasteler"))return ["Postres"];
+ return [];
+}
+function getKDSStations(){
+ normalizeKDSData();
+ const list=[...new Set(posOrders.flatMap(o=>(o.items||[]).map(i=>i.station||"Cocina")).concat(recipes.map(r=>getRecipeStation(r))))].filter(Boolean).sort();
+ const allowed=getKDSWorkerStations();
+ return allowed===null?list:list.filter(x=>allowed.includes(x));
+}
+function prepareKDSStationFilter(){
+ const sel=document.getElementById("kdsStationFilter");if(!sel)return;
+ const current=sel.value,stations=getKDSStations();
+ sel.innerHTML=(currentSession?.role!=="worker"?'<option value="all">Todas las estaciones</option>':'')+stations.map(x=>`<option value="${escapeHTML(x)}">${escapeHTML(x)}</option>`).join("");
+ if(current&&Array.from(sel.options).some(o=>o.value===current))sel.value=current;else if(sel.options.length)sel.selectedIndex=0;
+}
+function getKDSFilteredItems(){
+ normalizeKDSData();
+ const filter=document.getElementById("kdsStationFilter")?.value||"all";
+ const allowed=getKDSWorkerStations();
+ const result=[];
+ posOrders.forEach(order=>{
+   if(!["open","paid"].includes(order.status))return;
+   (order.items||[]).forEach(item=>{
+     if(!item.kdsStatus||item.kdsStatus==="draft")return;
+     const station=item.station||"Cocina";
+     if(filter!=="all"&&station!==filter)return;
+     if(allowed!==null&&!allowed.includes(station))return;
+     result.push({order,item,station});
+   });
+ });
+ return result;
+}
+function getElapsedMinutes(date){if(!date)return 0;return Math.max(0,Math.floor((Date.now()-new Date(date).getTime())/60000));}
+function groupKDS(items){
+ const groups={};items.forEach(x=>{const key=String(x.order.id)+"|"+x.station;if(!groups[key])groups[key]={order:x.order,station:x.station,items:[]};groups[key].items.push(x.item);});return Object.values(groups);
+}
+function kdsTicketHTML(group,status){
+ const items=group.items.filter(i=>i.kdsStatus===status);if(!items.length)return "";
+ const firstSent=Math.min(...items.map(i=>new Date(i.sentAt||i.addedAt||Date.now()).getTime()));const elapsed=Math.max(0,Math.floor((Date.now()-firstSent)/60000));
+ const urgent=elapsed>=15&&status!=="ready";const ready=status==="ready";
+ return `<div class="kds-ticket ${urgent?'urgent':''} ${ready?'ready':''}"><div class="kds-ticket-head"><div><div class="kds-ticket-table">${escapeHTML(group.order.tableName)}</div><div class="kds-ticket-meta">${escapeHTML(group.station)} · ${escapeHTML(group.order.workerName||'')} · ${group.order.people||1} pers.</div></div><div class="kds-elapsed">${elapsed} min</div></div>${items.map(i=>`<div class="kds-item"><div><div class="kds-item-name">${Number(i.quantity||0)} × ${escapeHTML(i.recipeName)}</div>${i.notes?`<div class="kds-item-note">${escapeHTML(i.notes)}</div>`:''}<span class="kds-item-status ${getKDSStatusClass(i.kdsStatus)}">${getKDSStatusLabel(i.kdsStatus)}</span></div><button class="secondary-button" style="padding:6px 8px;font-size:10px" onclick="advanceKDSItem('${group.order.id}','${i.id}')">${i.kdsStatus==='new'?'Preparar':i.kdsStatus==='preparing'?'Lista':i.kdsStatus==='ready'?'Entregar':'✓'}</button></div>`).join('')}<div class="kds-ticket-actions">${status==='new'?`<button class="secondary-button" onclick="setKDSTicketStatus('${group.order.id}','${escapeHTML(group.station)}','preparing')">Tomar comanda</button>`:''}${status!=='ready'?`<button class="primary-button" onclick="setKDSTicketStatus('${group.order.id}','${escapeHTML(group.station)}','ready')">Todo listo</button>`:`<button class="primary-button" onclick="setKDSTicketStatus('${group.order.id}','${escapeHTML(group.station)}','delivered')">Todo entregado</button>`}</div></div>`;
+}
+function renderKDS(){
+ if(!document.getElementById("kdsNewColumn"))return;prepareKDSStationFilter();
+ const items=getKDSFilteredItems(),view=document.getElementById("kdsViewFilter")?.value||"active";
+ const newItems=items.filter(x=>x.item.kdsStatus==="new"),prepItems=items.filter(x=>x.item.kdsStatus==="preparing"),readyItems=items.filter(x=>x.item.kdsStatus==="ready"),delivered=items.filter(x=>x.item.kdsStatus==="delivered");
+ const renderStatus=(status,list)=>{const groups=groupKDS(list);return groups.map(g=>kdsTicketHTML(g,status)).join("")||'<div class="pos-empty">Sin comandas.</div>';};
+ kdsNewColumn.innerHTML=renderStatus("new",newItems);kdsPreparingColumn.innerHTML=renderStatus("preparing",prepItems);kdsReadyColumn.innerHTML=renderStatus("ready",readyItems);
+ kdsNewCount.textContent=newItems.length;kdsPreparingCount.textContent=prepItems.length;kdsReadyCount.textContent=readyItems.length;kdsNewBadge.textContent=newItems.length;kdsPreparingBadge.textContent=prepItems.length;kdsReadyBadge.textContent=readyItems.length;
+ const completed=delivered.filter(x=>x.item.sentAt&&x.item.deliveredAt);const avg=completed.length?completed.reduce((sum,x)=>sum+(new Date(x.item.deliveredAt)-new Date(x.item.sentAt))/60000,0)/completed.length:0;kdsAvgTime.textContent=Math.round(avg)+" min";
+ const box=document.getElementById("kdsDeliveredBox");if(view==="all"){box.style.display="block";kdsDeliveredList.innerHTML=groupKDS(delivered).map(g=>`<div class="kds-ticket"><div class="kds-ticket-head"><div><div class="kds-ticket-table">${escapeHTML(g.order.tableName)}</div><div class="kds-ticket-meta">${escapeHTML(g.station)}</div></div><span class="badge badge-success">Entregada</span></div>${g.items.map(i=>`<div class="kds-item"><div class="kds-item-name">${i.quantity} × ${escapeHTML(i.recipeName)}</div><div>${i.deliveredAt?new Date(i.deliveredAt).toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}):''}</div></div>`).join('')}</div>`).join('')||'<div class="pos-empty">Sin entregas.</div>';}else box.style.display="none";
+ renderPOSReadyBanner();
+}
+function saveKDSEvent(action,order,item){
+ const w=getPOSWorkerIdentity();auditLog.unshift({id:Date.now()+Math.random(),date:new Date().toISOString(),workerId:w.workerId,workerName:w.workerName,action,subject:(order?.tableName||"")+(item?" · "+item.recipeName:""),reason:"KDS"});saveAuditLog();
+}
+function setKDSItemStatus(orderId,itemId,status){
+ const order=posOrders.find(o=>String(o.id)===String(orderId));const item=order?.items.find(i=>String(i.id)===String(itemId));if(!item)return;
+ item.kdsStatus=status;const now=new Date().toISOString();if(status==="preparing"&&!item.preparingAt)item.preparingAt=now;if(status==="ready")item.readyAt=now;if(status==="delivered")item.deliveredAt=now;savePOSOrders();saveKDSEvent("KDS · "+getKDSStatusLabel(status),order,item);renderKDS();renderPOSReadyBanner();
+}
+function advanceKDSItem(orderId,itemId){
+ const order=posOrders.find(o=>String(o.id)===String(orderId));const item=order?.items.find(i=>String(i.id)===String(itemId));if(!item)return;const next={new:"preparing",preparing:"ready",ready:"delivered"}[item.kdsStatus];if(next)setKDSItemStatus(orderId,itemId,next);
+}
+function setKDSTicketStatus(orderId,station,status){
+ const order=posOrders.find(o=>String(o.id)===String(orderId));if(!order)return;(order.items||[]).filter(i=>(i.station||"Cocina")===station&&i.kdsStatus!=="draft"&&i.kdsStatus!=="delivered").forEach(i=>{i.kdsStatus=status;const now=new Date().toISOString();if(status==="preparing"&&!i.preparingAt)i.preparingAt=now;if(status==="ready")i.readyAt=now;if(status==="delivered")i.deliveredAt=now;});savePOSOrders();saveKDSEvent("KDS estación · "+getKDSStatusLabel(status),order);renderKDS();renderPOSReadyBanner();
+}
+function markAllKDSReady(){
+ const filter=document.getElementById("kdsStationFilter")?.value||"all";if(filter==="all"&&!confirm("¿Marcar como listas todas las comandas visibles de todas las estaciones?"))return;getKDSFilteredItems().filter(x=>["new","preparing"].includes(x.item.kdsStatus)).forEach(x=>{x.item.kdsStatus="ready";x.item.readyAt=new Date().toISOString();});savePOSOrders();renderKDS();renderPOSReadyBanner();
+}
+function sendCurrentPOSOrderToKDS(station="all",silent=false){
+ const order=getActivePOSOrder();if(!order||!order.items.length){if(!silent)alert("No hay productos en la comanda.");return false;}
+ const draft=(order.items||[]).filter(i=>(station==="all"||(i.station||"Cocina")===station)&&(!i.kdsStatus||i.kdsStatus==="draft"));if(!draft.length){if(!silent)alert("No hay productos nuevos pendientes de enviar a producción.");return false;}
+ const now=new Date().toISOString();draft.forEach(i=>{i.kdsStatus="new";i.sentAt=now;i.sentBy=getPOSWorkerIdentity().workerName;});order.lastSentAt=now;order.lastPrintedAt=order.lastPrintedAt||now;savePOSOrders();if(!silent)alert(`${draft.reduce((s,i)=>s+Number(i.quantity||0),0)} producto(s) enviados a producción.`);renderPOS();renderKDS();return true;
+}
+function renderPOSReadyBanner(){
+ const el=document.getElementById("posReadyBanner");if(!el)return;normalizeKDSData();let ready=[];
+ posOrders.filter(o=>o.status==="open").forEach(o=>{if(currentSession?.role==="worker"&&isGarzon()&&String(o.workerId)!==String(currentSession.workerId))return;(o.items||[]).filter(i=>i.kdsStatus==="ready").forEach(i=>ready.push({o,i}));});
+ if(!ready.length){el.classList.remove("show");el.innerHTML="";return;}el.classList.add("show");el.innerHTML=`<strong>${ready.length} producto(s) listo(s) para entregar</strong> · ${ready.slice(0,4).map(x=>escapeHTML(x.o.tableName)+": "+escapeHTML(x.i.recipeName)).join(" · ")}${ready.length>4?" · …":""}`;
+}
+
+/* Sobrescribe el agregado para separar productos ya enviados de productos nuevos. */
+addPOSItem = function(recipeId){
+ const order=getActivePOSOrder();if(!order){alert("Primero selecciona una mesa.");return;}const recipe=recipes.find(r=>String(r.id)===String(recipeId));if(!recipe)return;const a=getRecipeAvailability(recipe);let override=false;if(a.status==="out"){if(!authorizeAdminOverride("Comanda sin stock",recipe.name,"Producto marcado sin stock por inventario teórico"))return;override=true;}const calc=calculateSavedRecipe(recipe);const found=order.items.find(i=>String(i.recipeId)===String(recipe.id)&&(!i.kdsStatus||i.kdsStatus==="draft"));if(found){found.quantity=Number(found.quantity||0)+1;found.override=found.override||override;}else order.items.push({id:Date.now()+Math.random(),recipeId:recipe.id,recipeName:recipe.name,station:getRecipeStation(recipe),quantity:1,unitPrice:Math.round(Number(calc.finalPerPortion||0)),notes:"",override,addedBy:getPOSWorkerIdentity().workerName,addedAt:new Date().toISOString(),kdsStatus:"draft"});savePOSOrders();renderPOS();
+};
+changePOSQty = function(itemId,delta){
+ const order=getActivePOSOrder();if(!order)return;const item=order.items.find(i=>String(i.id)===String(itemId));if(!item)return;const sent=item.kdsStatus&&item.kdsStatus!=="draft";if(sent&&!authorizeAdminOverride("Modificar producto enviado",item.recipeName,"Cambio de cantidad después de enviar a producción"))return;if(delta>0){const recipe=recipes.find(r=>String(r.id)===String(item.recipeId));const a=recipe?getRecipeAvailability(recipe):{status:'out'};if(a.status==='out'){if(!authorizeAdminOverride("Aumentar producto sin stock",item.recipeName,"Stock teórico insuficiente"))return;item.override=true;}item.quantity+=1;}else{item.quantity-=1;if(item.quantity<=0)order.items=order.items.filter(i=>String(i.id)!==String(itemId));}if(sent){item.kdsStatus="new";item.sentAt=new Date().toISOString();delete item.readyAt;delete item.deliveredAt;}savePOSOrders();renderPOS();renderKDS();
+};
+editPOSItemNote = function(itemId){
+ const order=getActivePOSOrder();const item=order?.items.find(i=>String(i.id)===String(itemId));if(!item)return;if(item.kdsStatus&&item.kdsStatus!=="draft"&&!authorizeAdminOverride("Modificar observación enviada",item.recipeName,"Cambio de nota después de enviar a producción"))return;const v=prompt("Observación para cocina/bar:",item.notes||"");if(v===null)return;item.notes=v.trim();if(item.kdsStatus&&item.kdsStatus!=="draft"){item.kdsStatus="new";item.sentAt=new Date().toISOString();}savePOSOrders();renderPOSOrder();renderKDS();
+};
+renderPOSOrder = function(){
+ const order=getActivePOSOrder(),empty=document.getElementById("posNoOrder"),content=document.getElementById("posOrderContent");if(!empty||!content)return;if(!order){empty.style.display="block";content.style.display="none";renderPOSReadyBanner();return;}normalizeKDSData();empty.style.display="none";content.style.display="block";posOrderTableName.textContent=order.tableName;posOrderWorker.textContent=order.workerName+" · abierta "+new Date(order.openedAt).toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});posPeople.value=order.people||1;posCart.innerHTML=order.items.length?order.items.map(i=>`<div class="pos-cart-row"><div><div class="pos-cart-name">${escapeHTML(i.recipeName)} ${i.override?'<span class="badge badge-danger">PIN</span>':''}<span class="kds-mini-status ${getKDSStatusClass(i.kdsStatus)}">${getKDSStatusLabel(i.kdsStatus)}</span></div><span class="station-badge">${escapeHTML(i.station||'Cocina')}</span><div class="pos-cart-note">${escapeHTML(i.notes||'Sin observaciones')}</div><button class="secondary-button" style="margin-top:5px;padding:4px 7px;font-size:10px" onclick="editPOSItemNote('${i.id}')">Nota</button></div><div><div class="pos-cart-controls"><button class="qty-btn" onclick="changePOSQty('${i.id}',-1)">−</button><strong>${i.quantity}</strong><button class="qty-btn" onclick="changePOSQty('${i.id}',1)">+</button></div><div style="text-align:right;font-size:11px;margin-top:5px">$${formatMoney(i.quantity*i.unitPrice)}</div></div></div>`).join(""):'<div class="pos-empty">Aún no agregas productos.</div>';posSubtotal.textContent="$"+formatMoney(getOrderSubtotal(order));posTotal.textContent="$"+formatMoney(getOrderTotal(order));renderPOSReadyBanner();
+};
+printCurrentPOSOrder = function(station){
+ const order=getActivePOSOrder();if(!order||!order.items.length){alert("No hay productos en la comanda.");return;}normalizeKDSData();let items=(order.items||[]).filter(i=>station==="all"||(i.station||"Cocina")===station);if(!items.length){alert("No hay productos para esa estación.");return;}let fresh=items.filter(i=>i.kdsStatus==="draft");const isReprint=!fresh.length;if(fresh.length){const now=new Date().toISOString();fresh.forEach(i=>{i.kdsStatus="new";i.sentAt=now;i.sentBy=getPOSWorkerIdentity().workerName;});order.lastSentAt=now;items=fresh;savePOSOrders();}else if(!confirm("No hay productos nuevos para esta estación. ¿Reimprimir la comanda existente?"))return;
+ const groups={};items.forEach(i=>{const st=i.station||'Cocina';(groups[st]||(groups[st]=[])).push(i);});const win=window.open("","_blank","width=430,height=720");if(!win){alert("El navegador bloqueó la ventana de impresión.");return;}const sections=Object.entries(groups).map(([st,list])=>`<section style="page-break-after:always"><h2>${escapeHTML(st)} ${isReprint?'· REIMPRESIÓN':''}</h2><div>Mesa: <strong>${escapeHTML(order.tableName)}</strong> · Personas: ${order.people||1}</div><div>Garzón: ${escapeHTML(order.workerName)} · ${new Date().toLocaleString('es-CL')}</div><hr>${list.map(i=>`<div style="font-size:18px;margin:12px 0"><strong>${i.quantity} × ${escapeHTML(i.recipeName)}</strong>${i.notes?`<div style="font-size:14px">Obs: ${escapeHTML(i.notes)}</div>`:''}</div>`).join('')}</section>`).join('');win.document.write(`<!doctype html><html><head><title>Comanda ${escapeHTML(order.tableName)}</title><style>body{font-family:Arial,sans-serif;padding:16px;color:#111}h2{font-size:22px;margin:0 0 8px}hr{border:0;border-top:1px dashed #333;margin:14px 0}@media print{body{padding:0}section:last-child{page-break-after:auto}}</style></head><body>${sections}</body></html>`);win.document.close();order.lastPrintedAt=new Date().toISOString();savePOSOrders();renderPOS();renderKDS();setTimeout(()=>{win.focus();win.print();},250);
+};
+
+/* Aviso antes de cobrar si aún hay productos de producción pendientes. */
+const _kdsBaseFinalizePOSPayment = finalizePOSPayment;
+finalizePOSPayment = function(){const order=getActivePOSOrder();if(order){normalizeKDSData();const pending=(order.items||[]).filter(i=>i.kdsStatus&&!["draft","delivered"].includes(i.kdsStatus));if(pending.length&&!confirm(`Hay ${pending.length} producto(s) enviados que todavía no figuran como entregados. ¿Cerrar la cuenta igualmente?`))return;}_kdsBaseFinalizePOSPayment();};
+
+/* Sincronización instantánea entre pestañas del mismo navegador. */
+window.addEventListener("storage",event=>{
+ if(event.key==="kuchePOSOrders"){try{posOrders=JSON.parse(event.newValue||"[]")||[];}catch(e){}renderPOS();renderKDS();renderPOSReadyBanner();}
+ if(event.key==="kucheInventory"){try{inventory=JSON.parse(event.newValue||"[]")||[];}catch(e){}renderPOS();}
+ if(event.key==="kucheDiningTables"){try{diningTables=JSON.parse(event.newValue||"[]")||[];}catch(e){}renderPOS();}
+});
+setInterval(()=>{const active=document.querySelector(".page.active")?.id;if(active==="kds")renderKDS();if(active==="commandas")renderPOSReadyBanner();},5000);
+
+
 /* Permisos específicos por cargo */
 workerCanAccess = function(pageId){
  const role=normalizeRole(getCurrentWorker()?.role);const base=["dashboard","checklists","shifts"];
  if(role.includes("garzon")||role.includes("mesero"))return [...base,"reservations","commandas","cash"].includes(pageId);
  if(role.includes("cajero"))return [...base,"cash","reservations"].includes(pageId);
- if(role.includes("jefe de cocina")||role.includes("cocinero")||role.includes("ayudante"))return [...base,"production","temperatures"].includes(pageId);
- if(role.includes("barista"))return [...base,"temperatures"].includes(pageId);
+ if(role.includes("jefe de cocina")||role.includes("cocinero")||role.includes("ayudante"))return [...base,"production","temperatures","kds"].includes(pageId);
+ if(role.includes("barista")||role.includes("bartender")||role.includes("barman")||role.includes("repostero")||role.includes("pasteler"))return [...base,"temperatures","kds"].includes(pageId);
  if(role.includes("administrador"))return true;
  return base.includes(pageId);
 };
@@ -10025,6 +10194,7 @@ renderPOS();
 renderCash();
 renderWorkerStockAlert();
 
+normalizeKDSData();
 initializeLogin();
 
 </script>
