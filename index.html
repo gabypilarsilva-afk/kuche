@@ -537,7 +537,10 @@ COMPRAS / MERMAS / VENTAS / IA
 .table-config-grid{display:grid;grid-template-columns:2fr 1fr auto;gap:12px;align-items:end}.agenda-list{display:grid;gap:10px}.agenda-item{background:#fff;border:1px solid var(--border);border-left:4px solid var(--green);border-radius:10px;padding:14px;display:flex;justify-content:space-between;gap:12px;align-items:center}.agenda-time{font-size:18px;font-weight:700;color:var(--green-dark)}
 .shift-form-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr;gap:12px;align-items:end}.week-nav{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.week-board{display:grid;grid-template-columns:repeat(7,minmax(170px,1fr));gap:10px;overflow-x:auto}.day-column{background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px;min-height:160px}.day-column h4{font-size:12px;color:var(--green-dark);margin-bottom:10px}.shift-chip{border:1px solid var(--border);background:#f8f9f7;border-radius:8px;padding:9px;margin-bottom:8px;font-size:11px}.shift-chip strong{display:block;color:var(--green-dark);font-size:12px;margin-bottom:3px}
 .trace-form-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr 1fr;gap:12px}.trace-alert{padding:12px 14px;border-radius:9px;margin-bottom:8px;background:var(--warning-soft);color:var(--warning);font-size:12px}.trace-alert.danger{background:var(--danger-soft);color:var(--danger)}
-.login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#173f35,#24594b);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px}.login-overlay.hidden{display:none}.login-box{width:min(480px,96vw);background:white;border-radius:18px;padding:28px;box-shadow:0 25px 60px rgba(0,0,0,.25)}.login-brand{font-size:26px;font-weight:800;letter-spacing:4px;color:var(--green-dark)}.login-sub{color:var(--muted);font-size:12px;margin:5px 0 22px}.login-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}.login-tabs button.active{background:var(--green-dark);color:white}.login-error{display:none;background:var(--danger-soft);color:var(--danger);padding:10px;border-radius:8px;font-size:12px;margin-top:12px}.logout-btn{margin-top:8px;width:100%;border:1px solid rgba(255,255,255,.18);background:transparent;color:rgba(255,255,255,.75);padding:7px;border-radius:7px;font-size:10px}.worker-mode .admin-sensitive{display:none!important}
+.login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#173f35,#24594b);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px}.login-overlay.hidden{display:none}.login-box{width:min(480px,96vw);background:white;border-radius:18px;padding:28px;box-shadow:0 25px 60px rgba(0,0,0,.25)}.login-brand{font-size:26px;font-weight:800;letter-spacing:4px;color:var(--green-dark)}.login-sub{color:var(--muted);font-size:12px;margin:5px 0 22px}.login-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}.login-tabs button.active{background:var(--green-dark);color:white}.login-error{display:none;background:var(--danger-soft);color:var(--danger);padding:10px;border-radius:8px;font-size:12px;margin-top:12px}.logout-btn{margin-top:8px;width:100%;border:1px solid rgba(255,255,255,.18);background:transparent;color:rgba(255,255,255,.75);padding:7px;border-radius:7px;font-size:10px}
+.worker-mode .admin-sensitive{display:none!important}
+.cloud-status{padding:7px 11px;border-radius:20px;background:var(--warning-soft);color:var(--warning);font-size:11px;font-weight:700;white-space:nowrap}.cloud-status.online{background:var(--success-soft);color:var(--success)}.cloud-status.offline{background:var(--danger-soft);color:var(--danger)}.topbar-status-wrap{display:flex;align-items:center;gap:8px}.login-note{font-size:11px;line-height:1.45;color:var(--muted);margin-top:10px;padding:9px 10px;background:var(--cream);border-radius:8px}.login-link{border:0;background:transparent;color:var(--green);font-weight:700;font-size:11px;padding:8px 0;text-decoration:underline}.cloud-message{padding:10px 12px;border-radius:8px;font-size:12px;margin-top:12px;background:var(--success-soft);color:var(--success);display:none}.cloud-message.bad{background:var(--danger-soft);color:var(--danger)}
+
 @media(max-width:1100px){.kpi-grid-5{grid-template-columns:repeat(2,1fr)}.cid-form-grid,.cid-settings-grid,.mod-grid,.reservation-form-grid,.reservation-second-grid,.shift-form-grid,.trace-form-grid{grid-template-columns:repeat(2,1fr)}.week-board{grid-template-columns:repeat(7,180px)}}
 @media(max-width:750px){.module-grid,.kpi-grid-5,.cid-form-grid,.cid-settings-grid,.mod-grid,.reservation-form-grid,.reservation-second-grid,.shift-form-grid,.trace-form-grid,.table-config-grid{grid-template-columns:1fr}}
 
@@ -625,14 +628,40 @@ COMPRAS / MERMAS / VENTAS / IA
       <button id="loginWorkerTab" class="secondary-button" onclick="setLoginMode('worker')">Trabajador</button>
     </div>
     <div id="adminLoginFields">
-      <div class="field"><label>PIN administrador</label><input id="adminLoginPin" type="password" inputmode="numeric" placeholder="Si no configuraste PIN, déjalo vacío"></div>
+      <div class="field"><label>Correo administrador</label><input id="adminLoginEmail" type="email" autocomplete="username" placeholder="correo@ejemplo.cl"></div>
+      <div class="field" style="margin-top:10px"><label>Contraseña</label><input id="adminLoginPassword" type="password" autocomplete="current-password"></div>
+      <button class="login-link" onclick="requestPasswordRecovery()">Olvidé / crear mi contraseña</button>
+      <div class="login-note">El acceso del administrador ya utiliza Supabase. Tu PIN de administrador sigue existiendo para autorizar acciones sensibles dentro de KÜCHE.</div>
     </div>
     <div id="workerLoginFields" style="display:none">
       <div class="field"><label>Trabajador</label><select id="workerLoginSelect"><option value="">Seleccionar trabajador</option></select></div>
       <div class="field" style="margin-top:10px"><label>PIN personal</label><input id="workerLoginPin" type="password" inputmode="numeric"></div>
+      <div class="login-note">Acceso operativo por PIN. En la siguiente etapa vincularemos estos perfiles a cuentas Supabase para usarlos desde dispositivos diferentes.</div>
     </div>
-    <button class="primary-button" style="width:100%;margin-top:18px" onclick="loginKuche()">Ingresar</button>
+    <button id="loginSubmitButton" class="primary-button" style="width:100%;margin-top:18px" onclick="loginKuche()">Ingresar</button>
     <div id="loginError" class="login-error"></div>
+  </div>
+</div>
+
+<div id="passwordResetOverlay" class="login-overlay hidden">
+  <div class="login-box">
+    <div class="login-brand">KÜCHE</div>
+    <div class="login-sub">Crear nueva contraseña de administrador</div>
+    <div class="field"><label>Nueva contraseña</label><input id="newCloudPassword" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres"></div>
+    <div class="field" style="margin-top:10px"><label>Repetir contraseña</label><input id="newCloudPasswordConfirm" type="password" autocomplete="new-password"></div>
+    <button class="primary-button" style="width:100%;margin-top:18px" onclick="saveNewCloudPassword()">Guardar nueva contraseña</button>
+    <div id="passwordResetMessage" class="login-error"></div>
+  </div>
+</div>
+
+<div id="organizationOverlay" class="login-overlay hidden">
+  <div class="login-box">
+    <div class="login-brand">KÜCHE</div>
+    <div class="login-sub">Primera configuración de tu cuenta</div>
+    <div class="field"><label>Nombre del establecimiento / empresa</label><input id="firstOrganizationName" type="text" placeholder="Ej. KÜCHE o nombre de tu restaurante"></div>
+    <div class="login-note">Esto crea el establecimiento en la base de datos y deja tu usuario como Administrador.</div>
+    <button class="primary-button" style="width:100%;margin-top:18px" onclick="createFirstCloudOrganization()">Crear establecimiento</button>
+    <div id="organizationSetupError" class="login-error"></div>
   </div>
 </div>
 
@@ -731,7 +760,7 @@ COMPRAS / MERMAS / VENTAS / IA
 <header class="topbar">
 <div class="topbar-title" id="topbarTitle">Panel de gestión</div>
 <button id="workerStockAlert" class="stock-alert-pill" style="display:none" onclick="openGarzonCommandasFromAlert()">Disponibilidad</button>
-<div class="system-status">Sistema operativo</div>
+<div class="topbar-status-wrap"><div id="cloudStatus" class="cloud-status">Conectando nube…</div><div class="system-status">Sistema operativo</div></div>
 </header>
 
 <div class="content">
@@ -2733,6 +2762,18 @@ Cerrar
 </div>
 </div>
 
+<div class="config-card admin-sensitive">
+<h3>Cuenta Supabase</h3>
+<p>Estado de la cuenta administradora y del establecimiento conectado a la nube.</p>
+<div class="config-info-row"><span>Conexión</span><strong id="cloudConnectionStatus">Comprobando…</strong></div>
+<div class="config-info-row"><span>Usuario</span><strong id="cloudUserEmail">—</strong></div>
+<div class="config-info-row"><span>Establecimiento</span><strong id="cloudOrganizationDisplay">—</strong></div>
+<div class="config-actions">
+<button class="secondary-button" onclick="sendCloudPasswordRecoveryFromSettings()">Cambiar contraseña</button>
+</div>
+<div class="login-note">En esta fase la autenticación y los datos básicos de la empresa ya están en Supabase. Los módulos operativos siguen conservando sus datos locales mientras hacemos la migración controlada a las tablas en nube.</div>
+</div>
+
 <div class="config-card">
 <h3>Respaldo de información</h3>
 <p>Exporta una copia completa de todos los datos guardados en este navegador o restaúrala más adelante.</p>
@@ -2756,7 +2797,27 @@ Cerrar
 </main>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+
+/* =====================================================
+SUPABASE · CONEXIÓN SEGURA DE NAVEGADOR
+===================================================== */
+const SUPABASE_URL="https://gnthwwypdturdigmbxui.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_KqkabPILDG6pJgsBEQL1Fw_NiGO_ZAp";
+let kucheCloud=null;
+let cloudAuthSession=null;
+let cloudOrganization=null;
+let cloudMembership=null;
+let cloudAuthSubscription=null;
+let passwordRecoveryMode=false;
+try{
+  if(window.supabase?.createClient){
+    kucheCloud=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
+      auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+    });
+  }
+}catch(error){console.error("Supabase init",error);}
 
 /* =====================================================
 DATOS
@@ -2846,6 +2907,7 @@ let cidEquipment = JSON.parse(localStorage.getItem("kucheCIDEquipment")) || [];
 let cidExpenses = JSON.parse(localStorage.getItem("kucheCIDExpenses")) || [];
 let cidSettings = JSON.parse(localStorage.getItem("kucheCIDSettings")) || {electricRate:200,baseMode:"purchases",manualBase:0,lastApplied:Number(costSettings.indirect)||0};
 let currentSession = JSON.parse(sessionStorage.getItem("kucheSession")||"null");
+if(currentSession?.role==="admin"&&!currentSession?.cloud){currentSession=null;sessionStorage.removeItem("kucheSession");}
 let loginMode="admin";
 let editingReservationId=null;
 let editingDiningTableId=null;
@@ -9289,6 +9351,7 @@ profitMethod:getValue("settingsProfitMethod")||"markup"
 };
 saveAppSettings();
 localStorage.setItem("kucheCostSettings",JSON.stringify(costSettings));
+syncOrganizationSettingsToCloud();
 loadCostSettingsFields();
 applyBrandSettings();
 loadSettingsForm();
@@ -9841,38 +9904,206 @@ function populateWorkerLogin(){
  sel.innerHTML='<option value="">Seleccionar trabajador</option>';
  staff.filter(w=>w.status==="activo").forEach(w=>{const o=document.createElement("option");o.value=w.id;o.textContent=w.name+" — "+w.role;sel.appendChild(o);});
 }
-function setLoginMode(mode){loginMode=mode;loginAdminTab.classList.toggle("active",mode==="admin");loginWorkerTab.classList.toggle("active",mode==="worker");adminLoginFields.style.display=mode==="admin"?"block":"none";workerLoginFields.style.display=mode==="worker"?"block":"none";loginError.style.display="none";populateWorkerLogin();}
-function loginKuche(){
- let session=null;
- if(loginMode==="admin"){
-   const required=String(appSettings.adminPin||""); const entered=adminLoginPin.value;
-   if(required && entered!==required){return showLoginError("PIN de administrador incorrecto.");}
-   session={role:"admin",name:appSettings.adminName||"Administrador"};
- }else{
-   const worker=staff.find(w=>String(w.id)===String(workerLoginSelect.value));
-   if(!worker)return showLoginError("Selecciona un trabajador.");
-   if(!worker.pin)return showLoginError("Este trabajador aún no tiene un PIN configurado. El administrador debe asignarlo en Personal.");
-   if(workerLoginPin.value!==String(worker.pin))return showLoginError("PIN de trabajador incorrecto.");
-   session={role:"worker",workerId:worker.id,name:worker.name};
- }
- currentSession=session;sessionStorage.setItem("kucheSession",JSON.stringify(session));loginOverlay.classList.add("hidden");applyAccessMode();
+function setLoginMode(mode){
+ loginMode=mode;
+ document.getElementById("loginAdminTab")?.classList.toggle("active",mode==="admin");
+ document.getElementById("loginWorkerTab")?.classList.toggle("active",mode==="worker");
+ const af=document.getElementById("adminLoginFields"),wf=document.getElementById("workerLoginFields");
+ if(af)af.style.display=mode==="admin"?"block":"none";
+ if(wf)wf.style.display=mode==="worker"?"block":"none";
+ const err=document.getElementById("loginError");if(err)err.style.display="none";
+ populateWorkerLogin();
 }
-function showLoginError(msg){loginError.textContent=msg;loginError.style.display="block";}
-function logoutKuche(){sessionStorage.removeItem("kucheSession");currentSession=null;document.body.classList.remove("worker-mode");loginOverlay.classList.remove("hidden");setLoginMode("admin");}
+function setCloudStatus(label,state=""){
+ const el=document.getElementById("cloudStatus");if(!el)return;
+ el.textContent=label;el.className="cloud-status"+(state?" "+state:"");
+ updateCloudSettingsCard();
+}
+function showLoginError(msg){const el=document.getElementById("loginError");if(!el)return;el.textContent=msg;el.style.display="block";}
+function clearLoginError(){const el=document.getElementById("loginError");if(el){el.textContent="";el.style.display="none";}}
+function getCloudRedirectURL(){return window.location.origin+window.location.pathname;}
+async function requestPasswordRecovery(emailOverride=""){
+ if(!kucheCloud){showLoginError("No fue posible conectar con Supabase. Revisa tu conexión a internet.");return;}
+ const email=(emailOverride||document.getElementById("adminLoginEmail")?.value||"").trim();
+ if(!email){showLoginError("Escribe primero tu correo de administrador.");return;}
+ clearLoginError();setCloudStatus("Enviando recuperación…");
+ const {error}=await kucheCloud.auth.resetPasswordForEmail(email,{redirectTo:getCloudRedirectURL()});
+ if(error){setCloudStatus("Nube conectada","online");showLoginError("No se pudo enviar el correo: "+error.message);return;}
+ setCloudStatus("Nube conectada","online");
+ showLoginError("Correo enviado. Abre el correo más reciente de Supabase y vuelve a KÜCHE desde ese enlace.");
+ const el=document.getElementById("loginError");if(el){el.style.background="var(--success-soft)";el.style.color="var(--success)";}
+}
+async function sendCloudPasswordRecoveryFromSettings(){
+ const email=cloudAuthSession?.user?.email||"";
+ if(!email){alert("No hay una cuenta Supabase iniciada.");return;}
+ await requestPasswordRecovery(email);
+ alert("Si Supabase aceptó la solicitud, revisa el correo "+email+". Usa siempre el mensaje más reciente.");
+}
+function showPasswordResetScreen(){
+ passwordRecoveryMode=true;
+ document.getElementById("loginOverlay")?.classList.add("hidden");
+ document.getElementById("organizationOverlay")?.classList.add("hidden");
+ document.getElementById("passwordResetOverlay")?.classList.remove("hidden");
+ const a=document.getElementById("newCloudPassword"),b=document.getElementById("newCloudPasswordConfirm"),m=document.getElementById("passwordResetMessage");
+ if(a)a.value="";if(b)b.value="";if(m){m.style.display="none";m.textContent="";}
+}
+async function saveNewCloudPassword(){
+ const msg=document.getElementById("passwordResetMessage");
+ const p1=document.getElementById("newCloudPassword")?.value||"",p2=document.getElementById("newCloudPasswordConfirm")?.value||"";
+ const fail=t=>{if(msg){msg.textContent=t;msg.style.display="block";}};
+ if(p1.length<8){fail("La contraseña debe tener al menos 8 caracteres.");return;}
+ if(p1!==p2){fail("Las contraseñas no coinciden.");return;}
+ if(!kucheCloud){fail("Supabase no está disponible.");return;}
+ const {data,error}=await kucheCloud.auth.updateUser({password:p1});
+ if(error){fail("No se pudo cambiar la contraseña: "+error.message);return;}
+ passwordRecoveryMode=false;
+ document.getElementById("passwordResetOverlay")?.classList.add("hidden");
+ const {data:sessionData}=await kucheCloud.auth.getSession();
+ if(sessionData?.session)await handleCloudAdminSession(sessionData.session);
+ alert("Contraseña creada correctamente. Tu cuenta administradora ya puede iniciar sesión en KÜCHE.");
+}
+async function loginKuche(){
+ clearLoginError();
+ const btn=document.getElementById("loginSubmitButton");if(btn)btn.disabled=true;
+ try{
+   if(loginMode==="admin"){
+     if(!kucheCloud){showLoginError("No se pudo cargar Supabase. Comprueba tu conexión a internet.");return;}
+     const email=(document.getElementById("adminLoginEmail")?.value||"").trim();
+     const password=document.getElementById("adminLoginPassword")?.value||"";
+     if(!email||!password){showLoginError("Escribe tu correo y contraseña.");return;}
+     setCloudStatus("Iniciando sesión…");
+     const {data,error}=await kucheCloud.auth.signInWithPassword({email,password});
+     if(error){setCloudStatus("Nube disponible","online");showLoginError("No se pudo ingresar. Revisa correo y contraseña.");return;}
+     if(data?.session)await handleCloudAdminSession(data.session);
+   }else{
+     const worker=staff.find(w=>String(w.id)===String(document.getElementById("workerLoginSelect")?.value));
+     if(!worker){showLoginError("Selecciona un trabajador.");return;}
+     if(!worker.pin){showLoginError("Este trabajador aún no tiene un PIN configurado. El administrador debe asignarlo en Personal.");return;}
+     if((document.getElementById("workerLoginPin")?.value||"")!==String(worker.pin)){showLoginError("PIN de trabajador incorrecto.");return;}
+     currentSession={role:"worker",workerId:worker.id,name:worker.name,cloud:false};
+     sessionStorage.setItem("kucheSession",JSON.stringify(currentSession));
+     document.getElementById("loginOverlay")?.classList.add("hidden");applyAccessMode();
+   }
+ }finally{if(btn)btn.disabled=false;}
+}
+async function loadCloudProfile(userId){
+ if(!kucheCloud||!userId)return null;
+ const {data}=await kucheCloud.from("profiles").select("id,full_name").eq("id",userId).maybeSingle();
+ return data||null;
+}
+async function loadCloudOrganizationForUser(user){
+ const {data:members,error}=await kucheCloud.from("organization_members").select("organization_id,role,active").eq("user_id",user.id).eq("active",true).limit(1);
+ if(error)throw error;
+ if(!members?.length)return null;
+ const membership=members[0];
+ const {data:org,error:orgErr}=await kucheCloud.from("organizations").select("id,name,rut,address,phone,email,currency,timezone").eq("id",membership.organization_id).single();
+ if(orgErr)throw orgErr;
+ cloudMembership=membership;cloudOrganization=org;
+ return org;
+}
+async function hydrateCloudBasicSettings(){
+ if(!kucheCloud||!cloudOrganization)return;
+ const {data:cfg}=await kucheCloud.from("organization_settings").select("vat_pct,default_profit_pct,profit_method,reservation_minutes,settings").eq("organization_id",cloudOrganization.id).maybeSingle();
+ appSettings={...appSettings,businessName:cloudOrganization.name||appSettings.businessName,businessRut:cloudOrganization.rut||appSettings.businessRut,businessAddress:cloudOrganization.address||appSettings.businessAddress,currency:cloudOrganization.currency||appSettings.currency};
+ if(cfg){costSettings={...costSettings,vat:Number(cfg.vat_pct??costSettings.vat),profit:Number(cfg.default_profit_pct??costSettings.profit),profitMethod:cfg.profit_method||costSettings.profitMethod};}
+ saveAppSettings();localStorage.setItem("kucheCostSettings",JSON.stringify(costSettings));applyBrandSettings();loadCostSettingsFields();loadSettingsForm();
+}
+async function handleCloudAdminSession(session){
+ if(!session?.user||passwordRecoveryMode)return;
+ cloudAuthSession=session;setCloudStatus("Nube conectada","online");
+ let org=null;
+ try{org=await loadCloudOrganizationForUser(session.user);}catch(error){console.error(error);showLoginError("Supabase respondió, pero no pudimos leer el establecimiento: "+error.message);return;}
+ if(!org){
+   document.getElementById("loginOverlay")?.classList.add("hidden");
+   const n=document.getElementById("firstOrganizationName");if(n&&!n.value)n.value=appSettings.businessName||"KÜCHE";
+   document.getElementById("organizationOverlay")?.classList.remove("hidden");
+   return;
+ }
+ const profile=await loadCloudProfile(session.user.id);
+ currentSession={role:"admin",cloud:true,userId:session.user.id,orgId:org.id,name:profile?.full_name||appSettings.adminName||session.user.email,email:session.user.email};
+ sessionStorage.setItem("kucheSession",JSON.stringify(currentSession));
+ document.getElementById("organizationOverlay")?.classList.add("hidden");document.getElementById("loginOverlay")?.classList.add("hidden");
+ await hydrateCloudBasicSettings();applyAccessMode();updateCloudSettingsCard();
+}
+async function createFirstCloudOrganization(){
+ const err=document.getElementById("organizationSetupError"),name=(document.getElementById("firstOrganizationName")?.value||"").trim();
+ if(err)err.style.display="none";
+ if(!name){if(err){err.textContent="Escribe el nombre del establecimiento.";err.style.display="block";}return;}
+ if(!kucheCloud||!cloudAuthSession?.user){if(err){err.textContent="La sesión de Supabase no está disponible.";err.style.display="block";}return;}
+ const {data,error}=await kucheCloud.rpc("create_organization",{p_name:name});
+ if(error){if(err){err.textContent="No se pudo crear el establecimiento: "+error.message;err.style.display="block";}return;}
+ appSettings.businessName=name;saveAppSettings();
+ await handleCloudAdminSession(cloudAuthSession);
+}
+async function syncOrganizationSettingsToCloud(){
+ if(!kucheCloud||!cloudAuthSession?.user||!cloudOrganization||currentSession?.role!=="admin")return;
+ try{
+   const {error:e1}=await kucheCloud.from("organizations").update({name:appSettings.businessName||cloudOrganization.name,rut:appSettings.businessRut||null,address:appSettings.businessAddress||null,currency:appSettings.currency||"CLP"}).eq("id",cloudOrganization.id);
+   if(e1)throw e1;
+   const {error:e2}=await kucheCloud.from("organization_settings").update({vat_pct:Number(costSettings.vat)||0,default_profit_pct:Number(costSettings.profit)||0,profit_method:costSettings.profitMethod||"markup"}).eq("organization_id",cloudOrganization.id);
+   if(e2)throw e2;
+   const {error:e3}=await kucheCloud.from("profiles").update({full_name:appSettings.adminName||"Administrador"}).eq("id",cloudAuthSession.user.id);
+   if(e3)throw e3;
+   cloudOrganization={...cloudOrganization,name:appSettings.businessName||cloudOrganization.name,rut:appSettings.businessRut,address:appSettings.businessAddress,currency:appSettings.currency};
+   setCloudStatus("Nube conectada","online");updateCloudSettingsCard();
+ }catch(error){console.error("Cloud settings sync",error);setCloudStatus("Error de sincronización","offline");}
+}
+function updateCloudSettingsCard(){
+ const c=document.getElementById("cloudConnectionStatus"),u=document.getElementById("cloudUserEmail"),o=document.getElementById("cloudOrganizationDisplay");
+ if(c)c.textContent=cloudAuthSession?.user?"Conectado":"Sin sesión";
+ if(u)u.textContent=cloudAuthSession?.user?.email||"—";
+ if(o)o.textContent=cloudOrganization?.name||"—";
+}
+async function logoutKuche(){
+ if(currentSession?.cloud&&kucheCloud){try{await kucheCloud.auth.signOut();}catch(e){console.error(e);}}
+ sessionStorage.removeItem("kucheSession");currentSession=null;cloudAuthSession=null;cloudOrganization=null;cloudMembership=null;
+ document.body.classList.remove("worker-mode");document.getElementById("loginOverlay")?.classList.remove("hidden");setLoginMode("admin");setCloudStatus(kucheCloud?"Nube disponible":"Sin conexión",kucheCloud?"online":"offline");
+}
 function workerCanAccess(pageId){return ["dashboard","production","temperatures","checklists","reservations","shifts"].includes(pageId);}
 function applyAccessMode(){
  document.body.classList.toggle("worker-mode",currentSession?.role==="worker");
  document.querySelectorAll(".nav-item").forEach(btn=>{const m=(btn.getAttribute("onclick")||"").match(/showPage\('([^']+)'/);if(!m)return;btn.style.display=(currentSession?.role==="worker"&&!workerCanAccess(m[1]))?"none":"";});
- sidebarAdminName.textContent=currentSession?.name||appSettings.adminName||"Administrador";
+ const sidebarAdminName=document.getElementById("sidebarAdminName"),sidebarBusinessName=document.getElementById("sidebarBusinessName");
+ if(sidebarAdminName)sidebarAdminName.textContent=currentSession?.name||appSettings.adminName||"Administrador";
  if(currentSession?.role==="worker"){
-   sidebarBusinessName.textContent="Perfil trabajador";
+   if(sidebarBusinessName)sidebarBusinessName.textContent="Perfil trabajador";
    const labor=document.getElementById("statLaborToday");if(labor)labor.parentElement.style.display="none";
  }else{
-   sidebarBusinessName.textContent=appSettings.businessName||"Cuenta principal";
+   if(sidebarBusinessName)sidebarBusinessName.textContent=cloudOrganization?.name||appSettings.businessName||"Cuenta principal";
    const labor=document.getElementById("statLaborToday");if(labor)labor.parentElement.style.display="";
  }
+ updateCloudSettingsCard();
 }
-function initializeLogin(){populateWorkerLogin();if(currentSession){const valid=currentSession.role==="admin"||staff.some(w=>String(w.id)===String(currentSession.workerId));if(valid){loginOverlay.classList.add("hidden");applyAccessMode();return;}}loginOverlay.classList.remove("hidden");setLoginMode("admin");}
+async function initializeSupabaseAuth(){
+ if(!kucheCloud){setCloudStatus("Supabase no cargó","offline");return;}
+ setCloudStatus("Conectando nube…");
+ if(!cloudAuthSubscription){
+   const {data}=kucheCloud.auth.onAuthStateChange((event,session)=>{
+     if(event==="PASSWORD_RECOVERY"){
+       cloudAuthSession=session;showPasswordResetScreen();setCloudStatus("Recuperación de contraseña","online");return;
+     }
+     if(event==="SIGNED_OUT"){
+       cloudAuthSession=null;cloudOrganization=null;cloudMembership=null;
+       if(currentSession?.cloud){currentSession=null;sessionStorage.removeItem("kucheSession");document.getElementById("loginOverlay")?.classList.remove("hidden");}
+       setCloudStatus("Nube disponible","online");updateCloudSettingsCard();return;
+     }
+     if((event==="SIGNED_IN"||event==="INITIAL_SESSION"||event==="TOKEN_REFRESHED")&&session&&!passwordRecoveryMode){
+       setTimeout(()=>handleCloudAdminSession(session),0);
+     }
+   });
+   cloudAuthSubscription=data?.subscription||null;
+ }
+ const {data,error}=await kucheCloud.auth.getSession();
+ if(error){setCloudStatus("Error de nube","offline");console.error(error);return;}
+ if(data?.session&&!passwordRecoveryMode){await handleCloudAdminSession(data.session);}else if(!passwordRecoveryMode){setCloudStatus("Nube disponible","online");}
+}
+async function initializeLogin(){
+ populateWorkerLogin();
+ if(currentSession?.role==="worker"&&staff.some(w=>String(w.id)===String(currentSession.workerId))){document.getElementById("loginOverlay")?.classList.add("hidden");applyAccessMode();}
+ else{currentSession=null;sessionStorage.removeItem("kucheSession");document.getElementById("loginOverlay")?.classList.remove("hidden");setLoginMode("admin");}
+ await initializeSupabaseAuth();
+}
+
 
 /* =====================================================
    MOD AUTOMÁTICA POR RECETA
