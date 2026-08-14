@@ -570,6 +570,32 @@ COMPRAS / MERMAS / VENTAS / IA
 @media(max-width:1150px){.kds-board{grid-template-columns:1fr}.kds-stats{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:700px){.kds-stats{grid-template-columns:1fr}.kds-toolbar{display:grid;grid-template-columns:1fr}.kds-toolbar .field{min-width:0}}
 
+
+
+/* PROMOCIONES / COMBOS */
+.promo-info{background:#f7f3e9;border:1px solid var(--border);border-radius:12px;padding:14px 16px;font-size:12px;line-height:1.55;color:var(--muted);margin-bottom:16px}
+.promo-components{margin-top:14px;border:1px solid var(--border);border-radius:12px;padding:14px;background:#fff}
+.promo-components-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.promo-component-row{display:grid;grid-template-columns:minmax(220px,2fr) minmax(100px,.55fr) auto;gap:10px;align-items:end;padding:10px 0;border-bottom:1px solid var(--border)}
+.promo-component-row:last-child{border-bottom:0}
+.promo-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.promo-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:17px;box-shadow:var(--shadow)}
+.promo-card-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}
+.promo-card h3{margin:0 0 4px;font-size:16px}
+.promo-card p{margin:0;color:var(--muted);font-size:11px}
+.promo-component-list{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:10px 0}
+.promo-component-line{display:flex;justify-content:space-between;gap:12px;font-size:12px}
+.promo-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.promo-metric{background:var(--cream);border-radius:10px;padding:10px}
+.promo-metric span{display:block;color:var(--muted);font-size:10px;margin-bottom:4px}
+.promo-metric strong{font-size:13px}
+.promo-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+.promo-detail-in-cart{margin-top:6px;padding:7px 9px;border-radius:9px;background:var(--cream);font-size:10px;line-height:1.5;color:var(--muted)}
+.promo-label{display:inline-flex;align-items:center;border:1px solid #b98b34;background:#fff8e6;color:#7f5a18;border-radius:999px;padding:2px 7px;font-size:9px;font-weight:700;margin-left:5px}
+.promo-kds-parent{font-size:10px;color:#8a651d;font-weight:700;margin:2px 0 4px}
+.promo-sale-detail{font-size:10px;color:var(--muted);margin-top:3px}
+@media(max-width:900px){.promo-list{grid-template-columns:1fr}.promo-component-row{grid-template-columns:1fr 1fr}.promo-component-row .danger-button{grid-column:1/-1}.promo-metrics{grid-template-columns:1fr}}
+
 </style>
 </head>
 
@@ -626,6 +652,7 @@ COMPRAS / MERMAS / VENTAS / IA
 <button class="nav-item" onclick="showPage('sales',this)"><span>Ventas diarias</span></button>
 <button class="nav-item" onclick="showPage('reconciliation',this)"><span>Conciliación stock</span></button>
 <button class="nav-item" onclick="showPage('reservations',this)"><span>Reservas</span></button>
+<button class="nav-item" onclick="showPage('promotions',this)"><span>Promociones / combos</span></button>
 <button class="nav-item" onclick="showPage('commandas',this)"><span>Mesas y comandas</span></button>
 <button class="nav-item" onclick="showPage('kds',this)"><span>Cocina / Bar KDS</span></button>
 <button class="nav-item" onclick="showPage('cash',this)"><span>Caja y cierre de turno</span></button>
@@ -2268,6 +2295,43 @@ Cerrar
 
 <!-- ASISTENTE IA -->
 
+<!-- PROMOCIONES / COMBOS -->
+<section id="promotions" class="page">
+<div class="page-header">
+  <div><h1>Promociones y combos</h1><p>Crea promociones usando productos existentes de la carta sin duplicar recetas ni ingredientes.</p></div>
+  <button class="primary-button" onclick="newPromotion()">+ Nueva promoción</button>
+</div>
+
+<div class="operation-summary">
+  <div class="operation-stat"><div class="label">Promociones</div><div class="number" id="promoTotal">0</div></div>
+  <div class="operation-stat"><div class="label">Activas</div><div class="number" id="promoActive">0</div></div>
+  <div class="operation-stat"><div class="label">Precio promedio</div><div class="number" id="promoAveragePrice">$0</div></div>
+  <div class="operation-stat"><div class="label">Productos incluidos</div><div class="number" id="promoComponentCount">0</div></div>
+</div>
+
+<div class="promo-info"><strong>Cómo funciona:</strong> la promoción se cobra como un solo producto al precio especial, pero KÜCHE conserva el detalle de cada producto incluido. Al cerrar la cuenta, los ingredientes se descuentan desde las recetas originales y Cocina/Bar reciben los productos separados por estación.</div>
+
+<div id="promotionForm" class="form-panel">
+  <div id="promotionFormTitle" class="form-title">Nueva promoción</div>
+  <div class="module-grid">
+    <div class="field"><label>Nombre de la promoción</label><input id="promotionName" type="text" placeholder="Ej. Promo Pareja"></div>
+    <div class="field"><label>Precio final de venta $</label><input id="promotionPrice" type="number" min="0" step="1" oninput="updatePromotionPreview()"></div>
+    <div class="field"><label>Estado</label><select id="promotionStatus"><option value="activo">Activa</option><option value="inactivo">Inactiva</option></select></div>
+    <div class="field"><label>Etiqueta / categoría</label><input id="promotionLabel" type="text" value="Promoción" placeholder="Ej. Promo almuerzo"></div>
+  </div>
+  <div class="promo-components">
+    <div class="promo-components-head"><strong>Productos incluidos</strong><button type="button" class="secondary-button" onclick="addPromotionComponent()">+ Agregar producto</button></div>
+    <div id="promotionComponents"></div>
+  </div>
+  <div id="promotionPreview" class="status-box" style="margin-top:12px">Selecciona los productos que incluirá la promoción.</div>
+  <div class="field" style="margin-top:12px"><label>Observaciones internas</label><textarea id="promotionNotes" placeholder="Opcional"></textarea></div>
+  <div class="form-actions"><button class="primary-button" onclick="savePromotion()">Guardar promoción</button><button class="secondary-button" onclick="closePromotionForm()">Cancelar</button></div>
+</div>
+
+<div class="toolbar"><div class="search-box"><input id="promotionSearch" type="text" placeholder="Buscar promoción..." oninput="renderPromotions()"></div></div>
+<div id="promotionList" class="promo-list"></div>
+</section>
+
 <!-- MESAS Y COMANDAS / POS -->
 <section id="commandas" class="page">
 <div class="page-header">
@@ -2746,6 +2810,7 @@ let purchases = JSON.parse(localStorage.getItem("kuchePurchases")) || [];
 let wastes = JSON.parse(localStorage.getItem("kucheWaste")) || [];
 let staffMeals = JSON.parse(localStorage.getItem("kucheStaffMeals")) || [];
 let sales = JSON.parse(localStorage.getItem("kucheSales")) || [];
+let promotions = JSON.parse(localStorage.getItem("kuchePromotions")) || [];
 let reconciliations = JSON.parse(localStorage.getItem("kucheReconciliations")) || [];
 
 let diningTables = JSON.parse(localStorage.getItem("kucheDiningTables")) || [];
@@ -2775,6 +2840,7 @@ let activePOSOrderId = null;
 let editingId=null;
 let editingProductionId=null;
 let editingRecipeId=null;
+let editingPromotionId=null;
 let editingEquipmentId=null;
 let editingStaffId=null;
 let editingChecklistId=null;
@@ -2888,6 +2954,10 @@ localStorage.setItem("kucheProductions",JSON.stringify(productions));
 
 function saveRecipes(){
 localStorage.setItem("kucheRecipes",JSON.stringify(recipes));
+}
+
+function savePromotions(){
+localStorage.setItem("kuchePromotions",JSON.stringify(promotions));
 }
 
 function saveTemperatureEquipment(){
@@ -3063,6 +3133,9 @@ if(pageId==="recipes"){
 renderRecipes();
 
 updateRecipeStats();
+
+renderPromotions();
+updatePromotionStats();
 
 }
 
@@ -9226,6 +9299,7 @@ inventory,
 movements,
 productions,
 recipes,
+promotions,
 temperatureEquipment,
 temperatureRecords,
 staff,
@@ -9263,7 +9337,7 @@ reader.onload=function(){
 try{
 const data=JSON.parse(reader.result);
 if(!data||typeof data!=="object") throw new Error("Formato inválido");
-const keys=["inventory","movements","productions","recipes","temperatureEquipment","temperatureRecords","staff","attendance","checklists","checklistRecords","suppliers","purchases","wastes","staffMeals","sales","reconciliations"];
+const keys=["inventory","movements","productions","recipes","promotions","temperatureEquipment","temperatureRecords","staff","attendance","checklists","checklistRecords","suppliers","purchases","wastes","staffMeals","sales","reconciliations"];
 const hasData=keys.some(key=>Array.isArray(data[key]))||data.appSettings||data.costSettings;
 if(!hasData) throw new Error("El archivo no parece ser un respaldo de KÜCHE");
 if(!confirm("¿Importar este respaldo? Los datos actuales de KÜCHE serán reemplazados.")){
@@ -9277,6 +9351,7 @@ inventory:"kucheInventory",
 movements:"kucheMovements",
 productions:"kucheProductions",
 recipes:"kucheRecipes",
+promotions:"kuchePromotions",
 temperatureEquipment:"kucheTemperatureEquipment",
 temperatureRecords:"kucheTemperatureRecords",
 staff:"kucheStaff",
@@ -10106,6 +10181,120 @@ generateAIAnalysis = function(){
 ===================================================== */
 function enrichRecipeMODData(data,c){data.laborAuto=c.autoLabor;data.prepMinutes=c.prepMinutes;data.laborWorkerId=c.laborWorkerId;data.laborRate=c.laborRate;return data;}
 
+
+
+/* =====================================================
+   PROMOCIONES / COMBOS — VENTA + INVENTARIO + KDS
+===================================================== */
+function getPromotionById(id){return promotions.find(p=>String(p.id)===String(id));}
+function getPromotionComponents(promo){return Array.isArray(promo?.components)?promo.components:[];}
+function getPromotionComponentRecipe(component){return recipes.find(r=>String(r.id)===String(component.recipeId));}
+function getPromotionCost(promo){
+ return getPromotionComponents(promo).reduce((sum,c)=>{const r=getPromotionComponentRecipe(c);if(!r)return sum;const calc=calculateSavedRecipe(r);return sum+Number(calc.costPerPortion||0)*Number(c.quantity||0);},0);
+}
+function getPromotionComponentUnits(promo){return getPromotionComponents(promo).reduce((s,c)=>s+Number(c.quantity||0),0);}
+function getPromotionSnapshot(promo){
+ return getPromotionComponents(promo).map(c=>{const r=getPromotionComponentRecipe(c);return {recipeId:c.recipeId,recipeName:r?.name||c.recipeName||"Producto",quantity:Number(c.quantity||0),station:r?getRecipeStation(r):(c.station||"Cocina")};});
+}
+function getPromotionConsumptions(promo, promoQty=1){
+ const aggregate={};
+ getPromotionComponents(promo).forEach(c=>{const r=getPromotionComponentRecipe(c);if(!r)return;recipeConsumptions(r,Number(c.quantity||0)*Number(promoQty||0)).forEach(cons=>{const k=String(cons.productId);if(!aggregate[k])aggregate[k]={...cons,quantity:0};aggregate[k].quantity+=Number(cons.quantity||0);});});
+ return Object.values(aggregate);
+}
+function getPromotionAvailability(promo){
+ const committed=getOpenCommittedByProduct();const required=getPromotionConsumptions(promo,1);let portions=Infinity,criticalIngredient=false;const details=[];
+ if(!required.length)return {status:"out",portions:0,details:["Promoción sin componentes válidos"]};
+ required.forEach(c=>{const p=inventory.find(x=>String(x.id)===String(c.productId));if(!p||Number(c.quantity||0)<=0){portions=0;details.push((c.productName||"Insumo")+": no disponible");return;}const free=Number(p.quantity||0)-Number(committed[p.id]||0);const possible=Math.floor(Math.max(0,free)/Number(c.quantity||0)+1e-9);portions=Math.min(portions,possible);if(Number(p.quantity||0)<=Number(p.minimum||0))criticalIngredient=true;if(possible<=3)details.push(p.name+": "+possible+" promo(s) aprox.");});
+ if(portions===Infinity)portions=0;return {status:portions<1?"out":(portions<=3||criticalIngredient?"low":"ok"),portions,details};
+}
+
+function newPromotion(){
+ editingPromotionId=null;promotionFormTitle.textContent="Nueva promoción";promotionName.value="";promotionPrice.value="";promotionStatus.value="activo";promotionLabel.value="Promoción";promotionNotes.value="";promotionComponents.innerHTML="";addPromotionComponent();promotionForm.classList.add("open");updatePromotionPreview();
+}
+function closePromotionForm(){editingPromotionId=null;promotionForm.classList.remove("open");}
+function addPromotionComponent(existing=null){
+ const box=document.getElementById("promotionComponents");if(!box)return;const row=document.createElement("div");row.className="promo-component-row";
+ row.innerHTML=`<div class="field"><label>Producto de la carta</label><select class="promoRecipe"><option value="">Seleccionar producto</option>${recipes.slice().sort((a,b)=>a.name.localeCompare(b.name,'es')).map(r=>`<option value="${r.id}">${escapeHTML(r.name)} · ${escapeHTML(getRecipeStation(r))}</option>`).join("")}</select></div><div class="field"><label>Cantidad</label><input class="promoQty" type="number" min="1" step="1" value="1"></div><button type="button" class="danger-button">Eliminar</button>`;
+ box.appendChild(row);const sel=row.querySelector(".promoRecipe"),qty=row.querySelector(".promoQty");if(existing){sel.value=String(existing.recipeId);qty.value=Number(existing.quantity||1);}sel.addEventListener("change",updatePromotionPreview);qty.addEventListener("input",updatePromotionPreview);row.querySelector(".danger-button").addEventListener("click",()=>{row.remove();updatePromotionPreview();});updatePromotionPreview();
+}
+function collectPromotionComponents(){
+ const out=[];document.querySelectorAll(".promo-component-row").forEach(row=>{const recipeId=row.querySelector(".promoRecipe")?.value;const quantity=Number(row.querySelector(".promoQty")?.value)||0;const r=recipes.find(x=>String(x.id)===String(recipeId));if(r&&quantity>0)out.push({recipeId:r.id,recipeName:r.name,quantity,station:getRecipeStation(r)});});return out;
+}
+function updatePromotionPreview(){
+ const el=document.getElementById("promotionPreview");if(!el)return;const components=collectPromotionComponents(),price=Number(document.getElementById("promotionPrice")?.value)||0;let cost=0;components.forEach(c=>{const r=getPromotionComponentRecipe(c);if(r)cost+=Number(calculateSavedRecipe(r).costPerPortion||0)*c.quantity;});const difference=price-cost;el.className="status-box "+(price>0&&difference<0?"warning":"");el.innerHTML=components.length?`Productos incluidos: <strong>${components.reduce((s,c)=>s+c.quantity,0)}</strong> · Costo real estimado de componentes: <strong>$${formatMoney(cost)}</strong> · Precio promo: <strong>$${formatMoney(price)}</strong> · Diferencia precio − costo: <strong>$${formatMoney(difference)}</strong>`:"Selecciona los productos que incluirá la promoción.";
+}
+function savePromotion(){
+ const name=promotionName.value.trim(),price=Number(promotionPrice.value),status=promotionStatus.value,label=promotionLabel.value.trim()||"Promoción",components=collectPromotionComponents();if(!name||!price||price<=0){alert("Completa nombre y precio de la promoción.");return;}if(!components.length){alert("Agrega al menos un producto a la promoción.");return;}const data={id:editingPromotionId!==null?editingPromotionId:Date.now(),name,price,status,label,components,notes:promotionNotes.value.trim(),updatedAt:new Date().toISOString()};if(editingPromotionId!==null){const idx=promotions.findIndex(x=>String(x.id)===String(editingPromotionId));if(idx!==-1)promotions[idx]=data;}else promotions.unshift(data);savePromotions();closePromotionForm();renderPromotions();updatePromotionStats();renderPOS();
+}
+function editPromotion(id){const p=getPromotionById(id);if(!p)return;editingPromotionId=p.id;promotionFormTitle.textContent="Editar promoción";promotionName.value=p.name;promotionPrice.value=Number(p.price||0);promotionStatus.value=p.status||"activo";promotionLabel.value=p.label||"Promoción";promotionNotes.value=p.notes||"";promotionComponents.innerHTML="";getPromotionComponents(p).forEach(c=>addPromotionComponent(c));if(!getPromotionComponents(p).length)addPromotionComponent();promotionForm.classList.add("open");updatePromotionPreview();}
+function deletePromotion(id){const p=getPromotionById(id);if(!p)return;if(!confirm(`¿Eliminar la promoción "${p.name}"? Las ventas históricas conservarán el detalle ya registrado.`))return;promotions=promotions.filter(x=>String(x.id)!==String(id));savePromotions();renderPromotions();updatePromotionStats();renderPOS();}
+function renderPromotions(){
+ const box=document.getElementById("promotionList");if(!box)return;const q=(document.getElementById("promotionSearch")?.value||"").toLowerCase();const list=promotions.filter(p=>(p.name+" "+(p.label||"")).toLowerCase().includes(q));if(!list.length){box.innerHTML='<div class="table-card" style="grid-column:1/-1"><div class="empty-state"><strong>No hay promociones</strong><span>Crea una promoción usando productos ya registrados en Recetas y costos.</span></div></div>';return;}box.innerHTML=list.map(p=>{const cost=getPromotionCost(p),diff=Number(p.price||0)-cost,avail=p.status==="activo"?getPromotionAvailability(p):{status:"inactive",portions:0};const comp=getPromotionComponents(p);const badge=p.status!=="activo"?'<span class="badge badge-danger">Inactiva</span>':avail.status==="out"?'<span class="badge badge-danger">Sin stock</span>':avail.status==="low"?`<span class="badge badge-warning">Stock bajo · ~${avail.portions}</span>`:'<span class="badge badge-success">Disponible</span>';return `<div class="promo-card"><div class="promo-card-head"><div><h3>${escapeHTML(p.name)}</h3><p>${escapeHTML(p.label||'Promoción')}</p></div>${badge}</div><div class="promo-component-list">${comp.map(c=>`<div class="promo-component-line"><span>${Number(c.quantity||0)} × ${escapeHTML(c.recipeName||getPromotionComponentRecipe(c)?.name||'Producto')}</span><span>${escapeHTML(c.station||getRecipeStation(getPromotionComponentRecipe(c)||{}))}</span></div>`).join('')}</div><div class="promo-metrics"><div class="promo-metric"><span>Precio promo</span><strong>$${formatMoney(p.price)}</strong></div><div class="promo-metric"><span>Costo componentes</span><strong>$${formatMoney(cost)}</strong></div><div class="promo-metric"><span>Precio − costo</span><strong>$${formatMoney(diff)}</strong></div></div><div class="promo-actions"><button class="secondary-button" onclick="editPromotion(${p.id})">Editar</button><button class="danger-button" onclick="deletePromotion(${p.id})">Eliminar</button></div></div>`;}).join("");
+}
+function updatePromotionStats(){const total=promotions.length,active=promotions.filter(p=>p.status==="activo"),avg=active.length?active.reduce((s,p)=>s+Number(p.price||0),0)/active.length:0,units=active.reduce((s,p)=>s+getPromotionComponentUnits(p),0);document.getElementById("promoTotal")&&(promoTotal.textContent=total);document.getElementById("promoActive")&&(promoActive.textContent=active.length);document.getElementById("promoAveragePrice")&&(promoAveragePrice.textContent="$"+formatMoney(avg));document.getElementById("promoComponentCount")&&(promoComponentCount.textContent=units);}
+
+/* POS: catálogo conjunto de productos individuales + promociones */
+renderPOSCategories = function(){const sel=document.getElementById("posCategoryFilter");if(!sel)return;const current=sel.value;const cats=[...new Set(recipes.map(r=>r.category).filter(Boolean))].sort();sel.innerHTML='<option value="">Todos los productos</option><option value="__PROMO__">Promociones / combos</option>'+cats.map(c=>`<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`).join("");if(Array.from(sel.options).some(o=>o.value===current))sel.value=current;};
+renderPOSCatalog = function(){
+ const grid=document.getElementById("posProductGrid");if(!grid)return;renderPOSCategories();const q=(document.getElementById("posProductSearch")?.value||"").toLowerCase(),cat=document.getElementById("posCategoryFilter")?.value||"";let html=[];
+ if(cat!=="__PROMO__")recipes.filter(r=>r.name.toLowerCase().includes(q)&&(!cat||r.category===cat)).forEach(r=>{const a=getRecipeAvailability(r),calc=calculateSavedRecipe(r),price=Math.round(Number(calc.finalPerPortion||0)),cls=a.status==="out"?'out':a.status==="low"?'low':'',availability=a.status==="out"?'SIN STOCK':a.status==="low"?`Stock bajo · ~${a.portions} porción(es)`:`Disponible · ~${a.portions} porción(es)`;html.push(`<div class="pos-product ${cls}"><div class="pos-product-name">${escapeHTML(r.name)}</div><span class="station-badge">${escapeHTML(getRecipeStation(r))}</span><div class="pos-product-price">$${formatMoney(price)}</div><div class="pos-product-meta">${escapeHTML(availability)}</div><button class="${a.status==='out'?'danger-button':'primary-button'}" onclick="addPOSItem(${r.id})">${a.status==='out'?'Agregar con PIN':'Agregar'}</button></div>`);});
+ if(!cat||cat==="__PROMO__")promotions.filter(p=>p.status==="activo"&&p.name.toLowerCase().includes(q)).forEach(p=>{const a=getPromotionAvailability(p),cls=a.status==="out"?'out':a.status==="low"?'low':'',availability=a.status==="out"?'SIN STOCK':a.status==="low"?`Stock bajo · ~${a.portions} promo(s)`:`Disponible · ~${a.portions} promo(s)`,detail=getPromotionComponents(p).map(c=>`${c.quantity}× ${c.recipeName}`).join(' · ');html.push(`<div class="pos-product ${cls}"><div class="pos-product-name">${escapeHTML(p.name)} <span class="promo-label">PROMO</span></div><span class="station-badge">Varias estaciones</span><div class="pos-product-price">$${formatMoney(p.price)}</div><div class="pos-product-meta">${escapeHTML(availability)}</div><div class="promo-detail-in-cart">${escapeHTML(detail)}</div><button class="${a.status==='out'?'danger-button':'primary-button'}" onclick="addPOSPromotion(${p.id})">${a.status==='out'?'Agregar con PIN':'Agregar promo'}</button></div>`);});
+ grid.innerHTML=html.join("")||'<div class="pos-empty">No hay productos para mostrar.</div>';
+};
+const _promoBaseGetPOSStockSummary=getPOSStockSummary;
+getPOSStockSummary = function(){const recipeRows=recipes.map(r=>({recipe:r,kind:"recipe",...getRecipeAvailability(r)})),promoRows=promotions.filter(p=>p.status==="activo").map(p=>({recipe:{name:p.name},promotion:p,kind:"promotion",...getPromotionAvailability(p)})),rows=[...recipeRows,...promoRows];return {all:rows,low:rows.filter(x=>x.status==="low"),out:rows.filter(x=>x.status==="out")};};
+
+function getPromoChildren(order,parentId){return (order.items||[]).filter(i=>i.promotionComponent&&String(i.parentPromotionItemId)===String(parentId));}
+function promoCanMerge(order,parent){const children=getPromoChildren(order,parent.id);return children.length&&children.every(c=>!c.kdsStatus||c.kdsStatus==="draft");}
+function syncPromotionChildren(order,parent,resetSent=false){
+ const snapshot=Array.isArray(parent.components)?parent.components:[];let children=getPromoChildren(order,parent.id);snapshot.forEach((c,index)=>{let child=children.find(x=>String(x.componentKey)===String(c.recipeId)+"|"+index);const recipe=recipes.find(r=>String(r.id)===String(c.recipeId));if(!recipe)return;if(!child){child={id:Date.now()+Math.random(),itemType:"promo_component",promotionComponent:true,parentPromotionItemId:parent.id,parentPromotionId:parent.promotionId,parentPromotionName:parent.recipeName,componentKey:String(c.recipeId)+"|"+index,recipeId:recipe.id,recipeName:recipe.name,station:getRecipeStation(recipe),quantity:0,unitPrice:0,notes:"",promoNote:parent.notes||"",addedBy:parent.addedBy,addedAt:new Date().toISOString(),kdsStatus:"draft"};order.items.push(child);}child.quantity=Number(c.quantity||0)*Number(parent.quantity||0);child.recipeName=recipe.name;child.station=getRecipeStation(recipe);child.parentPromotionName=parent.recipeName;child.promoNote=parent.notes||"";if(resetSent){child.kdsStatus="new";child.sentAt=new Date().toISOString();delete child.readyAt;delete child.deliveredAt;}});const validKeys=new Set(snapshot.map((c,index)=>String(c.recipeId)+"|"+index));order.items=order.items.filter(i=>!i.promotionComponent||String(i.parentPromotionItemId)!==String(parent.id)||validKeys.has(String(i.componentKey)));}
+function addPOSPromotion(promoId){
+ const order=getActivePOSOrder();if(!order){alert("Primero selecciona una mesa.");return;}const promo=getPromotionById(promoId);if(!promo||promo.status!=="activo")return;const a=getPromotionAvailability(promo);let override=false;if(a.status==="out"){if(!authorizeAdminOverride("Comanda promoción sin stock",promo.name,"La promoción no puede completarse con el inventario teórico disponible"))return;override=true;}let parent=(order.items||[]).find(i=>i.itemType==="promotion"&&String(i.promotionId)===String(promo.id)&&promoCanMerge(order,i));if(parent){parent.quantity=Number(parent.quantity||0)+1;parent.override=parent.override||override;syncPromotionChildren(order,parent);}else{const w=getPOSWorkerIdentity();parent={id:Date.now()+Math.random(),itemType:"promotion",commercialOnly:true,promotionId:promo.id,recipeName:promo.name,station:"Promoción",quantity:1,unitPrice:Number(promo.price||0),components:getPromotionSnapshot(promo),notes:"",override,addedBy:w.workerName,addedAt:new Date().toISOString(),kdsStatus:"delivered"};order.items.push(parent);syncPromotionChildren(order,parent);}savePOSOrders();renderPOS();renderKDS();
+}
+
+const _promoBaseChangePOSQty=changePOSQty;
+changePOSQty = function(itemId,delta){
+ const order=getActivePOSOrder(),item=order?.items.find(i=>String(i.id)===String(itemId));if(!item)return;if(item.itemType!=="promotion")return _promoBaseChangePOSQty(itemId,delta);const children=getPromoChildren(order,item.id),sent=children.some(c=>c.kdsStatus&&c.kdsStatus!=="draft");if(sent&&!authorizeAdminOverride("Modificar promoción enviada",item.recipeName,"Cambio de cantidad después de enviar sus productos a producción"))return;if(delta>0){const promo=getPromotionById(item.promotionId);const a=promo?getPromotionAvailability(promo):{status:"out"};if(a.status==="out"&&!authorizeAdminOverride("Aumentar promoción sin stock",item.recipeName,"Stock teórico insuficiente para completar otra promoción"))return;if(sent){addPOSPromotion(item.promotionId);return;}item.quantity=Number(item.quantity||0)+1;syncPromotionChildren(order,item);}else{item.quantity=Number(item.quantity||0)-1;if(item.quantity<=0){order.items=order.items.filter(i=>String(i.id)!==String(item.id)&&String(i.parentPromotionItemId)!==String(item.id));}else syncPromotionChildren(order,item,sent);}savePOSOrders();renderPOS();renderKDS();
+};
+const _promoBaseEditPOSItemNote=editPOSItemNote;
+editPOSItemNote = function(itemId){const order=getActivePOSOrder(),item=order?.items.find(i=>String(i.id)===String(itemId));if(!item)return;if(item.itemType!=="promotion")return _promoBaseEditPOSItemNote(itemId);const children=getPromoChildren(order,item.id),sent=children.some(c=>c.kdsStatus&&c.kdsStatus!=="draft");if(sent&&!authorizeAdminOverride("Modificar observación de promoción enviada",item.recipeName,"Cambio de nota después de enviar a producción"))return;const v=prompt("Observación para la promoción:",item.notes||"");if(v===null)return;item.notes=v.trim();children.forEach(c=>{c.promoNote=item.notes;if(sent){c.kdsStatus="new";c.sentAt=new Date().toISOString();}});savePOSOrders();renderPOSOrder();renderKDS();};
+
+renderPOSOrder = function(){
+ const order=getActivePOSOrder(),empty=document.getElementById("posNoOrder"),content=document.getElementById("posOrderContent");if(!empty||!content)return;if(!order){empty.style.display="block";content.style.display="none";renderPOSReadyBanner();return;}normalizeKDSData();empty.style.display="none";content.style.display="block";posOrderTableName.textContent=order.tableName;posOrderWorker.textContent=order.workerName+" · abierta "+new Date(order.openedAt).toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});posPeople.value=order.people||1;const visible=(order.items||[]).filter(i=>!i.promotionComponent);posCart.innerHTML=visible.length?visible.map(i=>{if(i.itemType==="promotion"){const children=getPromoChildren(order,i.id),statuses=children.map(c=>c.kdsStatus||"draft"),status=statuses.some(s=>s==="draft")?"Sin enviar":statuses.every(s=>s==="delivered")?"Entregada":statuses.every(s=>["ready","delivered"].includes(s))?"Lista / parcial":statuses.some(s=>s==="preparing")?"Preparando":"En producción";const detail=(i.components||[]).map(c=>`${Number(c.quantity||0)*Number(i.quantity||0)}× ${escapeHTML(c.recipeName)}`).join(' · ');return `<div class="pos-cart-row"><div><div class="pos-cart-name">${escapeHTML(i.recipeName)} <span class="promo-label">PROMO</span> ${i.override?'<span class="badge badge-danger">PIN</span>':''}</div><span class="station-badge">${escapeHTML(status)}</span><div class="promo-detail-in-cart">${detail}</div><div class="pos-cart-note">${escapeHTML(i.notes||'Sin observaciones')}</div><button class="secondary-button" style="margin-top:5px;padding:4px 7px;font-size:10px" onclick="editPOSItemNote('${i.id}')">Nota</button></div><div><div class="pos-cart-controls"><button class="qty-btn" onclick="changePOSQty('${i.id}',-1)">−</button><strong>${i.quantity}</strong><button class="qty-btn" onclick="changePOSQty('${i.id}',1)">+</button></div><div style="text-align:right;font-size:11px;margin-top:5px">$${formatMoney(i.quantity*i.unitPrice)}</div></div></div>`;}return `<div class="pos-cart-row"><div><div class="pos-cart-name">${escapeHTML(i.recipeName)} ${i.override?'<span class="badge badge-danger">PIN</span>':''}<span class="kds-mini-status ${getKDSStatusClass(i.kdsStatus)}">${getKDSStatusLabel(i.kdsStatus)}</span></div><span class="station-badge">${escapeHTML(i.station||'Cocina')}</span><div class="pos-cart-note">${escapeHTML(i.notes||'Sin observaciones')}</div><button class="secondary-button" style="margin-top:5px;padding:4px 7px;font-size:10px" onclick="editPOSItemNote('${i.id}')">Nota</button></div><div><div class="pos-cart-controls"><button class="qty-btn" onclick="changePOSQty('${i.id}',-1)">−</button><strong>${i.quantity}</strong><button class="qty-btn" onclick="changePOSQty('${i.id}',1)">+</button></div><div style="text-align:right;font-size:11px;margin-top:5px">$${formatMoney(i.quantity*i.unitPrice)}</div></div></div>`;}).join(""):'<div class="pos-empty">Aún no agregas productos.</div>';posSubtotal.textContent="$"+formatMoney(getOrderSubtotal(order));posTotal.textContent="$"+formatMoney(getOrderTotal(order));renderPOSReadyBanner();
+};
+
+/* Impresión: el precio sigue siendo de la promo, pero producción recibe el detalle por estación. */
+printCurrentPOSOrder = function(station){
+ const order=getActivePOSOrder();if(!order||!order.items.length){alert("No hay productos en la comanda.");return;}normalizeKDSData();let items=(order.items||[]).filter(i=>!i.commercialOnly&&(station==="all"||(i.station||"Cocina")===station));if(!items.length){alert("No hay productos para esa estación.");return;}let fresh=items.filter(i=>i.kdsStatus==="draft"),isReprint=!fresh.length;if(fresh.length){const now=new Date().toISOString();fresh.forEach(i=>{i.kdsStatus="new";i.sentAt=now;i.sentBy=getPOSWorkerIdentity().workerName;});order.lastSentAt=now;items=fresh;savePOSOrders();}else if(!confirm("No hay productos nuevos para esta estación. ¿Reimprimir la comanda existente?"))return;const groups={};items.forEach(i=>{const st=i.station||"Cocina";(groups[st]||(groups[st]=[])).push(i);});const win=window.open("","_blank","width=430,height=720");if(!win){alert("El navegador bloqueó la ventana de impresión.");return;}const sections=Object.entries(groups).map(([st,list])=>`<section style="page-break-after:always"><h2>${escapeHTML(st)} ${isReprint?'· REIMPRESIÓN':''}</h2><div>Mesa: <strong>${escapeHTML(order.tableName)}</strong> · Personas: ${order.people||1}</div><div>Garzón: ${escapeHTML(order.workerName)} · ${new Date().toLocaleString('es-CL')}</div><hr>${list.map(i=>`<div style="font-size:18px;margin:12px 0">${i.promotionComponent?`<div style="font-size:12px;font-weight:700;color:#76551c">PROMO: ${escapeHTML(i.parentPromotionName)}</div>`:''}<strong>${i.quantity} × ${escapeHTML(i.recipeName)}</strong>${i.promoNote?`<div style="font-size:14px">Obs promo: ${escapeHTML(i.promoNote)}</div>`:''}${i.notes?`<div style="font-size:14px">Obs: ${escapeHTML(i.notes)}</div>`:''}</div>`).join('')}</section>`).join('');win.document.write(`<!doctype html><html><head><title>Comanda ${escapeHTML(order.tableName)}</title><style>body{font-family:Arial,sans-serif;padding:16px;color:#111}h2{font-size:22px;margin:0 0 8px}hr{border:0;border-top:1px dashed #333;margin:14px 0}@media print{body{padding:0}section:last-child{page-break-after:auto}}</style></head><body>${sections}</body></html>`);win.document.close();order.lastPrintedAt=new Date().toISOString();savePOSOrders();renderPOS();renderKDS();setTimeout(()=>{win.focus();win.print();},250);
+};
+
+/* KDS: oculta la línea comercial de la promo y muestra sus productos reales. */
+getKDSStations = function(){normalizeKDSData();const list=[...new Set(posOrders.flatMap(o=>(o.items||[]).filter(i=>!i.commercialOnly).map(i=>i.station||"Cocina")).concat(recipes.map(r=>getRecipeStation(r))))].filter(Boolean).sort();const allowed=getKDSWorkerStations();return allowed===null?list:list.filter(x=>allowed.includes(x));};
+getKDSFilteredItems = function(){normalizeKDSData();const filter=document.getElementById("kdsStationFilter")?.value||"all",allowed=getKDSWorkerStations(),result=[];posOrders.forEach(order=>{if(!["open","paid"].includes(order.status))return;(order.items||[]).forEach(item=>{if(item.commercialOnly||!item.kdsStatus||item.kdsStatus==="draft")return;const station=item.station||"Cocina";if(filter!=="all"&&station!==filter)return;if(allowed!==null&&!allowed.includes(station))return;result.push({order,item,station});});});return result;};
+kdsTicketHTML = function(group,status){const items=group.items.filter(i=>i.kdsStatus===status);if(!items.length)return "";const firstSent=Math.min(...items.map(i=>new Date(i.sentAt||i.addedAt||Date.now()).getTime())),elapsed=Math.max(0,Math.floor((Date.now()-firstSent)/60000)),urgent=elapsed>=15&&status!=="ready",ready=status==="ready";return `<div class="kds-ticket ${urgent?'urgent':''} ${ready?'ready':''}"><div class="kds-ticket-head"><div><div class="kds-ticket-table">${escapeHTML(group.order.tableName)}</div><div class="kds-ticket-meta">${escapeHTML(group.station)} · ${escapeHTML(group.order.workerName||'')} · ${group.order.people||1} pers.</div></div><div class="kds-elapsed">${elapsed} min</div></div>${items.map(i=>`<div class="kds-item"><div>${i.promotionComponent?`<div class="promo-kds-parent">PROMO · ${escapeHTML(i.parentPromotionName)}</div>`:''}<div class="kds-item-name">${Number(i.quantity||0)} × ${escapeHTML(i.recipeName)}</div>${i.promoNote?`<div class="kds-item-note">Promo: ${escapeHTML(i.promoNote)}</div>`:''}${i.notes?`<div class="kds-item-note">${escapeHTML(i.notes)}</div>`:''}<span class="kds-item-status ${getKDSStatusClass(i.kdsStatus)}">${getKDSStatusLabel(i.kdsStatus)}</span></div><button class="secondary-button" style="padding:6px 8px;font-size:10px" onclick="advanceKDSItem('${group.order.id}','${i.id}')">${i.kdsStatus==='new'?'Preparar':i.kdsStatus==='preparing'?'Lista':i.kdsStatus==='ready'?'Entregar':'✓'}</button></div>`).join('')}<div class="kds-ticket-actions">${status==='new'?`<button class="secondary-button" onclick="setKDSTicketStatus('${group.order.id}','${escapeHTML(group.station)}','preparing')">Tomar comanda</button>`:''}${status!=='ready'?`<button class="primary-button" onclick="setKDSTicketStatus('${group.order.id}','${escapeHTML(group.station)}','ready')">Todo listo</button>`:`<button class="primary-button" onclick="setKDSTicketStatus('${group.order.id}','${escapeHTML(group.station)}','delivered')">Todo entregado</button>`}</div></div>`;};
+
+/* Ventas: registra la promo como ingreso y cada componente como detalle $0. */
+const _promoBaseFinalizePOSPayment=finalizePOSPayment;
+finalizePOSPayment = function(){
+ const order=getActivePOSOrder();if(!order)return _promoBaseFinalizePOSPayment();const promoParents=(order.items||[]).filter(i=>i.itemType==="promotion"),promoChildren=(order.items||[]).filter(i=>i.promotionComponent);_promoBaseFinalizePOSPayment();if(order.status!=="paid")return;const rows=sales.filter(s=>String(s.orderId)===String(order.id));promoParents.forEach(parent=>{const row=rows.find(s=>!s.saleType&&!s.promotionComponent&&!s.recipeId&&s.recipeName===parent.recipeName);if(row){row.saleType="promotion";row.promotionId=parent.promotionId;row.components=parent.components;}});promoChildren.forEach(child=>{const row=rows.find(s=>!s.saleType&&!s.promotionComponent&&String(s.recipeId)===String(child.recipeId)&&Number(s.quantity)===Number(child.quantity)&&Math.abs(Number(s.total||0))<1e-9);if(row){row.promotionComponent=true;row.parentPromotionName=child.parentPromotionName;row.promotionId=child.parentPromotionId;row.saleType="promotion_component";}});saveSales();renderSales();updateSalesStats();
+};
+renderSales = function(){const table=document.getElementById("salesTable");if(!table)return;const date=document.getElementById("salesFilterDate")?.value||getToday();let list=sales;if(!salesShowAll)list=list.filter(x=>x.date===date);if(!list.length){table.innerHTML='<tr><td colspan="7"><div class="empty-state"><strong>No hay ventas registradas</strong></div></td></tr>';return;}table.innerHTML=list.map(x=>{const isComp=x.promotionComponent,isPromo=x.saleType==="promotion";return `<tr><td>${formatDate(x.date)}</td><td><strong>${isComp?'↳ ':''}${escapeHTML(x.recipeName)}</strong>${isPromo?'<div class="promo-sale-detail"><span class="promo-label">PROMO</span> Venta comercial</div>':''}${isComp?`<div class="promo-sale-detail">Incluido en ${escapeHTML(x.parentPromotionName||'promoción')}</div>`:''}</td><td>${x.quantity}</td><td>${isComp?'Incluido':'$'+formatMoney(x.unitPrice)}</td><td><strong>${isComp?'$0':'$'+formatMoney(x.total)}</strong></td><td>${escapeHTML(x.channel||"—")}${isComp?'<div class="category">Detalle promo</div>':''}${x.status==="anulada"?'<div class="category">Anulada</div>':''}</td><td>${x.status!=="anulada"&&x.source!=="pos"?`<button class="danger-button" onclick="cancelSale(${x.id})">Anular</button>`:x.source==="pos"?'<span class="badge badge-blue">Desde POS</span>':""}</td></tr>`;}).join("");};
+updateSalesStats = function(){const month=getCurrentMonthPrefix(),today=getToday(),active=sales.filter(x=>x.status!=="anulada"),todayList=active.filter(x=>x.date===today),monthList=active.filter(x=>(x.date||"").startsWith(month)),todayAmount=todayList.reduce((a,b)=>a+Number(b.total||0),0),monthAmount=monthList.reduce((a,b)=>a+Number(b.total||0),0),deliveredUnits=todayList.filter(x=>x.saleType!=="promotion").reduce((a,b)=>a+Number(b.quantity||0),0),posTx=posOrders.filter(o=>o.status==="paid"&&String(o.closedAt||"").startsWith(month)).length,manualTx=monthList.filter(x=>x.source!=="pos"&&!x.promotionComponent).length,tx=posTx+manualTx;document.getElementById("salesTodayAmount")&&(salesTodayAmount.textContent="$"+formatMoney(todayAmount));document.getElementById("salesTodayUnits")&&(salesTodayUnits.textContent=deliveredUnits);document.getElementById("salesMonthAmount")&&(salesMonthAmount.textContent="$"+formatMoney(monthAmount));document.getElementById("salesAverageTicket")&&(salesAverageTicket.textContent="$"+formatMoney(tx?monthAmount/tx:0));};
+
+/* Vista de stock: ahora también incluye promociones. */
+const _promoBaseRenderWorkerStockAlert=renderWorkerStockAlert;
+renderWorkerStockAlert = function(){const el=document.getElementById("workerStockAlert");if(!el)return;if(currentSession?.role==="worker"&&isGarzon()){const s=getPOSStockSummary();el.style.display="inline-flex";el.className="stock-alert-pill "+(s.out.length?"danger":s.low.length?"":"ok");el.textContent=s.out.length?`${s.out.length} sin stock · ${s.low.length} bajo`:s.low.length?`${s.low.length} producto(s) con poco stock`:"Stock disponible";}else el.style.display="none";};
+
+/* Navegación del nuevo módulo */
+const _promoBaseShowPage=showPage;
+showPage = function(pageId,button){_promoBaseShowPage(pageId,button);if(pageId==="promotions"){renderPromotions();updatePromotionStats();}};
+
+/* IA: distingue promociones vendidas de productos realmente despachados. */
+const _promoBaseGenerateAIAnalysis=generateAIAnalysis;
+generateAIAnalysis = function(){_promoBaseGenerateAIAnalysis();const out=document.getElementById("aiOutput");if(!out)return;const month=getCurrentMonthPrefix(),paid=posOrders.filter(o=>o.status==="paid"&&String(o.closedAt||"").startsWith(month)),promoCount={},componentCount={};paid.forEach(o=>(o.items||[]).forEach(i=>{if(i.itemType==="promotion")promoCount[i.recipeName]=(promoCount[i.recipeName]||0)+Number(i.quantity||0);if(i.promotionComponent)componentCount[i.recipeName]=(componentCount[i.recipeName]||0)+Number(i.quantity||0);}));const topPromo=Object.entries(promoCount).sort((a,b)=>b[1]-a[1])[0],topComponent=Object.entries(componentCount).sort((a,b)=>b[1]-a[1])[0];if(Object.keys(promoCount).length)out.innerHTML+=`<h3 style="margin-top:18px">Promociones y productos incluidos</h3><p>Promociones vendidas este mes: <strong>${Object.values(promoCount).reduce((a,b)=>a+b,0)}</strong>${topPromo?` · Promo más vendida: <strong>${escapeHTML(topPromo[0])}</strong> (${topPromo[1]})`:''}.</p><p>Productos despachados dentro de promociones: <strong>${Object.values(componentCount).reduce((a,b)=>a+b,0)}</strong>${topComponent?` · Más frecuente: <strong>${escapeHTML(topComponent[0])}</strong> (${topComponent[1]})`:''}.</p>`;};
+
+/* Sincronización de promociones entre pestañas del mismo navegador. */
+window.addEventListener("storage",event=>{if(event.key==="kuchePromotions"){try{promotions=JSON.parse(event.newValue||"[]")||[];}catch(e){}renderPromotions();updatePromotionStats();renderPOS();}});
 
 /* =====================================================
 INICIO
