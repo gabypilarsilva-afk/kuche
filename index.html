@@ -843,6 +843,10 @@ COMPRAS / MERMAS / VENTAS / IA
 <span>Reportes</span>
 </button>
 
+<button class="nav-item" onclick="showPage('appearance',this)">
+<span>Mi apariencia</span>
+</button>
+
 <button class="nav-item" onclick="showPage('settings',this)">
 <span>Configuración</span>
 </button>
@@ -3042,6 +3046,57 @@ Cerrar
 
 </section>
 
+
+<!-- MI APARIENCIA -->
+<section id="appearance" class="page">
+<div class="page-header">
+<div>
+<h1>Mi apariencia</h1>
+<p>Personaliza el color principal de tu propia cuenta. Este cambio no modifica la interfaz de otros usuarios.</p>
+</div>
+</div>
+
+<div class="integral-panel">
+<div class="theme-layout">
+<div>
+<h2>Colores disponibles</h2>
+<div class="sub">El fondo beige se mantiene fijo. Elige el color que prefieras para tu interfaz.</div>
+<div id="themePresetGrid" class="theme-preset-grid"></div>
+</div>
+
+<div class="theme-custom-box">
+<div class="field">
+<label>Color personalizado</label>
+<div class="theme-color-row">
+<input id="themeColorPicker" type="color" value="#173f35" onchange="themePickerChanged(this.value)">
+<input id="themeColorHex" type="text" value="#173f35" maxlength="7" placeholder="#173F35" oninput="themeHexTyping(this.value)">
+</div>
+</div>
+
+<div class="theme-preview">
+<div class="theme-preview-head">KÜCHE</div>
+<div class="theme-preview-body">
+<div class="theme-preview-card">
+Vista previa de tu interfaz
+<div class="theme-preview-button">Botón principal</div>
+</div>
+</div>
+</div>
+
+<div id="themeSaveStatus" class="theme-fixed-note">
+Fondo principal fijo: beige original #F6F3EC.
+</div>
+
+<div class="form-actions" style="margin-top:10px">
+<button type="button" class="primary-button" onclick="applyCustomThemeFromField()">Aplicar color</button>
+<button type="button" class="secondary-button" onclick="resetThemeToOriginal()">Volver al verde original</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+
 <!-- CONFIGURACIÓN -->
 
 <section id="settings" class="page">
@@ -3082,38 +3137,6 @@ Cerrar
 </div>
 
 
-<div class="config-card full admin-only">
-<h3>Apariencia</h3>
-<p>El fondo beige de KÜCHE se mantiene fijo. Cada restaurante puede elegir libremente su color principal.</p>
-<div class="theme-layout">
-<div>
-<div id="themePresetGrid" class="theme-preset-grid"></div>
-</div>
-<div class="theme-custom-box">
-<div class="field">
-<label>Color personalizado</label>
-<div class="theme-color-row">
-<input id="themeColorPicker" type="color" value="#173f35" onchange="themePickerChanged(this.value)">
-<input id="themeColorHex" type="text" value="#173f35" maxlength="7" placeholder="#173F35" oninput="themeHexTyping(this.value)">
-</div>
-</div>
-<div class="theme-preview">
-<div class="theme-preview-head">KÜCHE</div>
-<div class="theme-preview-body">
-<div class="theme-preview-card">
-Vista previa de la interfaz
-<div class="theme-preview-button">Botón principal</div>
-</div>
-</div>
-</div>
-<div id="themeSaveStatus" class="theme-fixed-note">Fondo principal fijo: beige original #F6F3EC.</div>
-<div class="form-actions" style="margin-top:10px">
-<button type="button" class="primary-button" onclick="applyCustomThemeFromField()">Aplicar color</button>
-<button type="button" class="secondary-button" onclick="resetThemeToOriginal()">Volver al verde original</button>
-</div>
-</div>
-</div>
-</div>
 
 <div class="config-card full">
 <h3>Parámetros financieros</h3>
@@ -3263,6 +3286,7 @@ currency:"CLP"
 
 appSettings.adminPin = appSettings.adminPin || "";
 appSettings.primaryColor = appSettings.primaryColor || "#173f35";
+let currentUserThemeColor="#173F35";
 
 let checklists =
 JSON.parse(localStorage.getItem("kucheChecklists")) || [];
@@ -9898,36 +9922,88 @@ function previewCustomTheme(value){
  applyThemeColor(color,false);
  return true;
 }
+
+function currentThemeUserId(){
+ return currentSession?.userId||cloudAuthSession?.user?.id||"";
+}
+function localUserThemeKey(userId=currentThemeUserId()){
+ return userId?`kucheUserTheme::${userId}`:"kucheUserTheme::guest";
+}
+function loadLocalUserTheme(userId=currentThemeUserId()){
+ const stored=cleanThemeHex(localStorage.getItem(localUserThemeKey(userId))||"");
+ return stored||"#173F35";
+}
+function saveLocalUserTheme(color,userId=currentThemeUserId()){
+ const valid=cleanThemeHex(color)||"#173F35";
+ localStorage.setItem(localUserThemeKey(userId),valid);
+ return valid;
+}
+async function loadUserThemeFromCloud(){
+ const userId=currentThemeUserId();
+ if(!userId){
+   currentUserThemeColor=loadLocalUserTheme("");
+   applyThemeColor(currentUserThemeColor,false);
+   return currentUserThemeColor;
+ }
+ let color=loadLocalUserTheme(userId);
+ if(kucheCloud){
+   try{
+     const {data,error}=await kucheCloud
+       .from("user_themes")
+       .select("primary_color")
+       .eq("user_id",userId)
+       .maybeSingle();
+     if(error)throw error;
+     const cloudColor=cleanThemeHex(data?.primary_color||"");
+     if(cloudColor)color=cloudColor;
+   }catch(e){
+     console.warn("No se pudo cargar la apariencia personal",e.message);
+   }
+ }
+ currentUserThemeColor=color||"#173F35";
+ saveLocalUserTheme(currentUserThemeColor,userId);
+ appSettings.primaryColor=currentUserThemeColor;
+ applyThemeColor(currentUserThemeColor,false);
+ renderThemeCustomizer();
+ return currentUserThemeColor;
+}
+
 async function persistThemeColor(color,showMessage=true){
  const valid=cleanThemeHex(color);
  if(!valid){
    if(showMessage)setThemeStatus("El color debe tener formato HEX, por ejemplo #173F35.","error");
    return false;
  }
+
+ currentUserThemeColor=valid;
  appSettings.primaryColor=valid;
- saveAppSettings();
+ saveLocalUserTheme(valid);
  applyThemeColor(valid,false);
  renderThemeCustomizer(false);
+
  let cloudOk=true;
- if(kucheCloud&&cloudOrganization&&currentSession?.role==="admin"){
+ const userId=currentThemeUserId();
+
+ if(kucheCloud&&userId){
    try{
      const {error}=await kucheCloud
-       .from("organization_themes")
+       .from("user_themes")
        .upsert(
-         {organization_id:cloudOrganization.id,primary_color:valid},
-         {onConflict:"organization_id"}
+         {user_id:userId,primary_color:valid},
+         {onConflict:"user_id"}
        );
      if(error)throw error;
    }catch(e){
      cloudOk=false;
-     console.warn("No se pudo guardar el color en Supabase",e);
+     console.warn("No se pudo guardar la apariencia personal en Supabase",e);
    }
  }
+
  if(showMessage){
    setThemeStatus(
      cloudOk
-       ?`Color ${valid} guardado para este restaurante. El fondo beige se mantiene sin cambios.`
-       :`Color ${valid} aplicado en este dispositivo, pero no se pudo sincronizar con Supabase.`,
+       ?`Color ${valid} guardado en tu cuenta. Solo cambia tu propia interfaz.`
+       :`Color ${valid} aplicado en este dispositivo, pero no se pudo sincronizar con tu cuenta.`,
      cloudOk?"ok":"error"
    );
  }
@@ -9973,10 +10049,10 @@ function renderThemeCustomizer(resetStatus=true){
  const p=document.getElementById("themeColorPicker"),h=document.getElementById("themeColorHex");
  if(p)p.value=current.toLowerCase();
  if(h&&document.activeElement!==h)h.value=current;
- if(resetStatus)setThemeStatus(`Color actual: ${current}. Fondo fijo: beige original #F6F3EC.`);
+ if(resetStatus)setThemeStatus(`Tu color actual: ${current}. Fondo fijo: beige original #F6F3EC.`);
 }
 async function syncThemeToCloud(){
- const color=cleanThemeHex(appSettings.primaryColor)||"#173F35";
+ const color=cleanThemeHex(currentUserThemeColor||appSettings.primaryColor)||"#173F35";
  await persistThemeColor(color,false);
 }
 
@@ -10045,12 +10121,10 @@ profit:Number(getValue("settingsProfit"))||0,
 vat:Number(getValue("settingsVat"))||0,
 profitMethod:getValue("settingsProfitMethod")||"markup"
 };
-appSettings.primaryColor=cleanThemeHex(appSettings.primaryColor)||"#173F35";
 saveAppSettings();
 localStorage.setItem("kucheCostSettings",JSON.stringify(costSettings));
-applyThemeColor(appSettings.primaryColor,false);
+applyThemeColor(currentUserThemeColor||"#173F35",false);
 syncOrganizationSettingsToCloud();
-syncThemeToCloud();
 loadCostSettingsFields();
 applyBrandSettings();
 loadSettingsForm();
@@ -10058,7 +10132,7 @@ alert("Configuración guardada correctamente.");
 }
 
 function applyBrandSettings(){
-applyThemeColor(appSettings.primaryColor||"#173F35",false);
+applyThemeColor(currentUserThemeColor||loadLocalUserTheme()||"#173F35",false);
 const business=appSettings.businessName?.trim();
 const admin=appSettings.adminName?.trim()||"Administrador";
 const subtitle=document.getElementById("brandSubtitle");
@@ -11571,7 +11645,7 @@ async function loadIntegralCloudData(){
  if(!kucheCloud||!cloudOrganization)return;
  const [
   guides,batches,tipCfg,tipDist,tipAll,clubCfg,customers,rewards,mods,assignments,
-  cloudProtocols,activations,areas,areaRoles,onboards,cloudThemes,cloudMealPlans
+  cloudProtocols,activations,areas,areaRoles,onboards,cloudMealPlans
  ]=await Promise.all([
   safeCloudRows("recipe_guides"),safeCloudRows("preparation_batches"),
   safeCloudRows("tip_shift_settings"),safeCloudRows("tip_distributions"),safeCloudRows("tip_allocations"),
@@ -11579,8 +11653,7 @@ async function loadIntegralCloudData(){
   safeCloudRows("training_modules"),safeCloudRows("training_assignments"),
   safeCloudRows("internal_protocols"),safeCloudRows("protocol_activations"),
   safeCloudRows("inventory_areas"),safeCloudRows("inventory_area_role_assignments"),
-  safeCloudRows("onboarding_assignments"),safeCloudRows("organization_themes"),
-  safeCloudRows("staff_weekly_menus")
+  safeCloudRows("onboarding_assignments"),safeCloudRows("staff_weekly_menus")
  ]);
  if(guides)recipeGuidesCloud=guides;
  if(batches)preparedBatches=batches.map(x=>({cloudId:x.id,recipeId:x.source_recipe_local_id||x.recipe_id,recipeName:x.recipe_name,lot:x.lot_code,producedQty:Number(x.produced_qty),remainingQty:Number(x.remaining_qty),unit:x.unit,productionDate:x.production_date,expiryDate:x.expiry_date,storageMethod:x.storage_method,responsible:x.responsible_name,status:x.status,costPerUnit:Number(x.cost_per_unit||0)}));
@@ -11597,7 +11670,6 @@ async function loadIntegralCloudData(){
  if(areas?.length)inventoryAreas=areas.map(x=>({cloudId:x.id,key:x.area_key,name:x.name}));
  if(areaRoles?.length)inventoryAreaAssignments=areaRoles.map(x=>({cloudId:x.id,role:x.access_role,area:inventoryAreas.find(a=>a.cloudId===x.area_id)?.key||"",closing:x.count_closing,opening:x.count_opening}));
  if(onboards&&currentSession?.role==="worker")onboardingRecords=onboards.map(x=>({cloudId:x.id,staffId:x.staff_id,status:x.status,progress:Number(x.progress_pct||0),items:Array.isArray(x.items_state)?x.items_state:[]}));
- if(cloudThemes?.length){appSettings.primaryColor=cleanThemeHex(cloudThemes[0].primary_color)||"#173F35";saveAppSettings();applyThemeColor(appSettings.primaryColor,false);}
  if(cloudMealPlans)staffMealPlans=cloudMealPlans.map(x=>({cloudId:x.id,id:x.id,weekStart:x.week_start,date:x.menu_date,recipeId:x.source_recipe_local_id,recipeName:x.recipe_name_snapshot,portions:Number(x.portions_planned||0),notes:x.notes||"",active:x.active}));
 
  saveIntegralData();
@@ -11871,7 +11943,7 @@ finalizePOSPayment=function(){const o=getActivePOSOrder(),prepReq=preparedRequir
 /* ---------- Roles y navegación ---------- */
 workerCanAccess=function(pageId){
  const access=currentSession?.accessRole||"trabajador";
- const base=["dashboard","checklists","shifts","academy","protocols","onboarding","recipebook","inventoryareas","staffmeals"];
+ const base=["dashboard","checklists","shifts","academy","protocols","onboarding","recipebook","inventoryareas","staffmeals","appearance"];
  if(access==="garzon")return [...base,"reservations","commandas","cash","club"].includes(pageId);
  if(access==="cajero")return [...base,"cash","reservations","club"].includes(pageId);
  if(access==="cocina")return [...base,"production","preparations","temperatures","kds"].includes(pageId);
@@ -11884,11 +11956,18 @@ applyAccessMode=function(){_integralApplyAccessMode();document.querySelectorAll(
 
 /* ---------- Integración showPage ---------- */
 const _integralShowPage=showPage;
-showPage=function(pageId,button){_integralShowPage(pageId,button);if(pageId==="inventoryareas")renderInventoryAreas();if(pageId==="preparations")renderPreparations();if(pageId==="recipebook")renderRecipeBook();if(pageId==="tips")renderTips();if(pageId==="club")renderClub();if(pageId==="academy")renderAcademy();if(pageId==="protocols")renderProtocols();if(pageId==="onboarding")renderOnboarding();if(pageId==="menuengineering")renderMenuEngineering();if(pageId==="simulator")renderScenarioHistory();if(pageId==="staffmeals")renderStaffWeeklyMenu();if(pageId==="settings")renderThemeCustomizer();if(pageId==="dashboard")renderControlCenter();};
+showPage=function(pageId,button){_integralShowPage(pageId,button);if(pageId==="inventoryareas")renderInventoryAreas();if(pageId==="preparations")renderPreparations();if(pageId==="recipebook")renderRecipeBook();if(pageId==="tips")renderTips();if(pageId==="club")renderClub();if(pageId==="academy")renderAcademy();if(pageId==="protocols")renderProtocols();if(pageId==="onboarding")renderOnboarding();if(pageId==="menuengineering")renderMenuEngineering();if(pageId==="simulator")renderScenarioHistory();if(pageId==="staffmeals")renderStaffWeeklyMenu();if(pageId==="appearance")renderThemeCustomizer();if(pageId==="dashboard")renderControlCenter();};
 
 /* ---------- Hook sesión Supabase ---------- */
 const _integralHandleCloudSession=handleCloudSession;
-handleCloudSession=async function(session){await _integralHandleCloudSession(session);if(currentSession?.cloud&&cloudOrganization){await loadIntegralCloudData();renderIntegralModules();}};
+handleCloudSession=async function(session){
+ await _integralHandleCloudSession(session);
+ if(currentSession?.cloud&&cloudOrganization){
+   await loadUserThemeFromCloud();
+   await loadIntegralCloudData();
+   renderIntegralModules();
+ }
+};
 
 /* ---------- Render global ---------- */
 function renderIntegralModules(){normalizeAreaStocks();initializeTrainingDefaults();renderControlCenter();renderInventoryAreas();renderPreparations();renderRecipeBook();renderTips();renderClub();renderAcademy();renderProtocols();renderOnboarding();renderScenarioHistory();renderStaffWeeklyMenu();renderThemeCustomizer();}
@@ -11902,7 +11981,8 @@ const _integralApplyBrandSettings=applyBrandSettings;
 applyBrandSettings=function(){_integralApplyBrandSettings();document.querySelectorAll(".brand-name,.login-brand").forEach(el=>{el.style.fontFamily='Montserrat,"Arial Black",Arial,sans-serif';el.style.fontWeight="900";});};
 
 /* Inicialización */
-applyThemeColor(appSettings.primaryColor||"#173F35",false);
+currentUserThemeColor=loadLocalUserTheme()||"#173F35";
+applyThemeColor(currentUserThemeColor,false);
 normalizeAreaStocks();
 initializeTrainingDefaults();
 if(document.getElementById("tipDate"))tipDate.value=getToday();
