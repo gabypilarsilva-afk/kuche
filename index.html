@@ -6,24 +6,25 @@
 <title>KÜCHE | Gestión Gastronómica</title>
 
 <style>
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap");
 :root{
---green-dark:#173f35;
---green:#24594b;
---green-soft:#e8f0ec;
---cream:#f6f3ec;
---white:#fff;
---text:#202825;
---muted:#78817d;
---border:#e3e7e3;
---danger:#c94b4b;
---danger-soft:#fbecec;
---warning:#b87921;
---warning-soft:#fff3dc;
---success:#34785a;
---success-soft:#e8f4ed;
---blue:#416a91;
---blue-soft:#edf3f8;
---shadow:0 4px 18px rgba(23,63,53,.06);
+--green-dark:#131936;
+--green:#131936;
+--green-soft:#ececf3;
+--cream:#AEA989;
+--white:#fffdf8;
+--text:#1d2032;
+--muted:#686a72;
+--border:#d7d3bc;
+--danger:#b83f46;
+--danger-soft:#f8e8e9;
+--warning:#9c6b23;
+--warning-soft:#f8eedb;
+--success:#3d6856;
+--success-soft:#e7f0eb;
+--blue:#3f4b7a;
+--blue-soft:#eceef6;
+--shadow:0 6px 22px rgba(19,25,54,.10);
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -39,7 +40,7 @@ display:flex;flex-direction:column;z-index:100;
 }
 
 .brand{padding:0 12px 28px;border-bottom:1px solid rgba(255,255,255,.12)}
-.brand-name{font-size:25px;font-weight:700;letter-spacing:4px}
+.brand-name{font-family:Montserrat,"Arial Black",Arial,sans-serif;font-size:27px;font-weight:900;letter-spacing:3.5px}
 .brand-subtitle{margin-top:6px;font-size:11px;color:rgba(255,255,255,.6)}
 .nav{margin-top:24px}
 .nav-title{padding:0 12px 9px;margin-top:18px;font-size:10px;text-transform:uppercase;letter-spacing:1.3px;color:rgba(255,255,255,.4)}
@@ -613,6 +614,43 @@ COMPRAS / MERMAS / VENTAS / IA
 @media(max-width:760px){.promo-choice-group-head{grid-template-columns:1fr}.promo-customizer-slots{grid-template-columns:1fr}}
 @media(max-width:900px){.promo-list{grid-template-columns:1fr}.promo-component-row{grid-template-columns:1fr 1fr}.promo-component-row .danger-button{grid-column:1/-1}.promo-metrics{grid-template-columns:1fr}}
 
+
+/* =====================================================
+   KÜCHE GESTIÓN INTEGRAL
+===================================================== */
+.control-hero{background:var(--green-dark);color:#fff;border-radius:18px;padding:24px;margin-bottom:18px;box-shadow:var(--shadow)}
+.control-hero h2{font-size:25px;margin-bottom:6px}.control-hero p{color:rgba(255,255,255,.72);font-size:13px}
+.control-score-line{display:flex;align-items:flex-end;gap:14px;margin:18px 0 12px}
+.control-score{font-size:42px;font-weight:800;line-height:1}.control-score-label{font-size:13px;color:rgba(255,255,255,.7);padding-bottom:5px}
+.control-progress{height:9px;background:rgba(255,255,255,.16);border-radius:999px;overflow:hidden}.control-progress span{display:block;height:100%;background:#fff;border-radius:999px}
+.control-attention{margin-top:17px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.control-alert{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.11);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.45}
+.integral-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.integral-stat{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+.integral-stat span{font-size:11px;color:var(--muted);display:block;margin-bottom:6px}.integral-stat strong{font-size:24px;color:var(--green-dark)}
+.integral-two{display:grid;grid-template-columns:1fr 1fr;gap:16px}.integral-three{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.integral-panel{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:var(--shadow);margin-bottom:16px}
+.integral-panel h2{font-size:16px;margin-bottom:4px}.integral-panel .sub{font-size:11px;color:var(--muted);margin-bottom:14px}
+.mini-list{display:flex;flex-direction:column;gap:8px}.mini-row{display:flex;justify-content:space-between;gap:12px;align-items:center;border-bottom:1px solid var(--border);padding:9px 0;font-size:12px}.mini-row:last-child{border-bottom:0}
+.allergen-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:8px}.allergen-option{font-size:11px;padding:8px;background:#f8f7f1;border:1px solid var(--border);border-radius:8px}
+.allergen-chip{display:inline-flex;padding:4px 8px;border-radius:999px;background:#f4e6e7;color:#8f333b;font-size:10px;font-weight:700;margin:2px}.cross-chip{background:#f7efdf;color:#87601f}
+.recipe-guide-card,.protocol-card,.training-card,.customer-card,.prep-card{background:var(--white);border:1px solid var(--border);border-radius:13px;padding:16px;box-shadow:var(--shadow)}
+.guide-grid,.protocol-grid,.training-grid,.customer-grid,.prep-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.card-topline{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:10px}.card-topline h3{font-size:15px}.card-topline p{font-size:11px;color:var(--muted);margin-top:3px}
+.protocol-active{border:2px solid var(--danger)}.protocol-active-label{color:var(--danger);font-weight:800;font-size:11px}
+.progress-track{height:8px;background:#ecebe2;border-radius:999px;overflow:hidden}.progress-track span{display:block;height:100%;background:var(--green-dark)}
+.tip-table td,.tip-table th{white-space:nowrap}
+.paid-row{opacity:.65}
+.birthday-card{border:1px solid #c9ad74;background:#fffaf0}
+.score-pill{display:inline-flex;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:800;background:var(--green-soft);color:var(--green-dark)}
+.scenario-result{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.scenario-metric{background:#f8f7f1;border:1px solid var(--border);border-radius:10px;padding:12px}.scenario-metric span{display:block;font-size:10px;color:var(--muted)}.scenario-metric strong{display:block;font-size:18px;margin-top:5px}
+.engineering-class{font-weight:800}.engineering-star{color:#345f50}.engineering-workhorse{color:#756121}.engineering-puzzle{color:#384d82}.engineering-dog{color:#8b3c43}
+.count-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;align-items:end}.count-line{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);align-items:center;font-size:12px}
+.role-note{font-size:11px;color:var(--muted);margin-top:5px}
+.worker-mode .admin-only{display:none!important}
+@media(max-width:1000px){.integral-grid,.guide-grid,.protocol-grid,.training-grid,.customer-grid,.prep-grid{grid-template-columns:repeat(2,1fr)}.scenario-result{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.control-attention,.integral-grid,.integral-two,.integral-three,.guide-grid,.protocol-grid,.training-grid,.customer-grid,.prep-grid,.allergen-grid,.scenario-result{grid-template-columns:1fr}.count-grid,.count-line{grid-template-columns:1fr}}
+
 </style>
 </head>
 
@@ -691,8 +729,9 @@ COMPRAS / MERMAS / VENTAS / IA
 </button>
 
 <button class="nav-item" onclick="showPage('inventory',this)">
-<span>Inventario</span>
+<span>Inventario general</span>
 </button>
+<button class="nav-item" onclick="showPage('inventoryareas',this)"><span>Inventario por áreas</span></button>
 
 <div class="nav-title">Operación</div>
 
@@ -714,8 +753,10 @@ COMPRAS / MERMAS / VENTAS / IA
 <button class="nav-item" onclick="showPage('production',this)">
 <span>Producción</span>
 </button>
+<button class="nav-item" onclick="showPage('preparations',this)"><span>Preparaciones disponibles</span></button>
+<button class="nav-item" onclick="showPage('recipebook',this)"><span>Recetario operativo</span></button>
 
-<button class="nav-item" onclick="showPage('recipes',this)">
+<button class="nav-item admin-only" onclick="showPage('recipes',this)">
 <span>Recetas y costos</span>
 </button>
 
@@ -734,11 +775,20 @@ COMPRAS / MERMAS / VENTAS / IA
 </button>
 
 <button class="nav-item" onclick="showPage('shifts',this)"><span>Turnos y planificación</span></button>
+<button class="nav-item" onclick="showPage('academy',this)"><span>Academia</span></button>
+<button class="nav-item" onclick="showPage('protocols',this)"><span>Protocolos internos</span></button>
+<button class="nav-item" onclick="showPage('onboarding',this)"><span>Onboarding</span></button>
+
+<div class="nav-title">Clientes</div>
+<button class="nav-item" onclick="showPage('club',this)"><span>Club de clientes</span></button>
 
 <div class="nav-title">Costos</div>
 <button class="nav-item admin-sensitive" onclick="showPage('cid',this)"><span>Cálculo de CID</span></button>
+<button class="nav-item admin-only" onclick="showPage('tips',this)"><span>Propinas por turno</span></button>
 
 <div class="nav-title">Análisis</div>
+<button class="nav-item admin-only" onclick="showPage('menuengineering',this)"><span>Ingeniería de menú</span></button>
+<button class="nav-item admin-only" onclick="showPage('simulator',this)"><span>Simulador de escenarios</span></button>
 <button class="nav-item" onclick="showPage('assistant',this)"><span>Asistente IA</span></button>
 
 <button class="nav-item" onclick="showPage('reports',this)">
@@ -785,6 +835,14 @@ COMPRAS / MERMAS / VENTAS / IA
 <p>Información actual de tu establecimiento.</p>
 </div>
 <button class="primary-button" onclick="openInventory()">Gestionar inventario</button>
+</div>
+
+<div id="controlCenterHero" class="control-hero">
+  <h2 id="controlGreeting">Hola.</h2>
+  <p id="controlSubtitle">Analizando el estado operativo del establecimiento.</p>
+  <div class="control-score-line"><div id="controlScore" class="control-score">100%</div><div class="control-score-label">bajo control</div></div>
+  <div class="control-progress"><span id="controlScoreBar" style="width:100%"></span></div>
+  <div id="controlAttention" class="control-attention"></div>
 </div>
 
 <div class="stats">
@@ -892,6 +950,16 @@ COMPRAS / MERMAS / VENTAS / IA
 </select>
 </div>
 
+
+<div class="field">
+<label>Área principal</label>
+<select id="productArea">
+<option value="cocina">Cocina</option>
+<option value="barra">Barra</option>
+<option value="bebestibles">Bebestibles</option>
+<option value="salon">Salón</option>
+</select>
+</div>
 <div class="field">
 <label>Stock actual</label>
 <input id="quantity" type="number" step="0.01">
@@ -1000,6 +1068,7 @@ COMPRAS / MERMAS / VENTAS / IA
 <tr>
 <th>Insumo</th>
 <th>Categoría</th>
+<th>Área</th>
 <th>Stock</th>
 <th>Mínimo</th>
 <th>Costo</th>
@@ -1267,6 +1336,31 @@ COMPRAS / MERMAS / VENTAS / IA
 <label>Rendimiento / porciones</label>
 <input id="recipeYield" type="number" value="1" min="1" oninput="calculateRecipe()">
 </div>
+<div class="field">
+<label>Tipo de receta</label>
+<select id="recipeType">
+<option value="sale">Producto de venta</option>
+<option value="mise">Mise en place / preparación base</option>
+</select>
+</div>
+<div class="field">
+<label>Unidad de salida</label>
+<input id="recipeOutputUnit" type="text" value="porción" placeholder="porción, kg, L, unidad">
+</div>
+<div class="field">
+<label>Conservación</label>
+<select id="recipeStorageMethod">
+<option value="Uso inmediato">Uso inmediato</option>
+<option value="Refrigerado">Refrigerado</option>
+<option value="Congelado">Congelado</option>
+<option value="Ambiente">Ambiente</option>
+</select>
+</div>
+<div class="field">
+<label>Vida útil (días)</label>
+<input id="recipeShelfLife" type="number" min="0" value="0">
+</div>
+
 
 </div>
 
@@ -1323,6 +1417,23 @@ COMPRAS / MERMAS / VENTAS / IA
 
 <div id="recipeIngredients"></div>
 
+</div>
+
+
+<div class="recipe-ingredients-box" style="margin-top:14px">
+  <div class="recipe-ingredients-header">
+    <strong>Preparaciones base utilizadas</strong>
+    <button type="button" class="secondary-button" onclick="addRecipeBaseComponent()">+ Agregar preparación</button>
+  </div>
+  <div id="recipeBaseComponents"></div>
+</div>
+
+<div class="integral-panel" style="margin-top:14px">
+  <h2>Ficha operativa</h2>
+  <div class="sub">Esta información puede ser consultada por los trabajadores sin mostrar costos.</div>
+  <div class="field"><label>Procedimiento paso a paso</label><textarea id="recipeInstructions" placeholder="Describe el procedimiento de forma clara y breve."></textarea></div>
+  <div class="field" style="margin-top:12px"><label>Alérgenos que contiene</label><div id="recipeAllergenGrid" class="allergen-grid"></div></div>
+  <div class="field" style="margin-top:12px"><label>Riesgo de contacto cruzado / puede contener</label><div id="recipeCrossAllergenGrid" class="allergen-grid"></div></div>
 </div>
 
 <div class="cost-flow">
@@ -1826,6 +1937,11 @@ Proceso
 <label>Fecha de ingreso</label>
 <input id="staffJoinDate" type="date">
 </div>
+<div class="field">
+<label>Fecha de nacimiento</label>
+<input id="staffBirthDate" type="date">
+</div>
+
 
 </div>
 
@@ -2440,6 +2556,9 @@ Cerrar
   <div class="status-box" id="posPaymentSummary"></div>
   <div class="tip-buttons"><button class="secondary-button" onclick="setPOSTip(0)">Sin propina</button><button class="secondary-button" onclick="setPOSTip(10)">10%</button><button class="secondary-button" onclick="setPOSTip(15)">15%</button><button class="secondary-button" onclick="setPOSTip(20)">20%</button></div>
   <div class="payment-grid">
+    
+<div class="field"><label>Cliente del club</label><select id="posClubCustomer" onchange="setPOSClubCustomer(this.value)"><option value="">Sin cliente asociado</option></select></div>
+
     <div class="field"><label>Propina $</label><input id="posTipAmount" type="number" min="0" value="0" oninput="updatePOSPaymentCheck()"></div>
     <div class="field"><label>Medio propina</label><select id="posTipMethod" onchange="updatePOSPaymentCheck()"><option value="efectivo">Efectivo</option><option value="debito">Débito</option><option value="credito">Crédito</option><option value="transferencia">Transferencia</option></select></div>
     <div class="field"><label>Descuento $</label><input id="posDiscount" type="number" min="0" value="0" oninput="updatePOSPaymentCheck()"></div>
@@ -2490,6 +2609,147 @@ Cerrar
 <div class="page-header"><div><h1>Caja y cierre de turno</h1><p>Apertura, ventas automáticas desde comandas, propinas, movimientos y conciliación de cierre.</p></div><button class="secondary-button" onclick="renderCash()">Actualizar</button></div>
 <div id="cashWorkspace"></div>
 <div class="card" style="margin-top:16px"><div class="card-header"><h2>Historial de cajas</h2><span>Aperturas y cierres registrados</span></div><div class="table-wrapper"><table><thead><tr><th>Fecha</th><th>Responsable</th><th>Apertura</th><th>Venta POS</th><th>Propinas</th><th>Efectivo esperado</th><th>Efectivo contado</th><th>Diferencia</th></tr></thead><tbody id="cashHistoryBody"></tbody></table></div></div>
+</section>
+
+
+<!-- INVENTARIO POR ÁREAS -->
+<section id="inventoryareas" class="page">
+  <div class="page-header"><div><h1>Inventario por áreas</h1><p>Conteos, responsabilidades y transferencias internas por Cocina, Barra, Bebestibles y Salón.</p></div><button class="primary-button admin-only" onclick="openAreaTransfer()">Transferir stock</button></div>
+  <div id="inventoryAreaSummary" class="integral-grid"></div>
+  <div class="integral-two">
+    <div class="integral-panel">
+      <h2>Inventarios asignados</h2><div class="sub" id="areaRoleMessage">Tareas según cargo y turno.</div>
+      <div class="field"><label>Área</label><select id="areaCountArea" onchange="renderAreaCountForm()"></select></div>
+      <div class="field" style="margin-top:8px"><label>Tipo de conteo</label><select id="areaCountType"><option value="closing">Cierre</option><option value="opening">Apertura</option><option value="manual">Manual</option></select></div>
+      <div id="areaCountLines" style="margin-top:12px"></div>
+      <button class="primary-button" style="margin-top:12px" onclick="saveAreaCount()">Finalizar inventario</button>
+    </div>
+    <div class="integral-panel">
+      <h2>Responsabilidades por cargo</h2><div class="sub">El administrador puede cambiar qué área corresponde a cada rol.</div>
+      <div id="areaAssignmentsList"></div>
+      <div class="admin-only" style="margin-top:12px">
+        <div class="field"><label>Rol</label><select id="areaAssignRole"><option value="garzon">Garzón</option><option value="cocina">Cocina</option><option value="bar">Barra</option><option value="cajero">Cajero</option><option value="bodega">Bodega</option><option value="trabajador">Trabajador</option></select></div>
+        <div class="field" style="margin-top:8px"><label>Área</label><select id="areaAssignArea"></select></div>
+        <button class="secondary-button" style="margin-top:10px" onclick="saveAreaAssignment()">Asignar responsabilidad</button>
+      </div>
+    </div>
+  </div>
+  <div id="areaTransferPanel" class="integral-panel admin-only" style="display:none">
+    <h2>Transferencia interna</h2><div class="sub">Mover stock entre áreas no modifica el stock total del establecimiento.</div>
+    <div class="module-grid"><div class="field"><label>Insumo</label><select id="transferProduct"></select></div><div class="field"><label>Desde</label><select id="transferFrom"></select></div><div class="field"><label>Hacia</label><select id="transferTo"></select></div><div class="field"><label>Cantidad</label><input id="transferQty" type="number" min="0" step="0.01"></div></div>
+    <div class="form-actions"><button class="primary-button" onclick="saveAreaTransfer()">Registrar transferencia</button><button class="secondary-button" onclick="closeAreaTransfer()">Cancelar</button></div>
+  </div>
+  <div class="integral-panel"><h2>Historial de conteos y transferencias</h2><div id="areaHistory"></div></div>
+</section>
+
+<!-- PREPARACIONES DISPONIBLES -->
+<section id="preparations" class="page">
+  <div class="page-header"><div><h1>Preparaciones disponibles</h1><p>Mise en place producido, porcionado, conservado y disponible para venta.</p></div><button class="primary-button" onclick="openPreparationBatchForm()">+ Registrar producción</button></div>
+  <div id="prepSummary" class="integral-grid"></div>
+  <div id="prepBatchForm" class="integral-panel" style="display:none">
+    <h2>Registrar producción de mise en place</h2>
+    <div class="module-grid">
+      <div class="field"><label>Receta base</label><select id="prepBatchRecipe" onchange="updatePrepBatchDefaults()"></select></div>
+      <div class="field"><label>Cantidad obtenida</label><input id="prepBatchQty" type="number" min="0" step="0.01"></div>
+      <div class="field"><label>Lote</label><input id="prepBatchLot" type="text"></div>
+      <div class="field"><label>Fecha producción</label><input id="prepBatchDate" type="date"></div>
+      <div class="field"><label>Vencimiento</label><input id="prepBatchExpiry" type="date"></div>
+      <div class="field"><label>Responsable</label><input id="prepBatchResponsible" type="text" list="staffOptions"></div>
+    </div>
+    <div class="form-actions"><button class="primary-button" onclick="savePreparationBatch()">Completar producción</button><button class="secondary-button" onclick="closePreparationBatchForm()">Cancelar</button></div>
+  </div>
+  <div id="prepBatchList" class="prep-grid"></div>
+</section>
+
+<!-- RECETARIO OPERATIVO -->
+<section id="recipebook" class="page">
+  <div class="page-header"><div><h1>Recetario operativo</h1><p>Ingredientes, procedimiento, conservación y alérgenos disponibles para el equipo.</p></div></div>
+  <div class="toolbar"><div class="search-box"><input id="recipeBookSearch" placeholder="Buscar receta..." oninput="renderRecipeBook()"></div><select id="recipeBookType" onchange="renderRecipeBook()"><option value="">Todas</option><option value="sale">Venta</option><option value="mise">Mise en place</option></select></div>
+  <div id="recipeBookList" class="guide-grid"></div>
+</section>
+
+<!-- PROPINAS -->
+<section id="tips" class="page">
+  <div class="page-header"><div><h1>Propinas por turno</h1><p>Distribución automática entre las personas que efectivamente estuvieron presentes en cada turno.</p></div><button class="secondary-button" onclick="renderTips()">Actualizar</button></div>
+  <div class="integral-panel">
+    <div class="module-grid"><div class="field"><label>Fecha</label><input id="tipDate" type="date" onchange="renderTips()"></div><div class="field"><label>Método de reparto</label><select id="tipDistributionMode" onchange="renderTips()"><option value="equal">Partes iguales</option><option value="hours">Según horas trabajadas</option><option value="points">Según puntos por cargo</option></select></div></div>
+  </div>
+  <div id="tipShiftCards" class="integral-two"></div>
+  <div class="integral-panel"><h2>Configuración de turnos</h2><div class="sub">El turno de una propina se determina por la hora en que se abrió la comanda.</div><div id="tipShiftSettings"></div></div>
+</section>
+
+<!-- CLUB DE CLIENTES -->
+<section id="club" class="page">
+  <div class="page-header"><div><h1 id="clubPageTitle">Club de clientes</h1><p>Clientes, puntos, premios, cumpleaños y comunicaciones.</p></div><button class="primary-button" onclick="openClubCustomerForm()">+ Nuevo cliente</button></div>
+  <div id="clubStats" class="integral-grid"></div>
+  <div class="integral-two">
+    <div class="integral-panel admin-only">
+      <h2>Configuración del club</h2>
+      <div class="module-grid"><div class="field"><label>Nombre del club</label><input id="clubNameSetting"></div><div class="field"><label>Nombre de la unidad</label><input id="clubPointsName"></div><div class="field"><label>Monto de compra $</label><input id="clubSpendAmount" type="number" min="1"></div><div class="field"><label>Puntos entregados</label><input id="clubPointsPerSpend" type="number" min="0.01" step="0.01"></div><div class="field"><label>Redondeo</label><select id="clubRounding"><option value="floor">Hacia abajo</option><option value="round">Al entero más cercano</option><option value="ceil">Hacia arriba</option></select></div><div class="field"><label>Descuento de puntos en cumpleaños %</label><input id="clubBirthdayDiscount" type="number" min="0" max="100"></div></div>
+      <button class="primary-button" style="margin-top:12px" onclick="saveClubSettings()">Guardar configuración</button>
+    </div>
+    <div class="integral-panel">
+      <h2>Premios</h2><div id="clubRewardsList"></div>
+      <div class="admin-only"><div class="module-grid"><div class="field"><label>Premio</label><input id="rewardName"></div><div class="field"><label>Puntos normales</label><input id="rewardPoints" type="number" min="1"></div><div class="field"><label>Puntos cumpleaños</label><input id="rewardBirthdayPoints" type="number" min="1"></div></div><button class="secondary-button" style="margin-top:10px" onclick="addClubReward()">Agregar premio</button></div>
+    </div>
+  </div>
+  <div id="clubCustomerForm" class="integral-panel" style="display:none">
+    <h2>Ficha de cliente</h2>
+    <div class="module-grid"><div class="field"><label>Nombre completo</label><input id="customerName"></div><div class="field"><label>RUT</label><input id="customerRut"></div><div class="field"><label>Fecha de cumpleaños</label><input id="customerBirthDate" type="date"></div><div class="field"><label>Correo</label><input id="customerEmail" type="email"></div><div class="field"><label>Teléfono</label><input id="customerPhone"></div><div class="field"><label>Comunicaciones</label><select id="customerConsent"><option value="no">No autorizadas</option><option value="si">Autorizadas</option></select></div></div>
+    <div class="form-actions"><button class="primary-button" onclick="saveClubCustomer()">Guardar cliente</button><button class="secondary-button" onclick="closeClubCustomerForm()">Cancelar</button></div>
+  </div>
+  <div class="toolbar"><div class="search-box"><input id="clubSearch" placeholder="Buscar por nombre, RUT o correo..." oninput="renderClub()"></div></div>
+  <div id="clubCustomerList" class="customer-grid"></div>
+  <div class="integral-panel"><h2>Comunicaciones pendientes</h2><div class="sub">Los mensajes quedan preparados. El envío automático por correo se conecta posteriormente mediante SMTP.</div><div id="clubNotificationList"></div></div>
+</section>
+
+<!-- ACADEMIA -->
+<section id="academy" class="page">
+  <div class="page-header"><div><h1>Academia</h1><p>Microcapacitaciones mensuales breves sobre inocuidad, normativa y buenas prácticas.</p></div></div>
+  <div id="academySummary" class="integral-grid"></div>
+  <div id="academyList" class="training-grid"></div>
+  <div id="academyViewer" class="integral-panel" style="display:none"></div>
+</section>
+
+<!-- PROTOCOLOS -->
+<section id="protocols" class="page">
+  <div class="page-header"><div><h1>Protocolos internos</h1><p>Documentos operativos de cada empresa y activación de protocolos durante una contingencia.</p></div><button class="primary-button admin-only" onclick="openProtocolForm()">+ Nuevo protocolo</button></div>
+  <div id="protocolActiveSummary"></div>
+  <div id="protocolForm" class="integral-panel admin-only" style="display:none">
+    <h2>Editar protocolo</h2>
+    <div class="module-grid"><div class="field"><label>Título</label><input id="protocolTitle"></div><div class="field"><label>Categoría</label><input id="protocolCategory"></div><div class="field"><label>Severidad</label><select id="protocolSeverity"><option value="normal">Normal</option><option value="important">Importante</option><option value="critical">Crítico</option></select></div></div>
+    <div class="field" style="margin-top:10px"><label>Descripción / instrucciones</label><textarea id="protocolContent"></textarea></div>
+    <div class="field" style="margin-top:10px"><label>Pasos, uno por línea</label><textarea id="protocolSteps"></textarea></div>
+    <div class="form-actions"><button class="primary-button" onclick="saveProtocol()">Guardar protocolo</button><button class="secondary-button" onclick="closeProtocolForm()">Cancelar</button></div>
+  </div>
+  <div id="protocolList" class="protocol-grid"></div>
+  <div class="integral-panel"><h2>Activaciones e incidentes</h2><div id="protocolActivationList"></div></div>
+</section>
+
+<!-- ONBOARDING -->
+<section id="onboarding" class="page">
+  <div class="page-header"><div><h1>Onboarding</h1><p>Incorporación guiada según el cargo de cada trabajador.</p></div></div>
+  <div id="onboardingSummary" class="integral-grid"></div>
+  <div id="onboardingContent"></div>
+</section>
+
+<!-- INGENIERÍA DE MENÚ -->
+<section id="menuengineering" class="page">
+  <div class="page-header"><div><h1>Ingeniería de menú</h1><p>Popularidad, rentabilidad, mix de ventas y clasificación del portafolio.</p></div><button class="secondary-button" onclick="renderMenuEngineering()">Actualizar análisis</button></div>
+  <div class="integral-panel"><div class="module-grid"><div class="field"><label>Desde</label><input id="menuEngFrom" type="date" onchange="renderMenuEngineering()"></div><div class="field"><label>Hasta</label><input id="menuEngTo" type="date" onchange="renderMenuEngineering()"></div><div class="field"><label>Categoría</label><select id="menuEngCategory" onchange="renderMenuEngineering()"><option value="">Todas</option></select></div></div></div>
+  <div id="menuEngStats" class="integral-grid"></div>
+  <div class="table-card"><div class="table-wrapper"><table><thead><tr><th>Producto</th><th>Unidades</th><th>Mix</th><th>Precio prom.</th><th>Costo</th><th>Margen contrib.</th><th>Food Cost</th><th>Clasificación</th><th>Lectura</th></tr></thead><tbody id="menuEngBody"></tbody></table></div></div>
+</section>
+
+<!-- SIMULADOR -->
+<section id="simulator" class="page">
+  <div class="page-header"><div><h1>Simulador de escenarios</h1><p>Prueba cambios sin modificar los datos reales del restaurante.</p></div></div>
+  <div class="integral-panel">
+    <div class="module-grid"><div class="field"><label>Nombre del escenario</label><input id="scenarioName" placeholder="Ej. Aumento de precios septiembre"></div><div class="field"><label>Variación ventas %</label><input id="scenarioSalesPct" type="number" value="0"></div><div class="field"><label>Variación precios %</label><input id="scenarioPricePct" type="number" value="0"></div><div class="field"><label>Variación costo materias primas %</label><input id="scenarioFoodPct" type="number" value="0"></div><div class="field"><label>Variación costo laboral %</label><input id="scenarioLaborPct" type="number" value="0"></div><div class="field"><label>Reducción de mermas %</label><input id="scenarioWastePct" type="number" value="0"></div></div>
+    <div class="form-actions"><button class="primary-button" onclick="runScenario()">Simular</button><button class="secondary-button" onclick="saveScenario()">Guardar escenario</button></div>
+  </div>
+  <div id="scenarioResults" class="scenario-result"></div>
+  <div class="integral-panel" style="margin-top:16px"><h2>Escenarios guardados</h2><div id="scenarioHistory"></div></div>
 </section>
 
 <section id="assistant" class="page">
@@ -2931,6 +3191,79 @@ let cashRegisters = JSON.parse(localStorage.getItem("kucheCashRegisters")) || []
 let cashMovements = JSON.parse(localStorage.getItem("kucheCashMovements")) || [];
 let auditLog = JSON.parse(localStorage.getItem("kucheAuditLog")) || [];
 let activePOSOrderId = null;
+
+
+/* =====================================================
+   DATOS GESTIÓN INTEGRAL
+===================================================== */
+const KUCHE_ALLERGENS=[
+ "Gluten / cereales con gluten","Crustáceos","Huevo","Pescado","Maní",
+ "Soya","Leche / lácteos","Nueces","Sulfitos"
+];
+
+let recipeGuidesCloud=[];
+let preparedBatches=JSON.parse(localStorage.getItem("kuchePreparedBatches")||"[]");
+let tipShiftSettings=JSON.parse(localStorage.getItem("kucheTipShiftSettings")||"null")||[
+ {key:"turno1",name:"Turno 1",start:"13:00",end:"17:00",active:true},
+ {key:"turno2",name:"Turno 2",start:"17:00",end:"21:00",active:true}
+];
+let tipDistributions=JSON.parse(localStorage.getItem("kucheTipDistributions")||"[]");
+let tipAllocations=JSON.parse(localStorage.getItem("kucheTipAllocations")||"[]");
+
+let loyaltySettings=JSON.parse(localStorage.getItem("kucheLoyaltySettings")||"null")||{
+ clubName:"Club de clientes",pointsName:"puntos",spendAmount:1000,pointsPerSpend:1,
+ roundingMode:"floor",birthdayDiscountPct:30,birthdayWindowDays:0
+};
+let clubCustomers=JSON.parse(localStorage.getItem("kucheClubCustomers")||"[]");
+let loyaltyRewards=JSON.parse(localStorage.getItem("kucheLoyaltyRewards")||"[]");
+let loyaltyTransactions=JSON.parse(localStorage.getItem("kucheLoyaltyTransactions")||"[]");
+let customerNotifications=JSON.parse(localStorage.getItem("kucheCustomerNotifications")||"[]");
+let editingCustomerId=null;
+
+let protocols=JSON.parse(localStorage.getItem("kucheProtocols")||"[]");
+let protocolActivations=JSON.parse(localStorage.getItem("kucheProtocolActivations")||"[]");
+let protocolAcknowledgements=JSON.parse(localStorage.getItem("kucheProtocolAcknowledgements")||"[]");
+let editingProtocolId=null;
+
+let trainingModules=JSON.parse(localStorage.getItem("kucheTrainingModules")||"[]");
+let trainingProgress=JSON.parse(localStorage.getItem("kucheTrainingProgress")||"[]");
+let activeTrainingModuleId=null;
+
+let onboardingRecords=JSON.parse(localStorage.getItem("kucheOnboardingRecords")||"[]");
+let inventoryAreas=JSON.parse(localStorage.getItem("kucheInventoryAreas")||"null")||[
+ {key:"cocina",name:"Cocina"},{key:"barra",name:"Barra"},{key:"bebestibles",name:"Bebestibles"},{key:"salon",name:"Salón"}
+];
+let inventoryAreaAssignments=JSON.parse(localStorage.getItem("kucheInventoryAreaAssignments")||"null")||[
+ {role:"garzon",area:"bebestibles"},{role:"cocina",area:"cocina"},{role:"bar",area:"barra"}
+];
+let inventoryAreaCounts=JSON.parse(localStorage.getItem("kucheInventoryAreaCounts")||"[]");
+let inventoryTransfers=JSON.parse(localStorage.getItem("kucheInventoryTransfers")||"[]");
+let savedScenarios=JSON.parse(localStorage.getItem("kucheSavedScenarios")||"[]");
+let lastScenarioResult=null;
+
+function saveIntegralData(){
+ localStorage.setItem("kuchePreparedBatches",JSON.stringify(preparedBatches));
+ localStorage.setItem("kucheTipShiftSettings",JSON.stringify(tipShiftSettings));
+ localStorage.setItem("kucheTipDistributions",JSON.stringify(tipDistributions));
+ localStorage.setItem("kucheTipAllocations",JSON.stringify(tipAllocations));
+ localStorage.setItem("kucheLoyaltySettings",JSON.stringify(loyaltySettings));
+ localStorage.setItem("kucheClubCustomers",JSON.stringify(clubCustomers));
+ localStorage.setItem("kucheLoyaltyRewards",JSON.stringify(loyaltyRewards));
+ localStorage.setItem("kucheLoyaltyTransactions",JSON.stringify(loyaltyTransactions));
+ localStorage.setItem("kucheCustomerNotifications",JSON.stringify(customerNotifications));
+ localStorage.setItem("kucheProtocols",JSON.stringify(protocols));
+ localStorage.setItem("kucheProtocolActivations",JSON.stringify(protocolActivations));
+ localStorage.setItem("kucheProtocolAcknowledgements",JSON.stringify(protocolAcknowledgements));
+ localStorage.setItem("kucheTrainingModules",JSON.stringify(trainingModules));
+ localStorage.setItem("kucheTrainingProgress",JSON.stringify(trainingProgress));
+ localStorage.setItem("kucheOnboardingRecords",JSON.stringify(onboardingRecords));
+ localStorage.setItem("kucheInventoryAreas",JSON.stringify(inventoryAreas));
+ localStorage.setItem("kucheInventoryAreaAssignments",JSON.stringify(inventoryAreaAssignments));
+ localStorage.setItem("kucheInventoryAreaCounts",JSON.stringify(inventoryAreaCounts));
+ localStorage.setItem("kucheInventoryTransfers",JSON.stringify(inventoryTransfers));
+ localStorage.setItem("kucheSavedScenarios",JSON.stringify(savedScenarios));
+}
+
 
 
 
@@ -10525,7 +10858,7 @@ function kdsTicketHTML(group,status){
  const items=group.items.filter(i=>i.kdsStatus===status);if(!items.length)return "";
  const firstSent=Math.min(...items.map(i=>new Date(i.sentAt||i.addedAt||Date.now()).getTime()));const elapsed=Math.max(0,Math.floor((Date.now()-firstSent)/60000));
  const urgent=elapsed>=15&&status!=="ready";const ready=status==="ready";
- return `<div class="kds-ticket ${urgent?'urgent':''} ${ready?'ready':''}"><div class="kds-ticket-head"><div><div class="kds-ticket-table">${escapeHTML(group.order.tableName)}</div><div class="kds-ticket-meta">${escapeHTML(group.station)} · ${escapeHTML(group.order.workerName||'')} · ${group.order.people||1} pers.</div></div><div class="kds-elapsed">${elapsed} min</div></div>${items.map(i=>`<div class="kds-item"><div><div class="kds-item-name">${Number(i.quantity||0)} × ${escapeHTML(i.recipeName)}</div>${i.notes?`<div class="kds-item-note">${escapeHTML(i.notes)}</div>`:''}<span class="kds-item-status ${getKDSStatusClass(i.kdsStatus)}">${getKDSStatusLabel(i.kdsStatus)}</span></div><button class="secondary-button" style="padding:6px 8px;font-size:10px" onclick="advanceKDSItem('${group.order.id}','${i.id}')">${i.kdsStatus==='new'?'Preparar':i.kdsStatus==='preparing'?'Lista':i.kdsStatus==='ready'?'Entregar':'✓'}</button></div>`).join('')}<div class="kds-ticket-actions">${status==='new'?`<button class="secondary-button" onclick="setKDSTicketStatus('${group.order.id}','${escapeHTML(group.station)}','preparing')">Tomar comanda</button>`:''}${status!=='ready'?`<button class="primary-button" onclick="setKDSTicketStatus('${group.order.id}','${escapeHTML(group.station)}','ready')">Todo listo</button>`:`<button class="primary-button" onclick="setKDSTicketStatus('${group.order.id}','${escapeHTML(group.station)}','delivered')">Todo entregado</button>`}</div></div>`;
+ return `<div class="kds-ticket ${urgent?'urgent':''} ${ready?'ready':''}"><div class="kds-ticket-head"><div><div class="kds-ticket-table">${escapeHTML(group.order.tableName)}</div><div class="kds-ticket-meta">${escapeHTML(group.station)} · ${escapeHTML(group.order.workerName||'')} · ${group.order.people||1} pers.</div></div><div class="kds-elapsed">${elapsed} min</div></div>${items.map(i=>`<div class="kds-item"><div><div class="kds-item-name">${Number(i.quantity||0)} × ${escapeHTML(i.recipeName)}</div>${i.notes?`<div class="kds-item-note">${escapeHTML(i.notes)}</div>`:''}<span class="kds-item-status ${getKDSStatusClass(i.kdsStatus)}">${getKDSStatusLabel(i.kdsStatus)}</span></div><button class="secondary-button" style="padding:6px 8px;font-size:10px" onclick="advanceKDSItem('${group.order.id}','${i.id}')">${i.kdsStatus==='new'?'Preparar':i.kdsStatus==='preparing'?'Lista':i.kdsStatus==='ready'?'Entregar':'Entregado'}</button></div>`).join('')}<div class="kds-ticket-actions">${status==='new'?`<button class="secondary-button" onclick="setKDSTicketStatus('${group.order.id}','${escapeHTML(group.station)}','preparing')">Tomar comanda</button>`:''}${status!=='ready'?`<button class="primary-button" onclick="setKDSTicketStatus('${group.order.id}','${escapeHTML(group.station)}','ready')">Todo listo</button>`:`<button class="primary-button" onclick="setKDSTicketStatus('${group.order.id}','${escapeHTML(group.station)}','delivered')">Todo entregado</button>`}</div></div>`;
 }
 function renderKDS(){
  if(!document.getElementById("kdsNewColumn"))return;prepareKDSStationFilter();
@@ -10716,7 +11049,7 @@ printCurrentPOSOrder = function(station){
 /* KDS: oculta la línea comercial de la promo y muestra sus productos reales. */
 getKDSStations = function(){normalizeKDSData();const list=[...new Set(posOrders.flatMap(o=>(o.items||[]).filter(i=>!i.commercialOnly).map(i=>i.station||"Cocina")).concat(recipes.map(r=>getRecipeStation(r))))].filter(Boolean).sort();const allowed=getKDSWorkerStations();return allowed===null?list:list.filter(x=>allowed.includes(x));};
 getKDSFilteredItems = function(){normalizeKDSData();const filter=document.getElementById("kdsStationFilter")?.value||"all",allowed=getKDSWorkerStations(),result=[];posOrders.forEach(order=>{if(!["open","paid"].includes(order.status))return;(order.items||[]).forEach(item=>{if(item.commercialOnly||!item.kdsStatus||item.kdsStatus==="draft")return;const station=item.station||"Cocina";if(filter!=="all"&&station!==filter)return;if(allowed!==null&&!allowed.includes(station))return;result.push({order,item,station});});});return result;};
-kdsTicketHTML = function(group,status){const items=group.items.filter(i=>i.kdsStatus===status);if(!items.length)return "";const firstSent=Math.min(...items.map(i=>new Date(i.sentAt||i.addedAt||Date.now()).getTime())),elapsed=Math.max(0,Math.floor((Date.now()-firstSent)/60000)),urgent=elapsed>=15&&status!=="ready",ready=status==="ready";return `<div class="kds-ticket ${urgent?'urgent':''} ${ready?'ready':''}"><div class="kds-ticket-head"><div><div class="kds-ticket-table">${escapeHTML(group.order.tableName)}</div><div class="kds-ticket-meta">${escapeHTML(group.station)} · ${escapeHTML(group.order.workerName||'')} · ${group.order.people||1} pers.</div></div><div class="kds-elapsed">${elapsed} min</div></div>${items.map(i=>`<div class="kds-item"><div>${i.promotionComponent?`<div class="promo-kds-parent">PROMO · ${escapeHTML(i.parentPromotionName)}</div>`:''}<div class="kds-item-name">${Number(i.quantity||0)} × ${escapeHTML(i.recipeName)}</div>${i.promoNote?`<div class="kds-item-note">Promo: ${escapeHTML(i.promoNote)}</div>`:''}${i.notes?`<div class="kds-item-note">${escapeHTML(i.notes)}</div>`:''}<span class="kds-item-status ${getKDSStatusClass(i.kdsStatus)}">${getKDSStatusLabel(i.kdsStatus)}</span></div><button class="secondary-button" style="padding:6px 8px;font-size:10px" onclick="advanceKDSItem('${group.order.id}','${i.id}')">${i.kdsStatus==='new'?'Preparar':i.kdsStatus==='preparing'?'Lista':i.kdsStatus==='ready'?'Entregar':'✓'}</button></div>`).join('')}<div class="kds-ticket-actions">${status==='new'?`<button class="secondary-button" onclick="setKDSTicketStatus('${group.order.id}','${escapeHTML(group.station)}','preparing')">Tomar comanda</button>`:''}${status!=='ready'?`<button class="primary-button" onclick="setKDSTicketStatus('${group.order.id}','${escapeHTML(group.station)}','ready')">Todo listo</button>`:`<button class="primary-button" onclick="setKDSTicketStatus('${group.order.id}','${escapeHTML(group.station)}','delivered')">Todo entregado</button>`}</div></div>`;};
+kdsTicketHTML = function(group,status){const items=group.items.filter(i=>i.kdsStatus===status);if(!items.length)return "";const firstSent=Math.min(...items.map(i=>new Date(i.sentAt||i.addedAt||Date.now()).getTime())),elapsed=Math.max(0,Math.floor((Date.now()-firstSent)/60000)),urgent=elapsed>=15&&status!=="ready",ready=status==="ready";return `<div class="kds-ticket ${urgent?'urgent':''} ${ready?'ready':''}"><div class="kds-ticket-head"><div><div class="kds-ticket-table">${escapeHTML(group.order.tableName)}</div><div class="kds-ticket-meta">${escapeHTML(group.station)} · ${escapeHTML(group.order.workerName||'')} · ${group.order.people||1} pers.</div></div><div class="kds-elapsed">${elapsed} min</div></div>${items.map(i=>`<div class="kds-item"><div>${i.promotionComponent?`<div class="promo-kds-parent">PROMO · ${escapeHTML(i.parentPromotionName)}</div>`:''}<div class="kds-item-name">${Number(i.quantity||0)} × ${escapeHTML(i.recipeName)}</div>${i.promoNote?`<div class="kds-item-note">Promo: ${escapeHTML(i.promoNote)}</div>`:''}${i.notes?`<div class="kds-item-note">${escapeHTML(i.notes)}</div>`:''}<span class="kds-item-status ${getKDSStatusClass(i.kdsStatus)}">${getKDSStatusLabel(i.kdsStatus)}</span></div><button class="secondary-button" style="padding:6px 8px;font-size:10px" onclick="advanceKDSItem('${group.order.id}','${i.id}')">${i.kdsStatus==='new'?'Preparar':i.kdsStatus==='preparing'?'Lista':i.kdsStatus==='ready'?'Entregar':'Entregado'}</button></div>`).join('')}<div class="kds-ticket-actions">${status==='new'?`<button class="secondary-button" onclick="setKDSTicketStatus('${group.order.id}','${escapeHTML(group.station)}','preparing')">Tomar comanda</button>`:''}${status!=='ready'?`<button class="primary-button" onclick="setKDSTicketStatus('${group.order.id}','${escapeHTML(group.station)}','ready')">Todo listo</button>`:`<button class="primary-button" onclick="setKDSTicketStatus('${group.order.id}','${escapeHTML(group.station)}','delivered')">Todo entregado</button>`}</div></div>`;};
 
 /* Ventas: registra la promo como ingreso y cada componente como detalle $0. */
 const _promoBaseFinalizePOSPayment=finalizePOSPayment;
@@ -10841,6 +11174,385 @@ renderPOSOrder=function(){
 renderPOSCatalog=function(){
  const grid=document.getElementById('posProductGrid');if(!grid)return;renderPOSCategories();const q=(document.getElementById('posProductSearch')?.value||'').toLowerCase(),cat=document.getElementById('posCategoryFilter')?.value||'',html=[];if(cat!=='__PROMO__')recipes.filter(r=>r.name.toLowerCase().includes(q)&&(!cat||r.category===cat)).forEach(r=>{const a=getRecipeAvailability(r),calc=calculateSavedRecipe(r),price=Math.round(Number(calc.finalPerPortion||0)),cls=a.status==='out'?'out':a.status==='low'?'low':'',availability=a.status==='out'?'SIN STOCK':a.status==='low'?`Stock bajo · ~${a.portions} porción(es)`:`Disponible · ~${a.portions} porción(es)`;html.push(`<div class="pos-product ${cls}"><div class="pos-product-name">${escapeHTML(r.name)}</div><span class="station-badge">${escapeHTML(getRecipeStation(r))}</span><div class="pos-product-price">$${formatMoney(price)}</div><div class="pos-product-meta">${escapeHTML(availability)}</div><button class="${a.status==='out'?'danger-button':'primary-button'}" onclick="addPOSItem(${r.id})">${a.status==='out'?'Agregar con PIN':'Agregar'}</button></div>`);});if(!cat||cat==='__PROMO__')promotions.filter(p=>p.status==='activo'&&p.name.toLowerCase().includes(q)).forEach(p=>{const a=getPromotionAvailability(p),cls=a.status==='out'?'out':a.status==='low'?'low':'',availability=a.status==='out'?'SIN STOCK / revisar opciones':a.status==='low'?`Stock bajo · ~${a.portions} promo(s)`:`Disponible · ~${a.portions} promo(s)`,fixed=getPromotionComponents(p).map(c=>`${c.quantity}× ${c.recipeName}`),choices=getPromotionChoiceGroups(p).map(g=>`Elige ${g.choose} ${g.name}`),detail=[...fixed,...choices].join(' · ');html.push(`<div class="pos-product ${cls}"><div class="pos-product-name">${escapeHTML(p.name)} <span class="promo-label">PROMO</span></div><span class="station-badge">${promotionHasChoices(p)?'Personalizable':'Varias estaciones'}</span><div class="pos-product-price">$${formatMoney(p.price)}</div><div class="pos-product-meta">${escapeHTML(availability)}</div><div class="promo-detail-in-cart">${escapeHTML(detail)}</div><button class="${a.status==='out'?'danger-button':'primary-button'}" onclick="addPOSPromotion(${p.id})">${promotionHasChoices(p)?'Elegir productos':a.status==='out'?'Agregar con PIN':'Agregar promo'}</button></div>`);});grid.innerHTML=html.join('')||'<div class="pos-empty">No hay productos para mostrar.</div>';
 };
+
+
+
+/* =====================================================
+   KÜCHE GESTIÓN INTEGRAL — FUNCIONES
+===================================================== */
+function integralRole(){return currentSession?.accessRole||"admin";}
+function integralStaffId(){return cloudStaffRecord?.id||currentSession?.workerId||null;}
+function integralUserName(){return String(currentSession?.name||appSettings.adminName||"Administrador").trim();}
+function firstName(){return integralUserName().split(/\s+/)[0]||"Administrador";}
+function timeToMinutes(v){if(!v)return 0;const p=String(v).split(":").map(Number);return (p[0]||0)*60+(p[1]||0);}
+function dateOnlyISO(v){try{return new Date(v).toISOString().slice(0,10)}catch(e){return String(v||"").slice(0,10)}}
+function birthdayDistance(dateStr){
+ if(!dateStr)return null;const b=new Date(dateStr+"T12:00:00"),now=new Date();let next=new Date(now.getFullYear(),b.getMonth(),b.getDate(),12);if(next<new Date(now.getFullYear(),now.getMonth(),now.getDate(),0))next.setFullYear(now.getFullYear()+1);return Math.round((next-new Date(now.getFullYear(),now.getMonth(),now.getDate(),12))/86400000);
+}
+function inferInventoryArea(product){
+ if(product?.primaryArea)return product.primaryArea;
+ const c=normalizeRole(product?.category||"");
+ if(c.includes("bebestible"))return "bebestibles";
+ if(c.includes("lacteo")||c.includes("proteina")||c.includes("verdura")||c.includes("congelado")||c.includes("abarrote"))return "cocina";
+ return "salon";
+}
+function normalizeAreaStocks(){
+ inventory.forEach(p=>{
+   if(!p.areaStocks||typeof p.areaStocks!=="object"){
+     const a=inferInventoryArea(p);p.primaryArea=a;p.areaStocks={[a]:Number(p.quantity||0)};
+   }
+   p.quantity=Object.values(p.areaStocks||{}).reduce((s,v)=>s+Number(v||0),0);
+ });
+ saveInventory();
+}
+function areaStock(product,area){normalizeAreaStocks();return Number(product?.areaStocks?.[area]||0);}
+function areaName(key){return inventoryAreas.find(a=>a.key===key)?.name||key||"—";}
+function assignedAreasForRole(role){
+ const r=String(role||integralRole());
+ if(["admin","manager","bodega"].includes(r))return inventoryAreas.map(a=>a.key);
+ const x=inventoryAreaAssignments.filter(a=>a.role===r).map(a=>a.area);
+ return x.length?x:[];
+}
+
+/* ---------- nube nueva fase ---------- */
+async function safeCloudRows(table,select="*"){
+ if(!kucheCloud||!cloudOrganization)return null;
+ try{const {data,error}=await kucheCloud.from(table).select(select).eq("organization_id",cloudOrganization.id);if(error)throw error;return data||[];}catch(e){console.warn("KÜCHE cloud",table,e.message);return null;}
+}
+async function loadIntegralCloudData(){
+ if(!kucheCloud||!cloudOrganization)return;
+ const [
+  guides,batches,tipCfg,tipDist,tipAll,clubCfg,customers,rewards,mods,assignments,
+  cloudProtocols,activations,areas,areaRoles,onboards
+ ]=await Promise.all([
+  safeCloudRows("recipe_guides"),safeCloudRows("preparation_batches"),
+  safeCloudRows("tip_shift_settings"),safeCloudRows("tip_distributions"),safeCloudRows("tip_allocations"),
+  safeCloudRows("loyalty_settings"),safeCloudRows("customers"),safeCloudRows("loyalty_rewards"),
+  safeCloudRows("training_modules"),safeCloudRows("training_assignments"),
+  safeCloudRows("internal_protocols"),safeCloudRows("protocol_activations"),
+  safeCloudRows("inventory_areas"),safeCloudRows("inventory_area_role_assignments"),
+  safeCloudRows("onboarding_assignments")
+ ]);
+ if(guides)recipeGuidesCloud=guides;
+ if(batches)preparedBatches=batches.map(x=>({cloudId:x.id,recipeId:x.source_recipe_local_id||x.recipe_id,recipeName:x.recipe_name,lot:x.lot_code,producedQty:Number(x.produced_qty),remainingQty:Number(x.remaining_qty),unit:x.unit,productionDate:x.production_date,expiryDate:x.expiry_date,storageMethod:x.storage_method,responsible:x.responsible_name,status:x.status,costPerUnit:Number(x.cost_per_unit||0)}));
+ if(tipCfg?.length)tipShiftSettings=tipCfg.map(x=>({cloudId:x.id,key:x.shift_key,name:x.name,start:String(x.start_time).slice(0,5),end:String(x.end_time).slice(0,5),active:x.active}));
+ if(tipDist)tipDistributions=tipDist;
+ if(tipAll)tipAllocations=tipAll;
+ if(clubCfg?.length){const x=clubCfg[0];loyaltySettings={...loyaltySettings,clubName:x.club_name,pointsName:x.points_name,spendAmount:Number(x.spend_amount),pointsPerSpend:Number(x.points_per_spend),roundingMode:x.rounding_mode,birthdayDiscountPct:Number(x.birthday_reward_discount_pct||30),birthdayWindowDays:Number(x.birthday_window_days||0)};}
+ if(customers)clubCustomers=customers.map(x=>({cloudId:x.id,id:x.id,name:x.full_name,rut:x.rut||"",birthDate:x.birth_date||"",email:x.email||"",phone:x.phone||"",consent:x.consent_communications,points:Number(x.points_balance||0),earned:Number(x.points_earned_total||0),redeemed:Number(x.points_redeemed_total||0),purchaseTotal:Number(x.purchase_total||0),lastVisit:x.last_visit_at,joinedAt:x.joined_at,active:x.active}));
+ if(rewards)loyaltyRewards=rewards.map(x=>({cloudId:x.id,id:x.id,name:x.name,description:x.description||"",points:Number(x.points_cost),birthdayPoints:x.birthday_points_cost===null?null:Number(x.birthday_points_cost),active:x.active}));
+ if(mods?.length)trainingModules=mods.map(x=>({cloudId:x.id,id:x.id,key:x.module_key,title:x.title,category:x.category,description:x.short_description||"",minutes:x.estimated_minutes,month:x.month_order,content:Array.isArray(x.content)?x.content:[],questions:Array.isArray(x.questions)?x.questions:[],passing:Number(x.passing_score||80),sourceName:x.source_name||"",sourceVersion:x.source_version||""}));
+ if(assignments&&currentSession?.role==="worker")trainingProgress=assignments.map(x=>({cloudId:x.id,moduleId:x.module_id,staffId:x.staff_id,status:x.status,score:Number(x.best_score||0),attempts:x.attempts,completedAt:x.completed_at}));
+ if(cloudProtocols)protocols=cloudProtocols.map(x=>({cloudId:x.id,id:x.id,title:x.title,category:x.category||"",severity:x.severity,content:x.content||"",steps:Array.isArray(x.steps)?x.steps:[],version:x.version,active:x.active}));
+ if(activations)protocolActivations=activations.map(x=>({cloudId:x.id,id:x.id,protocolId:x.protocol_id,title:x.protocol_title_snapshot,severity:x.severity_snapshot,area:x.area||"",description:x.description,status:x.status,activatedBy:x.activated_by_name||"",createdAt:x.created_at,stepsState:Array.isArray(x.steps_state)?x.steps_state:[],resolutionNotes:x.resolution_notes||""}));
+ if(areas?.length)inventoryAreas=areas.map(x=>({cloudId:x.id,key:x.area_key,name:x.name}));
+ if(areaRoles?.length)inventoryAreaAssignments=areaRoles.map(x=>({cloudId:x.id,role:x.access_role,area:inventoryAreas.find(a=>a.cloudId===x.area_id)?.key||"",closing:x.count_closing,opening:x.count_opening}));
+ if(onboards&&currentSession?.role==="worker")onboardingRecords=onboards.map(x=>({cloudId:x.id,staffId:x.staff_id,status:x.status,progress:Number(x.progress_pct||0),items:Array.isArray(x.items_state)?x.items_state:[]}));
+ saveIntegralData();
+ renderIntegralModules();
+}
+async function syncRecipeGuideToCloud(recipe){
+ if(!kucheCloud||!cloudOrganization||currentSession?.role!=="admin"||!recipe)return;
+ const payload={organization_id:cloudOrganization.id,source_local_id:String(recipe.id),name:recipe.name,category:recipe.category||null,recipe_type:recipe.recipeType||"sale",station:getRecipeStation(recipe),yield_qty:Number(recipe.yield||1),output_unit:recipe.outputUnit||"porción",storage_method:recipe.storageMethod||null,shelf_life_days:Number(recipe.shelfLifeDays||0),ingredients:recipe.ingredients||[],base_components:recipe.baseComponents||[],instructions:recipe.instructions||null,allergens:recipe.allergens||[],cross_contact_allergens:recipe.crossAllergens||[],notes:recipe.operationalNotes||null,active:true};
+ try{const {data,error}=await kucheCloud.from("recipe_guides").upsert(payload,{onConflict:"organization_id,source_local_id"}).select().single();if(error)throw error;recipe.cloudGuideId=data.id;}catch(e){console.warn("No se pudo sincronizar recetario",e.message);}
+}
+async function cloudUpsert(table,payload,onConflict){
+ if(!kucheCloud||!cloudOrganization)return null;
+ try{const q=kucheCloud.from(table).upsert(payload,onConflict?{onConflict}:undefined).select();const {data,error}=await q;if(error)throw error;return data;}catch(e){console.warn("KÜCHE cloud upsert",table,e.message);return null;}
+}
+
+/* ---------- Dashboard inteligente ---------- */
+function controlCenterData(){
+ normalizeAreaStocks();
+ const alerts=[];let penalty=0;
+ const activeProtocols=protocolActivations.filter(x=>["active","in_progress"].includes(x.status));
+ activeProtocols.slice(0,3).forEach(x=>{alerts.push({text:"🔴 Protocolo activo: "+x.title+" · "+(x.activatedBy||"equipo"),weight:18});penalty+=18;});
+ const low=inventory.filter(p=>Number(p.quantity)<=Number(p.minimum));if(low.length){alerts.push({text:`Stock crítico: ${low.length} insumo(s) requieren atención.`,weight:Math.min(18,low.length*3)});penalty+=Math.min(18,low.length*3);}
+ const exp=traceLots.filter(x=>{const d=traceDaysLeft(x.expiryDate);return d>=0&&d<=2;});if(exp.length){alerts.push({text:`Vencimientos próximos: ${exp.length} lote(s) dentro de 2 días.`,weight:Math.min(12,exp.length*4)});penalty+=Math.min(12,exp.length*4);}
+ const badTemp=temperatureRecords.filter(x=>String(x.date||"").slice(0,10)===getToday()&&x.status==="bad").length;if(badTemp){alerts.push({text:`Temperaturas fuera de rango hoy: ${badTemp}.`,weight:Math.min(20,badTemp*10)});penalty+=Math.min(20,badTemp*10);}
+ const todayChecklist=checklistRecords.filter(x=>x.date===getToday());if(checklists.length&&todayChecklist.length<checklists.length){alerts.push({text:"Hay checklists del día pendientes de completar.",weight:6});penalty+=6;}
+ const birthdays=[...staff.filter(w=>birthdayDistance(w.birthDate)===1).map(w=>w.name),...clubCustomers.filter(c=>birthdayDistance(c.birthDate)===1).map(c=>c.name)].slice(0,2);
+ birthdays.forEach(n=>alerts.push({text:"🎂 "+n+" cumple años mañana.",weight:1}));
+ if(currentSession?.role==="admin"){
+   const overdue=trainingProgress.filter(x=>x.status==="overdue").length;if(overdue){alerts.push({text:`Capacitaciones atrasadas: ${overdue}.`,weight:Math.min(10,overdue*2)});penalty+=Math.min(10,overdue*2);}
+ }
+ const score=Math.max(0,Math.min(100,100-penalty));
+ return {score,alerts:alerts.slice(0,6)};
+}
+function renderControlCenter(){
+ const hero=document.getElementById("controlCenterHero");if(!hero)return;const d=controlCenterData();
+ controlGreeting.textContent=`Hola, ${firstName()}.`;
+ controlSubtitle.textContent=d.alerts.length?`El local está ${d.score}% bajo control. Tienes ${d.alerts.length} cosa(s) que necesitan atención.`:`El local está ${d.score}% bajo control. No hay alertas relevantes en este momento.`;
+ controlScore.textContent=d.score+"%";controlScoreBar.style.width=d.score+"%";
+ controlAttention.innerHTML=d.alerts.length?d.alerts.map(a=>`<div class="control-alert">${escapeHTML(a.text).replace("🔴","🔴").replace("🎂","🎂")}</div>`).join(""):'<div class="control-alert">Operación estable. Revisa igualmente los controles programados del turno.</div>';
+}
+
+/* ---------- Inventario por áreas ---------- */
+function renderAreaSelectors(){
+ ["areaCountArea","areaAssignArea","transferFrom","transferTo"].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cur=el.value;let list=inventoryAreas;if(id==="areaCountArea"&&currentSession?.role==="worker")list=inventoryAreas.filter(a=>assignedAreasForRole().includes(a.key));el.innerHTML=list.map(a=>`<option value="${a.key}">${escapeHTML(a.name)}</option>`).join("");if([...el.options].some(o=>o.value===cur))el.value=cur;});
+ const p=document.getElementById("transferProduct");if(p)p.innerHTML=inventory.map(x=>`<option value="${x.id}">${escapeHTML(x.name)}</option>`).join("");
+}
+function renderInventoryAreas(){
+ normalizeAreaStocks();renderAreaSelectors();
+ const sum=document.getElementById("inventoryAreaSummary");if(!sum)return;
+ sum.innerHTML=inventoryAreas.map(a=>{const items=inventory.filter(p=>areaStock(p,a.key)>0),units=items.reduce((s,p)=>s+areaStock(p,a.key),0);return `<div class="integral-stat"><span>${escapeHTML(a.name)}</span><strong>${items.length}</strong><div class="role-note">${formatNumber(units)} unidades de stock contabilizado</div></div>`}).join("");
+ const roleMsg=document.getElementById("areaRoleMessage");if(roleMsg){const areas=assignedAreasForRole().map(areaName);roleMsg.textContent=currentSession?.role==="worker"?(areas.length?"Según tu cargo debes gestionar: "+areas.join(", "):"Tu cargo no tiene inventarios asignados actualmente."):"Configura qué área debe inventariar cada cargo.";}
+ const list=document.getElementById("areaAssignmentsList");if(list)list.innerHTML=inventoryAreaAssignments.length?inventoryAreaAssignments.map(x=>`<div class="mini-row"><span>${escapeHTML(x.role)}</span><strong>${escapeHTML(areaName(x.area))}</strong></div>`).join(""):'<div class="category">Sin responsabilidades configuradas.</div>';
+ renderAreaCountForm();renderAreaHistory();
+}
+function formatNumber(n){return Number(n||0).toLocaleString("es-CL",{maximumFractionDigits:2});}
+function renderAreaCountForm(){
+ const box=document.getElementById("areaCountLines"),sel=document.getElementById("areaCountArea");if(!box||!sel)return;const area=sel.value;const products=inventory.filter(p=>areaStock(p,area)>0||inferInventoryArea(p)===area);
+ box.innerHTML=products.length?products.map(p=>`<div class="count-line"><div><strong>${escapeHTML(p.name)}</strong><div class="role-note">Teórico: ${formatNumber(areaStock(p,area))} ${escapeHTML(p.unit)}</div></div><div>${escapeHTML(p.unit)}</div><input class="area-count-input" data-product="${p.id}" type="number" step="0.01" value="${areaStock(p,area)}"></div>`).join(""):'<div class="category">No hay productos asignados a esta área.</div>';
+}
+async function saveAreaCount(){
+ const area=document.getElementById("areaCountArea")?.value,type=document.getElementById("areaCountType")?.value||"closing";if(!area)return;
+ const lines=[];document.querySelectorAll(".area-count-input").forEach(inp=>{const p=inventory.find(x=>String(x.id)===String(inp.dataset.product));if(!p)return;const old=areaStock(p,area),counted=Math.max(0,Number(inp.value)||0);p.areaStocks[area]=counted;p.quantity=Object.values(p.areaStocks).reduce((s,v)=>s+Number(v||0),0);lines.push({productId:p.id,productName:p.name,expected:old,counted,difference:counted-old,unit:p.unit});if(Math.abs(counted-old)>1e-9)movements.unshift({id:Date.now()+Math.random(),productId:p.id,productName:p.name,type:"ajuste",quantity:Math.abs(counted-old),reason:`Inventario ${areaName(area)} · ${type}`,previousStock:Number(p.quantity)-(counted-old),resultingStock:p.quantity,unit:p.unit,date:new Date().toISOString(),area});});
+ const rec={id:Date.now(),date:getToday(),area,type,responsible:integralUserName(),role:integralRole(),lines,createdAt:new Date().toISOString()};inventoryAreaCounts.unshift(rec);saveInventory();saveMovements();saveIntegralData();renderInventory();renderInventoryAreas();updateDashboard();alert("Inventario del área registrado.");
+}
+function openAreaTransfer(){renderAreaSelectors();document.getElementById("areaTransferPanel").style.display="block";}
+function closeAreaTransfer(){document.getElementById("areaTransferPanel").style.display="none";}
+function saveAreaTransfer(){
+ normalizeAreaStocks();const p=inventory.find(x=>String(x.id)===String(transferProduct.value)),from=transferFrom.value,to=transferTo.value,qty=Number(transferQty.value)||0;if(!p||!from||!to||from===to||qty<=0){alert("Completa una transferencia válida.");return;}if(areaStock(p,from)<qty){alert("No existe stock suficiente en el área de origen.");return;}p.areaStocks[from]-=qty;p.areaStocks[to]=(p.areaStocks[to]||0)+qty;p.quantity=Object.values(p.areaStocks).reduce((s,v)=>s+Number(v||0),0);inventoryTransfers.unshift({id:Date.now(),productId:p.id,productName:p.name,from,to,qty,responsible:integralUserName(),createdAt:new Date().toISOString()});saveInventory();saveIntegralData();transferQty.value="";closeAreaTransfer();renderInventoryAreas();renderInventory();
+}
+function saveAreaAssignment(){const role=areaAssignRole.value,area=areaAssignArea.value;if(!role||!area)return;inventoryAreaAssignments=inventoryAreaAssignments.filter(x=>!(x.role===role&&x.area===area));inventoryAreaAssignments.push({role,area});saveIntegralData();renderInventoryAreas();}
+function renderAreaHistory(){const el=document.getElementById("areaHistory");if(!el)return;const rows=[...inventoryAreaCounts.map(x=>({date:x.createdAt,text:`Conteo ${areaName(x.area)} · ${x.responsible} · ${x.lines.length} ítem(s)`})),...inventoryTransfers.map(x=>({date:x.createdAt,text:`Transferencia ${x.productName}: ${formatNumber(x.qty)} · ${areaName(x.from)} a ${areaName(x.to)}`}))].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,12);el.innerHTML=rows.map(x=>`<div class="mini-row"><span>${escapeHTML(x.text)}</span><strong>${new Date(x.date).toLocaleString("es-CL")}</strong></div>`).join("")||'<div class="category">Sin movimientos por área.</div>';}
+
+/* ---------- Recetas operativas, base y alérgenos ---------- */
+function renderAllergenOptions(selected=[],cross=[]){
+ const a=document.getElementById("recipeAllergenGrid"),c=document.getElementById("recipeCrossAllergenGrid");if(a)a.innerHTML=KUCHE_ALLERGENS.map(x=>`<label class="allergen-option"><input type="checkbox" class="recipeAllergen" value="${escapeHTML(x)}" ${selected.includes(x)?"checked":""}> ${escapeHTML(x)}</label>`).join("");if(c)c.innerHTML=KUCHE_ALLERGENS.map(x=>`<label class="allergen-option"><input type="checkbox" class="recipeCrossAllergen" value="${escapeHTML(x)}" ${cross.includes(x)?"checked":""}> ${escapeHTML(x)}</label>`).join("");
+}
+function addRecipeBaseComponent(existing=null){
+ const box=document.getElementById("recipeBaseComponents");if(!box)return;const row=document.createElement("div");row.className="recipe-row recipe-base-row";const choices=recipes.filter(r=>(r.recipeType||"sale")==="mise"&&String(r.id)!==String(editingRecipeId)).map(r=>`<option value="${r.id}">${escapeHTML(r.name)}</option>`).join("");row.innerHTML=`<div class="field"><label>Preparación base</label><select class="recipeBaseSelect"><option value="">Seleccionar</option>${choices}</select></div><div class="field"><label>Cantidad por rendimiento</label><input class="recipeBaseQty" type="number" min="0" step="0.01"></div><div class="field"><label>Unidad</label><input class="recipeBaseUnit" value="${escapeHTML(existing?.unit||"porción")}"></div><button type="button" class="danger-button">Eliminar</button>`;box.appendChild(row);if(existing){row.querySelector(".recipeBaseSelect").value=existing.recipeId;row.querySelector(".recipeBaseQty").value=existing.quantity;}row.querySelector("button").onclick=()=>row.remove();
+}
+function collectRecipeBaseComponents(){return [...document.querySelectorAll(".recipe-base-row")].map(row=>{const recipeId=row.querySelector(".recipeBaseSelect").value,r=recipes.find(x=>String(x.id)===String(recipeId)),quantity=Number(row.querySelector(".recipeBaseQty").value)||0,unit=row.querySelector(".recipeBaseUnit").value.trim()||"porción";return r&&quantity>0?{recipeId:r.id,recipeName:r.name,quantity,unit}:null;}).filter(Boolean);}
+function getEffectiveAllergens(recipe,visited=new Set()){
+ if(!recipe)return {contains:[],cross:[]};const key=String(recipe.id||recipe.source_local_id||recipe.name);if(visited.has(key))return {contains:[],cross:[]};visited.add(key);const contains=new Set(recipe.allergens||[]),cross=new Set(recipe.crossAllergens||recipe.cross_contact_allergens||[]);(recipe.baseComponents||recipe.base_components||[]).forEach(c=>{const base=recipes.find(x=>String(x.id)===String(c.recipeId||c.recipe_id))||recipeGuidesCloud.find(x=>String(x.source_local_id)===String(c.recipeId||c.recipe_id));const a=getEffectiveAllergens(base,visited);a.contains.forEach(x=>contains.add(x));a.cross.forEach(x=>cross.add(x));});return {contains:[...contains],cross:[...cross]};}
+function getRecipeGuideList(){
+ if(currentSession?.role==="worker"&&recipeGuidesCloud.length)return recipeGuidesCloud.map(x=>({id:x.id,name:x.name,category:x.category,recipeType:x.recipe_type,station:x.station,yield:x.yield_qty,outputUnit:x.output_unit,storageMethod:x.storage_method,shelfLifeDays:x.shelf_life_days,ingredients:x.ingredients||[],baseComponents:x.base_components||[],instructions:x.instructions||"",allergens:x.allergens||[],crossAllergens:x.cross_contact_allergens||[],notes:x.notes||""}));
+ return recipes.map(r=>({...r,recipeType:r.recipeType||"sale"}));
+}
+function renderRecipeBook(){
+ const box=document.getElementById("recipeBookList");if(!box)return;const q=(document.getElementById("recipeBookSearch")?.value||"").toLowerCase(),type=document.getElementById("recipeBookType")?.value||"";const list=getRecipeGuideList().filter(r=>r.name.toLowerCase().includes(q)&&(!type||(r.recipeType||"sale")===type));
+ box.innerHTML=list.length?list.map(r=>{const a=getEffectiveAllergens(r),ings=(r.ingredients||[]).map(i=>`${formatNumber(i.quantity)} ${escapeHTML(i.unit||"")} ${escapeHTML(i.productName||i.product_name||"")}`).join(" · ");return `<div class="recipe-guide-card"><div class="card-topline"><div><h3>${escapeHTML(r.name)}</h3><p>${escapeHTML(r.category||"Sin categoría")} · ${(r.recipeType||"sale")==="mise"?"Mise en place":"Venta"}</p></div><span class="score-pill">${escapeHTML(r.storageMethod||r.storage_method||"Uso inmediato")}</span></div><div class="role-note"><strong>Rendimiento:</strong> ${formatNumber(r.yield||r.yield_qty||1)} ${escapeHTML(r.outputUnit||r.output_unit||"porción")}</div><div class="role-note"><strong>Ingredientes:</strong> ${ings||"No informados"}</div><div style="margin-top:9px">${a.contains.map(x=>`<span class="allergen-chip">${escapeHTML(x)}</span>`).join("")}${a.cross.map(x=>`<span class="allergen-chip cross-chip">Puede contener: ${escapeHTML(x)}</span>`).join("")}</div><div style="font-size:12px;line-height:1.5;margin-top:10px;white-space:pre-line">${escapeHTML(r.instructions||"Procedimiento no informado.")}</div><div class="role-note" style="margin-top:9px">Ante una alergia grave, confirmar con cocina y revisar riesgo de contacto cruzado antes de responder.</div></div>`}).join(""):'<div class="table-card" style="grid-column:1/-1"><div class="empty-state"><strong>No hay recetas operativas</strong><span>El administrador puede publicarlas desde Recetas y costos.</span></div></div>';
+}
+
+/* ---------- Mise en place ---------- */
+function miseRecipes(){return recipes.filter(r=>(r.recipeType||"sale")==="mise");}
+function prepAvailable(recipeId){return preparedBatches.filter(b=>String(b.recipeId)===String(recipeId)&&b.status!=="discarded"&&Number(b.remainingQty)>0&&(!b.expiryDate||traceDaysLeft(b.expiryDate)>=0)).reduce((s,b)=>s+Number(b.remainingQty||0),0);}
+function openPreparationBatchForm(){const sel=document.getElementById("prepBatchRecipe");sel.innerHTML=miseRecipes().map(r=>`<option value="${r.id}">${escapeHTML(r.name)}</option>`).join("");prepBatchDate.value=getToday();prepBatchResponsible.value=integralUserName();prepBatchLot.value="L-"+getToday().replaceAll("-","")+"-"+String(Date.now()).slice(-4);updatePrepBatchDefaults();document.getElementById("prepBatchForm").style.display="block";}
+function closePreparationBatchForm(){document.getElementById("prepBatchForm").style.display="none";}
+function updatePrepBatchDefaults(){const r=recipes.find(x=>String(x.id)===String(prepBatchRecipe.value));if(!r)return;prepBatchQty.value=Number(r.yield||1);const d=new Date(getToday()+"T12:00:00");d.setDate(d.getDate()+Number(r.shelfLifeDays||0));prepBatchExpiry.value=Number(r.shelfLifeDays||0)?d.toISOString().slice(0,10):"";}
+async function savePreparationBatch(){
+ const r=recipes.find(x=>String(x.id)===String(prepBatchRecipe.value)),qty=Number(prepBatchQty.value)||0;if(!r||qty<=0){alert("Selecciona una receta y cantidad obtenida.");return;}const factor=qty/Math.max(1,Number(r.yield||1));const req=(r.ingredients||[]).map(i=>({i,p:inventory.find(x=>String(x.id)===String(i.productId)),qty:Number(i.quantity||0)*factor}));const missing=req.filter(x=>!x.p||Number(x.p.quantity)<x.qty-1e-9);if(missing.length){alert("No existe stock suficiente para producir: "+missing.map(x=>x.i.productName).join(", "));return;}req.forEach(x=>{const p=x.p,old=Number(p.quantity);let remain=x.qty;normalizeAreaStocks();for(const a of Object.keys(p.areaStocks)){const take=Math.min(remain,Number(p.areaStocks[a]||0));p.areaStocks[a]-=take;remain-=take;if(remain<=1e-9)break;}p.quantity=Object.values(p.areaStocks).reduce((s,v)=>s+Number(v||0),0);movements.unshift({id:Date.now()+Math.random(),productId:p.id,productName:p.name,type:"salida",quantity:x.qty,reason:"Producción mise en place · "+r.name,previousStock:old,resultingStock:p.quantity,unit:p.unit,date:new Date().toISOString(),source:"mise"});});
+ const calc=calculateSavedRecipe(r),batch={id:Date.now(),recipeId:r.id,recipeName:r.name,lot:prepBatchLot.value.trim(),producedQty:qty,remainingQty:qty,unit:r.outputUnit||"porción",productionDate:prepBatchDate.value,expiryDate:prepBatchExpiry.value,storageMethod:r.storageMethod||"Uso inmediato",responsible:prepBatchResponsible.value.trim(),status:"available",costPerUnit:Number(calc.realCost||0)/Math.max(1,Number(r.yield||1)),createdAt:new Date().toISOString()};preparedBatches.unshift(batch);saveInventory();saveMovements();saveIntegralData();if(kucheCloud&&cloudOrganization){try{const {data,error}=await kucheCloud.from("preparation_batches").insert({organization_id:cloudOrganization.id,batch_key:String(batch.id),source_recipe_local_id:String(r.id),recipe_name:r.name,lot_code:batch.lot,produced_qty:qty,remaining_qty:qty,unit:batch.unit,production_date:batch.productionDate,expiry_date:batch.expiryDate||null,storage_method:batch.storageMethod,responsible_name:batch.responsible,cost_per_unit:batch.costPerUnit,status:"available"}).select().single();if(!error)batch.cloudId=data.id;}catch(e){console.warn(e);}}closePreparationBatchForm();renderPreparations();renderInventory();updateDashboard();alert("Producción registrada y agregada a preparaciones disponibles.");
+}
+function renderPreparations(){
+ const list=document.getElementById("prepBatchList");if(!list)return;const active=preparedBatches.filter(b=>Number(b.remainingQty)>0&&b.status!=="discarded"),soon=active.filter(b=>b.expiryDate&&traceDaysLeft(b.expiryDate)<=3),total=active.reduce((s,b)=>s+Number(b.remainingQty||0),0);prepSummary.innerHTML=`<div class="integral-stat"><span>Lotes activos</span><strong>${active.length}</strong></div><div class="integral-stat"><span>Stock preparado</span><strong>${formatNumber(total)}</strong></div><div class="integral-stat"><span>Por vencer</span><strong>${soon.length}</strong></div><div class="integral-stat"><span>Recetas mise</span><strong>${miseRecipes().length}</strong></div>`;list.innerHTML=active.length?active.map(b=>{const days=b.expiryDate?traceDaysLeft(b.expiryDate):null;return `<div class="prep-card"><div class="card-topline"><div><h3>${escapeHTML(b.recipeName)}</h3><p>Lote ${escapeHTML(b.lot||"—")}</p></div><span class="badge ${days!==null&&days<=3?"badge-warning":"badge-success"}">${days===null?"Sin vencimiento":days<0?"Vencido":days+" día(s)"}</span></div><div class="mini-row"><span>Disponible</span><strong>${formatNumber(b.remainingQty)} ${escapeHTML(b.unit)}</strong></div><div class="mini-row"><span>Conservación</span><strong>${escapeHTML(b.storageMethod||"—")}</strong></div><div class="mini-row"><span>Responsable</span><strong>${escapeHTML(b.responsible||"—")}</strong></div></div>`}).join(""):'<div class="table-card" style="grid-column:1/-1"><div class="empty-state"><strong>No hay preparaciones disponibles</strong></div></div>';
+}
+function getOpenCommittedPrepared(){
+ const map={};posOrders.filter(o=>o.status==="open").forEach(o=>(o.items||[]).forEach(item=>{if(item.commercialOnly)return;const r=recipes.find(x=>String(x.id)===String(item.recipeId));if(!r)return;const factor=Number(item.quantity||0)/Math.max(1,Number(r.yield||1));(r.baseComponents||[]).forEach(c=>{map[c.recipeId]=(map[c.recipeId]||0)+Number(c.quantity||0)*factor;});}));return map;
+}
+function preparedRequirementsForOrder(order){
+ const map={};(order?.items||[]).filter(i=>!i.commercialOnly).forEach(item=>{const r=recipes.find(x=>String(x.id)===String(item.recipeId));if(!r)return;const factor=Number(item.quantity||0)/Math.max(1,Number(r.yield||1));(r.baseComponents||[]).forEach(c=>{map[c.recipeId]=(map[c.recipeId]||0)+Number(c.quantity||0)*factor;});});return map;
+}
+function consumePreparedRequirements(map){
+ Object.entries(map||{}).forEach(([recipeId,need0])=>{let need=Number(need0||0);const batches=preparedBatches.filter(b=>String(b.recipeId)===String(recipeId)&&Number(b.remainingQty)>0&&b.status!=="discarded").sort((a,b)=>String(a.expiryDate||"9999").localeCompare(String(b.expiryDate||"9999")));for(const b of batches){const take=Math.min(need,Number(b.remainingQty||0));b.remainingQty-=take;need-=take;if(b.remainingQty<=1e-9)b.status="depleted";if(need<=1e-9)break;}});
+ saveIntegralData();
+}
+
+/* ---------- Propinas ---------- */
+function shiftForDateTime(dateTime){
+ const d=new Date(dateTime),m=d.getHours()*60+d.getMinutes();for(const s of tipShiftSettings.filter(x=>x.active!==false)){const a=timeToMinutes(s.start),b=timeToMinutes(s.end);if(b>=a?m>=a&&m<b:m>=a||m<b)return s;}return tipShiftSettings.find(x=>x.active!==false)||{key:"sin_turno",name:"Sin turno"};
+}
+function attendanceOverlapsShift(rec,shift){
+ if(rec.status!=="presente"||!rec.start||!rec.end)return false;let rs=timeToMinutes(rec.start),re=timeToMinutes(rec.end),ss=timeToMinutes(shift.start),se=timeToMinutes(shift.end);if(re<rs)re+=1440;if(se<ss)se+=1440;return Math.max(rs,ss)<Math.min(re,se);
+}
+function workedHoursInShift(rec,shift){if(!attendanceOverlapsShift(rec,shift))return 0;let rs=timeToMinutes(rec.start),re=timeToMinutes(rec.end),ss=timeToMinutes(shift.start),se=timeToMinutes(shift.end);if(re<rs)re+=1440;if(se<ss)se+=1440;return Math.max(0,Math.min(re,se)-Math.max(rs,ss))/60;}
+function roleTipWeight(role){const r=normalizeRole(role);if(r.includes("administrador")||r.includes("jefe"))return 1.5;return 1;}
+function getTipDistribution(date,shift,mode){
+ const orders=posOrders.filter(o=>o.status==="paid"&&dateOnlyISO(o.openedAt)===date&&(o.tipShiftKey||shiftForDateTime(o.openedAt).key)===shift.key);const total=orders.reduce((s,o)=>s+Number(o.tip||0),0);const recs=attendance.filter(a=>a.date===date&&attendanceOverlapsShift(a,shift));const people=recs.map(a=>({staffId:a.staffId,name:a.staffName,role:a.role,hours:workedHoursInShift(a,shift),weight:roleTipWeight(a.role)}));let denom=0;if(mode==="hours")denom=people.reduce((s,p)=>s+p.hours,0);else if(mode==="points")denom=people.reduce((s,p)=>s+p.weight,0);else denom=people.length;const allocations=people.map(p=>({ ...p, amount:denom?total*(mode==="hours"?p.hours:mode==="points"?p.weight:1)/denom:0 }));return {orders,total,allocations};
+}
+function renderTips(){
+ const date=document.getElementById("tipDate")?.value||getToday(),mode=document.getElementById("tipDistributionMode")?.value||"equal";if(document.getElementById("tipDate")&&!tipDate.value)tipDate.value=date;const cards=document.getElementById("tipShiftCards");if(!cards)return;cards.innerHTML=tipShiftSettings.filter(s=>s.active!==false).map(s=>{const d=getTipDistribution(date,s,mode),paid=tipAllocations.filter(a=>a.date===date&&a.shiftKey===s.key&&a.paymentStatus==="paid").reduce((x,a)=>x+Number(a.amount||0),0);return `<div class="integral-panel"><h2>${escapeHTML(s.name)}</h2><div class="sub">${s.start}–${s.end} · ${d.orders.length} comanda(s)</div><div class="integral-grid" style="grid-template-columns:repeat(3,1fr)"><div class="integral-stat"><span>Propinas</span><strong>$${formatMoney(d.total)}</strong></div><div class="integral-stat"><span>Pagadas</span><strong>$${formatMoney(paid)}</strong></div><div class="integral-stat"><span>Pendientes</span><strong>$${formatMoney(Math.max(0,d.total-paid))}</strong></div></div><div>${d.allocations.map(a=>{const saved=tipAllocations.find(x=>x.date===date&&x.shiftKey===s.key&&String(x.staffId)===String(a.staffId)),isPaid=saved?.paymentStatus==="paid";return `<div class="mini-row ${isPaid?"paid-row":""}"><span>${escapeHTML(a.name)} · ${escapeHTML(a.role||"")}</span><span><strong>$${formatMoney(saved?.amount??a.amount)}</strong> · ${isPaid?"Pagada":"Pendiente"} ${!isPaid?`<button class="secondary-button" style="margin-left:6px" onclick="markTipPaid('${s.key}','${a.staffId}','efectivo')">Pagar efectivo</button><button class="secondary-button" onclick="markTipPaid('${s.key}','${a.staffId}','transferencia')">Transferencia</button>`:""}</span></div>`}).join("")||'<div class="category">No hay personas con asistencia registrada en este turno.</div>'}</div><button class="primary-button" style="margin-top:12px" onclick="confirmTipDistribution('${s.key}')">Confirmar reparto</button></div>`}).join("");renderTipSettings();
+}
+function confirmTipDistribution(shiftKey){
+ const date=tipDate.value||getToday(),mode=tipDistributionMode.value,shift=tipShiftSettings.find(s=>s.key===shiftKey),d=getTipDistribution(date,shift,mode);tipAllocations=tipAllocations.filter(x=>!(x.date===date&&x.shiftKey===shiftKey));d.allocations.forEach(a=>tipAllocations.push({id:Date.now()+Math.random(),date,shiftKey,shiftName:shift.name,staffId:a.staffId,staffName:a.name,role:a.role,amount:Math.round(a.amount),hours:a.hours,paymentStatus:"pending",createdAt:new Date().toISOString()}));tipDistributions=tipDistributions.filter(x=>!(x.date===date&&x.shiftKey===shiftKey));tipDistributions.push({id:Date.now(),date,shiftKey,shiftName:shift.name,totalTip:d.total,mode,status:"confirmed"});saveIntegralData();renderTips();
+}
+function markTipPaid(shiftKey,staffId,method){
+ const date=tipDate.value||getToday();let a=tipAllocations.find(x=>x.date===date&&x.shiftKey===shiftKey&&String(x.staffId)===String(staffId));if(!a){confirmTipDistribution(shiftKey);a=tipAllocations.find(x=>x.date===date&&x.shiftKey===shiftKey&&String(x.staffId)===String(staffId));}if(!a)return;a.paymentStatus="paid";a.paymentMethod=method;a.paidAt=new Date().toISOString();if(method==="efectivo"){const reg=getActiveCashRegister();if(reg)cashMovements.unshift({id:Date.now(),registerId:reg.id,type:"retiro",amount:Number(a.amount||0),reason:`Pago propina · ${a.staffName} · ${a.shiftName}`,workerName:integralUserName(),createdAt:new Date().toISOString()});saveCashMovements();}saveIntegralData();renderTips();renderCash();
+}
+function renderTipSettings(){const box=document.getElementById("tipShiftSettings");if(!box)return;box.innerHTML=tipShiftSettings.map((s,i)=>`<div class="count-line"><input value="${escapeHTML(s.name)}" onchange="updateTipShift(${i},'name',this.value)"><input type="time" value="${s.start}" onchange="updateTipShift(${i},'start',this.value)"><input type="time" value="${s.end}" onchange="updateTipShift(${i},'end',this.value)"></div>`).join("");}
+function updateTipShift(index,key,value){tipShiftSettings[index][key]=value;saveIntegralData();renderTips();}
+
+/* ---------- Club ---------- */
+function birthdayBenefit(customer,date=getToday()){const d=birthdayDistance(customer.birthDate);if(d===null)return false;return d<=Number(loyaltySettings.birthdayWindowDays||0);}
+function pointsForPurchase(amount,customer){
+ const raw=(Number(amount||0)/Math.max(1,Number(loyaltySettings.spendAmount||1000)))*Number(loyaltySettings.pointsPerSpend||1);const fn=loyaltySettings.roundingMode==="ceil"?Math.ceil:loyaltySettings.roundingMode==="round"?Math.round:Math.floor;return Math.max(0,fn(raw));
+}
+function rewardCostForCustomer(reward,customer){if(birthdayBenefit(customer)&&Number(reward.birthdayPoints||0)>0)return Number(reward.birthdayPoints);if(birthdayBenefit(customer)&&Number(loyaltySettings.birthdayDiscountPct)>0)return Math.max(1,Math.ceil(Number(reward.points)*(1-Number(loyaltySettings.birthdayDiscountPct)/100)));return Number(reward.points);}
+function openClubCustomerForm(id=null){editingCustomerId=id;const c=clubCustomers.find(x=>String(x.id)===String(id));customerName.value=c?.name||"";customerRut.value=c?.rut||"";customerBirthDate.value=c?.birthDate||"";customerEmail.value=c?.email||"";customerPhone.value=c?.phone||"";customerConsent.value=c?.consent?"si":"no";document.getElementById("clubCustomerForm").style.display="block";}
+function closeClubCustomerForm(){editingCustomerId=null;document.getElementById("clubCustomerForm").style.display="none";}
+async function saveClubCustomer(){
+ const name=customerName.value.trim();if(!name){alert("Ingresa el nombre del cliente.");return;}let c=clubCustomers.find(x=>String(x.id)===String(editingCustomerId));if(!c){c={id:Date.now(),points:0,earned:0,redeemed:0,purchaseTotal:0,joinedAt:new Date().toISOString(),active:true};clubCustomers.unshift(c);}Object.assign(c,{name,rut:customerRut.value.trim(),birthDate:customerBirthDate.value,email:customerEmail.value.trim(),phone:customerPhone.value.trim(),consent:customerConsent.value==="si"});saveIntegralData();if(kucheCloud&&cloudOrganization){const payload={organization_id:cloudOrganization.id,full_name:c.name,rut:c.rut||null,birth_date:c.birthDate||null,email:c.email||null,phone:c.phone||null,consent_communications:c.consent,consent_at:c.consent?new Date().toISOString():null,points_balance:Number(c.points||0),points_earned_total:Number(c.earned||0),points_redeemed_total:Number(c.redeemed||0),purchase_total:Number(c.purchaseTotal||0),active:true};try{let q=c.cloudId?kucheCloud.from("customers").update(payload).eq("id",c.cloudId).select().single():kucheCloud.from("customers").insert(payload).select().single();const {data,error}=await q;if(!error&&data){c.cloudId=data.id;c.id=data.id;}}catch(e){console.warn(e);}}closeClubCustomerForm();renderClub();loadPOSClubCustomers();
+}
+async function saveClubSettings(){loyaltySettings={...loyaltySettings,clubName:clubNameSetting.value.trim()||"Club de clientes",pointsName:clubPointsName.value.trim()||"puntos",spendAmount:Math.max(1,Number(clubSpendAmount.value)||1000),pointsPerSpend:Math.max(.01,Number(clubPointsPerSpend.value)||1),roundingMode:clubRounding.value,birthdayDiscountPct:Math.max(0,Math.min(100,Number(clubBirthdayDiscount.value)||0))};saveIntegralData();if(kucheCloud&&cloudOrganization)await cloudUpsert("loyalty_settings",{organization_id:cloudOrganization.id,club_name:loyaltySettings.clubName,points_name:loyaltySettings.pointsName,spend_amount:loyaltySettings.spendAmount,points_per_spend:loyaltySettings.pointsPerSpend,rounding_mode:loyaltySettings.roundingMode,birthday_reward_discount_pct:loyaltySettings.birthdayDiscountPct},"organization_id");renderClub();}
+async function addClubReward(){const name=rewardName.value.trim(),pts=Number(rewardPoints.value)||0;if(!name||pts<=0){alert("Completa premio y puntos.");return;}const r={id:Date.now(),name,points:pts,birthdayPoints:Number(rewardBirthdayPoints.value)||null,active:true};loyaltyRewards.push(r);saveIntegralData();if(kucheCloud&&cloudOrganization){try{const {data,error}=await kucheCloud.from("loyalty_rewards").insert({organization_id:cloudOrganization.id,name:r.name,points_cost:r.points,birthday_points_cost:r.birthdayPoints,active:true}).select().single();if(!error){r.cloudId=data.id;r.id=data.id;}}catch(e){console.warn(e);}}rewardName.value="";rewardPoints.value="";rewardBirthdayPoints.value="";renderClub();}
+function queueClubNotification(customer,type,message){if(!customer?.consent)return;customerNotifications.unshift({id:Date.now()+Math.random(),customerId:customer.id,customerName:customer.name,type,message,status:"pending",createdAt:new Date().toISOString()});}
+function addCustomerPoints(customer,amount,orderId){
+ const pts=pointsForPurchase(amount,customer);if(pts<=0)return;customer.points=Number(customer.points||0)+pts;customer.earned=Number(customer.earned||0)+pts;customer.purchaseTotal=Number(customer.purchaseTotal||0)+Number(amount||0);customer.lastVisit=new Date().toISOString();loyaltyTransactions.unshift({id:Date.now(),customerId:customer.id,type:"earn",points:pts,amount,orderId,createdAt:new Date().toISOString()});queueClubNotification(customer,"points_earned",`Gracias por tu compra. Ganaste ${pts} ${loyaltySettings.pointsName} y ahora tienes ${formatNumber(customer.points)} acumulados.`);const reward=[...loyaltyRewards].filter(r=>r.active).sort((a,b)=>rewardCostForCustomer(a,customer)-rewardCostForCustomer(b,customer)).find(r=>rewardCostForCustomer(r,customer)>customer.points);if(reward){const faltan=rewardCostForCustomer(reward,customer)-customer.points;if(faltan<=Math.max(5,rewardCostForCustomer(reward,customer)*.15))queueClubNotification(customer,"near_reward",`Ya falta poco. Te faltan ${formatNumber(faltan)} ${loyaltySettings.pointsName} para ${reward.name}.`);}saveIntegralData();syncCustomerBalance(customer);
+}
+async function syncCustomerBalance(c){if(!kucheCloud||!c?.cloudId)return;try{await kucheCloud.from("customers").update({points_balance:Number(c.points||0),points_earned_total:Number(c.earned||0),points_redeemed_total:Number(c.redeemed||0),purchase_total:Number(c.purchaseTotal||0),last_visit_at:c.lastVisit||null}).eq("id",c.cloudId);}catch(e){console.warn(e);}}
+function redeemReward(customerId,rewardId){const c=clubCustomers.find(x=>String(x.id)===String(customerId)),r=loyaltyRewards.find(x=>String(x.id)===String(rewardId));if(!c||!r)return;const cost=rewardCostForCustomer(r,c);if(Number(c.points)<cost){alert(`Le faltan ${formatNumber(cost-c.points)} ${loyaltySettings.pointsName}.`);return;}if(!confirm(`Canjear ${r.name} por ${formatNumber(cost)} ${loyaltySettings.pointsName}?`))return;c.points-=cost;c.redeemed=Number(c.redeemed||0)+cost;loyaltyTransactions.unshift({id:Date.now(),customerId:c.id,type:"redeem",points:-cost,reason:r.name,createdAt:new Date().toISOString()});saveIntegralData();syncCustomerBalance(c);renderClub();}
+function renderClub(){
+ if(!document.getElementById("clubStats"))return;clubPageTitle.textContent=loyaltySettings.clubName||"Club de clientes";clubNameSetting.value=loyaltySettings.clubName||"";clubPointsName.value=loyaltySettings.pointsName||"puntos";clubSpendAmount.value=loyaltySettings.spendAmount||1000;clubPointsPerSpend.value=loyaltySettings.pointsPerSpend||1;clubRounding.value=loyaltySettings.roundingMode||"floor";clubBirthdayDiscount.value=loyaltySettings.birthdayDiscountPct||0;
+ const birthdays=clubCustomers.filter(c=>birthdayDistance(c.birthDate)===0),available=clubCustomers.filter(c=>loyaltyRewards.some(r=>Number(c.points)>=rewardCostForCustomer(r,c)));clubStats.innerHTML=`<div class="integral-stat"><span>Clientes</span><strong>${clubCustomers.length}</strong></div><div class="integral-stat"><span>${escapeHTML(loyaltySettings.pointsName)} disponibles</span><strong>${formatNumber(clubCustomers.reduce((s,c)=>s+Number(c.points||0),0))}</strong></div><div class="integral-stat"><span>Con premio disponible</span><strong>${available.length}</strong></div><div class="integral-stat"><span>Cumpleaños hoy</span><strong>${birthdays.length}</strong></div>`;
+ clubRewardsList.innerHTML=loyaltyRewards.length?loyaltyRewards.map(r=>`<div class="mini-row"><span>${escapeHTML(r.name)}</span><strong>${formatNumber(r.points)} ${escapeHTML(loyaltySettings.pointsName)}${r.birthdayPoints?` · cumple ${formatNumber(r.birthdayPoints)}`:""}</strong></div>`).join(""):'<div class="category">No hay premios configurados.</div>';
+ const q=(document.getElementById("clubSearch")?.value||"").toLowerCase();const list=clubCustomers.filter(c=>(c.name+" "+c.rut+" "+c.email).toLowerCase().includes(q));clubCustomerList.innerHTML=list.length?list.map(c=>{const next=[...loyaltyRewards].filter(r=>r.active).sort((a,b)=>rewardCostForCustomer(a,c)-rewardCostForCustomer(b,c)).find(r=>rewardCostForCustomer(r,c)>c.points),bday=birthdayDistance(c.birthDate)===0;return `<div class="customer-card ${bday?"birthday-card":""}"><div class="card-topline"><div><h3>${bday?"🎂 ":""}${escapeHTML(c.name)}</h3><p>${escapeHTML(c.rut||"Sin RUT")} · ${escapeHTML(c.email||"Sin correo")}</p></div><span class="score-pill">${formatNumber(c.points)} ${escapeHTML(loyaltySettings.pointsName)}</span></div><div class="mini-row"><span>Compras acumuladas</span><strong>$${formatMoney(c.purchaseTotal||0)}</strong></div>${next?`<div class="role-note">Le faltan ${formatNumber(rewardCostForCustomer(next,c)-c.points)} ${escapeHTML(loyaltySettings.pointsName)} para ${escapeHTML(next.name)}.</div>`:'<div class="role-note">Ya tiene al menos un premio disponible.</div>'}<div style="margin-top:10px">${loyaltyRewards.filter(r=>Number(c.points)>=rewardCostForCustomer(r,c)).map(r=>`<button class="secondary-button" style="margin:3px" onclick="redeemReward('${c.id}','${r.id}')">Canjear ${escapeHTML(r.name)}</button>`).join("")}<button class="secondary-button" style="margin:3px" onclick="openClubCustomerForm('${c.id}')">Editar</button></div></div>`}).join(""):'<div class="table-card" style="grid-column:1/-1"><div class="empty-state"><strong>No hay clientes</strong></div></div>';
+ clubNotificationList.innerHTML=customerNotifications.slice(0,12).map(n=>`<div class="mini-row"><span>${escapeHTML(n.customerName)} · ${escapeHTML(n.message)}</span><strong>${escapeHTML(n.status==="pending"?"Pendiente":n.status)}</strong></div>`).join("")||'<div class="category">Sin comunicaciones pendientes.</div>';loadPOSClubCustomers();
+}
+function loadPOSClubCustomers(){const sel=document.getElementById("posClubCustomer");if(!sel)return;const cur=sel.value;sel.innerHTML='<option value="">Sin cliente asociado</option>'+clubCustomers.filter(c=>c.active!==false).map(c=>`<option value="${c.id}">${escapeHTML(c.name)} · ${formatNumber(c.points)} ${escapeHTML(loyaltySettings.pointsName)}</option>`).join("");if([...sel.options].some(o=>o.value===cur))sel.value=cur;}
+function setPOSClubCustomer(id){const order=getActivePOSOrder();if(!order)return;order.customerId=id||null;const c=clubCustomers.find(x=>String(x.id)===String(id));order.customerName=c?.name||"";savePOSOrders();}
+
+/* ---------- Academia ---------- */
+function initializeTrainingDefaults(){
+ if(trainingModules.length)return;trainingModules=[
+ {id:"higiene",title:"Higiene personal y lavado de manos",category:"Inocuidad",minutes:5,content:["Mantén una higiene personal adecuada antes y durante la manipulación.","Lávate las manos en los momentos críticos y después de actividades contaminantes.","Protege heridas y evita manipular alimentos si una condición puede comprometer su inocuidad."],questions:[{q:"¿El lavado de manos se realiza solo al iniciar el turno?",options:["Sí","No"],answer:1},{q:"¿Una herida sin protección puede representar un riesgo?",options:["Sí","No"],answer:0}],passing:80,sourceName:"Reglamento Sanitario de los Alimentos, DS 977/96"},
+ {id:"oms5",title:"Cinco claves para alimentos más seguros",category:"Inocuidad",minutes:5,content:["Mantén la limpieza.","Separa alimentos crudos y cocinados.","Cocina completamente.","Mantén los alimentos a temperaturas seguras.","Usa agua y materias primas seguras."],questions:[{q:"¿Se deben separar alimentos crudos y cocinados?",options:["Sí","No"],answer:0},{q:"¿Mantener temperaturas seguras es una de las cinco claves?",options:["Sí","No"],answer:0}],passing:80,sourceName:"Organización Mundial de la Salud"},
+ {id:"cross",title:"Prevención de contaminación cruzada",category:"Buenas prácticas",minutes:5,content:["Separa materias primas crudas de alimentos listos para consumo.","Usa utensilios y superficies limpias y sanitizadas.","Organiza el almacenamiento para evitar contacto entre productos incompatibles."],questions:[{q:"¿La separación de crudos y cocidos ayuda a prevenir contaminación cruzada?",options:["Sí","No"],answer:0}],passing:80,sourceName:"Codex CXC 1-1969"},
+ {id:"allergens",title:"Alérgenos y respuesta al cliente",category:"Servicio seguro",minutes:6,content:["Revisa la ficha de alérgenos antes de responder.","Diferencia entre contiene y riesgo de contacto cruzado.","Ante una alergia grave, confirma con cocina y aplica el protocolo interno."],questions:[{q:"¿Es correcto responder de memoria si no estás seguro?",options:["Sí","No"],answer:1},{q:"¿Debe revisarse el riesgo de contacto cruzado?",options:["Sí","No"],answer:0}],passing:80,sourceName:"RSA Chile y buenas prácticas de comunicación de alérgenos"},
+ {id:"haccp",title:"HACCP básico y peligros",category:"Control preventivo",minutes:7,content:["Los peligros pueden ser biológicos, químicos o físicos.","El enfoque preventivo busca controlar peligros significativos antes de que lleguen al cliente.","Las buenas prácticas de higiene son la base del sistema."],questions:[{q:"¿Un fragmento de vidrio es un peligro físico?",options:["Sí","No"],answer:0}],passing:80,sourceName:"Codex CXC 1-1969, revisión 2022"}
+ ];saveIntegralData();
+}
+function trainingKey(moduleId){return `${integralStaffId()||integralUserName()}::${moduleId}`;}
+function moduleProgress(moduleId){return trainingProgress.find(x=>String(x.key||`${x.staffId}::${x.moduleId}`)===String(trainingKey(moduleId)))||trainingProgress.find(x=>String(x.moduleId)===String(moduleId)&&String(x.staffId)===String(integralStaffId()));}
+function renderAcademy(){
+ initializeTrainingDefaults();const box=document.getElementById("academyList");if(!box)return;const passed=trainingModules.filter(m=>moduleProgress(m.id)?.status==="passed").length;academySummary.innerHTML=`<div class="integral-stat"><span>Módulos disponibles</span><strong>${trainingModules.length}</strong></div><div class="integral-stat"><span>Aprobados</span><strong>${passed}</strong></div><div class="integral-stat"><span>Pendientes</span><strong>${Math.max(0,trainingModules.length-passed)}</strong></div><div class="integral-stat"><span>Meta</span><strong>${trainingModules.length?Math.round(passed/trainingModules.length*100):0}%</strong></div>`;box.innerHTML=trainingModules.map(m=>{const p=moduleProgress(m.id);return `<div class="training-card"><div class="card-topline"><div><h3>${escapeHTML(m.title)}</h3><p>${escapeHTML(m.category)} · ${m.minutes||5} min</p></div><span class="badge ${p?.status==="passed"?"badge-success":"badge-warning"}">${p?.status==="passed"?"Aprobada":"Pendiente"}</span></div><div class="role-note">${escapeHTML(m.description||"Microcapacitación breve.")}</div><div class="progress-track" style="margin-top:12px"><span style="width:${p?.status==="passed"?100:0}%"></span></div><button class="primary-button" style="margin-top:12px" onclick="openTrainingModule('${m.id}')">${p?.status==="passed"?"Repasar":"Iniciar"}</button></div>`}).join("");
+}
+function openTrainingModule(id){const m=trainingModules.find(x=>String(x.id)===String(id));if(!m)return;activeTrainingModuleId=m.id;const v=document.getElementById("academyViewer");v.style.display="block";v.innerHTML=`<h2>${escapeHTML(m.title)}</h2><div class="sub">${escapeHTML(m.sourceName||"Fuente técnica")} · ${m.minutes||5} minutos</div><div class="mini-list">${(m.content||[]).map((x,i)=>`<div class="mini-row"><span><strong>${i+1}.</strong> ${escapeHTML(String(x))}</span></div>`).join("")}</div><h3 style="margin:18px 0 8px">Evaluación rápida</h3>${(m.questions||[]).map((q,qi)=>`<div class="field" style="margin-bottom:12px"><label>${qi+1}. ${escapeHTML(q.q)}</label><select class="training-answer" data-q="${qi}"><option value="">Seleccionar</option>${(q.options||[]).map((o,oi)=>`<option value="${oi}">${escapeHTML(o)}</option>`).join("")}</select></div>`).join("")}<button class="primary-button" onclick="submitTrainingModule()">Enviar evaluación</button>`;v.scrollIntoView({behavior:"smooth",block:"start"});}
+async function submitTrainingModule(){const m=trainingModules.find(x=>String(x.id)===String(activeTrainingModuleId));if(!m)return;const answers=[...document.querySelectorAll(".training-answer")].map(x=>Number(x.value));if(answers.some(Number.isNaN)){alert("Responde todas las preguntas.");return;}let ok=0;(m.questions||[]).forEach((q,i)=>{if(answers[i]===Number(q.answer))ok++;});const score=m.questions?.length?ok/m.questions.length*100:100,status=score>=Number(m.passing||80)?"passed":"failed";let p=moduleProgress(m.id);if(!p){p={id:Date.now(),key:trainingKey(m.id),staffId:integralStaffId(),moduleId:m.id,attempts:0};trainingProgress.push(p);}p.attempts=Number(p.attempts||0)+1;p.score=Math.max(Number(p.score||0),score);p.status=status;p.completedAt=status==="passed"?new Date().toISOString():p.completedAt;saveIntegralData();alert(status==="passed"?`Capacitación aprobada con ${Math.round(score)}%.`:`Resultado ${Math.round(score)}%. Debes obtener al menos ${m.passing||80}%.`);renderAcademy();renderOnboarding();renderControlCenter();}
+
+/* ---------- Protocolos ---------- */
+function openProtocolForm(id=null){editingProtocolId=id;const p=protocols.find(x=>String(x.id)===String(id));protocolTitle.value=p?.title||"";protocolCategory.value=p?.category||"";protocolSeverity.value=p?.severity||"normal";protocolContent.value=p?.content||"";protocolSteps.value=(p?.steps||[]).join("\n");document.getElementById("protocolForm").style.display="block";}
+function closeProtocolForm(){editingProtocolId=null;document.getElementById("protocolForm").style.display="none";}
+async function saveProtocol(){
+ const title=protocolTitle.value.trim();if(!title){alert("Ingresa el título del protocolo.");return;}let p=protocols.find(x=>String(x.id)===String(editingProtocolId));if(!p){p={id:Date.now(),version:1,active:true};protocols.unshift(p);}else p.version=Number(p.version||1)+1;Object.assign(p,{title,category:protocolCategory.value.trim(),severity:protocolSeverity.value,content:protocolContent.value.trim(),steps:protocolSteps.value.split("\n").map(x=>x.trim()).filter(Boolean)});saveIntegralData();if(kucheCloud&&cloudOrganization){const payload={organization_id:cloudOrganization.id,title:p.title,category:p.category||null,severity:p.severity,content:p.content,steps:p.steps,worker_can_activate:true,worker_can_mark_controlled:true,admin_required_to_close:true,version:p.version,active:true};try{let q=p.cloudId?kucheCloud.from("internal_protocols").update(payload).eq("id",p.cloudId).select().single():kucheCloud.from("internal_protocols").insert(payload).select().single();const {data,error}=await q;if(!error&&data){p.cloudId=data.id;p.id=data.id;}}catch(e){console.warn(e);}}closeProtocolForm();renderProtocols();renderControlCenter();
+}
+async function activateProtocol(id){const p=protocols.find(x=>String(x.id)===String(id));if(!p)return;const area=prompt("Área donde ocurrió la situación:","")||"";const desc=prompt("Describe brevemente qué ocurrió:","");if(desc===null||!desc.trim())return;const a={id:Date.now(),protocolId:p.id,title:p.title,severity:p.severity,area,description:desc.trim(),activatedBy:integralUserName(),staffId:integralStaffId(),status:"active",stepsState:(p.steps||[]).map((s,i)=>({index:i,label:s,done:false})),createdAt:new Date().toISOString()};protocolActivations.unshift(a);saveIntegralData();if(kucheCloud&&cloudOrganization){try{const {data,error}=await kucheCloud.from("protocol_activations").insert({organization_id:cloudOrganization.id,protocol_id:p.cloudId||p.id,protocol_title_snapshot:p.title,protocol_version:p.version||1,severity_snapshot:p.severity,area:a.area||null,description:a.description,activated_by_staff_id:cloudStaffRecord?.id||null,activated_by_name:a.activatedBy,status:"active",steps_state:a.stepsState}).select().single();if(!error){a.cloudId=data.id;a.id=data.id;}}catch(e){console.warn(e);}}renderProtocols();renderControlCenter();}
+function toggleProtocolStep(actId,index){const a=protocolActivations.find(x=>String(x.id)===String(actId));if(!a)return;const s=a.stepsState?.[index];if(s)s.done=!s.done;saveIntegralData();renderProtocols();}
+async function setProtocolStatus(id,status){const a=protocolActivations.find(x=>String(x.id)===String(id));if(!a)return;if(status==="closed"&&currentSession?.role!=="admin"){alert("El cierre definitivo del protocolo requiere un administrador o manager.");return;}a.status=status;if(status==="controlled")a.controlledAt=new Date().toISOString();if(status==="closed")a.closedAt=new Date().toISOString();saveIntegralData();if(kucheCloud&&a.cloudId){try{await kucheCloud.from("protocol_activations").update({status,controlled_at:a.controlledAt||null,closed_at:a.closedAt||null}).eq("id",a.cloudId);}catch(e){console.warn(e);}}renderProtocols();renderControlCenter();}
+function acknowledgeProtocol(id){const p=protocols.find(x=>String(x.id)===String(id));if(!p)return;const key=`${p.id}::${integralStaffId()||integralUserName()}::${p.version||1}`;if(!protocolAcknowledgements.some(x=>x.key===key))protocolAcknowledgements.push({key,protocolId:p.id,version:p.version||1,staffId:integralStaffId(),date:new Date().toISOString()});saveIntegralData();renderProtocols();}
+function renderProtocols(){
+ const list=document.getElementById("protocolList");if(!list)return;const active=protocolActivations.filter(a=>["active","in_progress","controlled"].includes(a.status));protocolActiveSummary.innerHTML=active.length?`<div class="integral-panel protocol-active"><div class="protocol-active-label">🔴 ${active.length} protocolo(s) activado(s)</div>${active.map(a=>`<div class="mini-row"><span>${escapeHTML(a.title)} · ${escapeHTML(a.area||"Sin área")}</span><strong>${escapeHTML(a.status)}</strong></div>`).join("")}</div>`:"";list.innerHTML=protocols.filter(p=>p.active!==false).map(p=>{const key=`${p.id}::${integralStaffId()||integralUserName()}::${p.version||1}`,ack=protocolAcknowledgements.some(x=>x.key===key);return `<div class="protocol-card"><div class="card-topline"><div><h3>${escapeHTML(p.title)}</h3><p>${escapeHTML(p.category||"General")} · versión ${p.version||1}</p></div><span class="badge ${p.severity==="critical"?"badge-danger":p.severity==="important"?"badge-warning":"badge-blue"}">${escapeHTML(p.severity||"normal")}</span></div><div style="font-size:12px;line-height:1.5;white-space:pre-line">${escapeHTML(p.content||"")}</div><div class="mini-list" style="margin-top:9px">${(p.steps||[]).map((s,i)=>`<div class="mini-row"><span>${i+1}. ${escapeHTML(s)}</span></div>`).join("")}</div><div style="margin-top:10px"><button class="primary-button" onclick="activateProtocol('${p.id}')">Activar protocolo</button><button class="secondary-button" onclick="acknowledgeProtocol('${p.id}')">${ack?"Revisado":"Marcar leído y comprendido"}</button>${currentSession?.role==="admin"?`<button class="secondary-button" onclick="openProtocolForm('${p.id}')">Editar</button>`:""}</div></div>`}).join("")||'<div class="table-card" style="grid-column:1/-1"><div class="empty-state"><strong>No hay protocolos internos cargados</strong></div></div>';
+ protocolActivationList.innerHTML=protocolActivations.slice(0,20).map(a=>`<div class="integral-panel ${["active","in_progress"].includes(a.status)?"protocol-active":""}"><div class="card-topline"><div><h3>${["active","in_progress"].includes(a.status)?"🔴 ":""}${escapeHTML(a.title)}</h3><p>${escapeHTML(a.activatedBy||"")} · ${new Date(a.createdAt).toLocaleString("es-CL")}</p></div><span class="badge ${a.status==="closed"?"badge-success":"badge-warning"}">${escapeHTML(a.status)}</span></div><div class="role-note">${escapeHTML(a.description||"")}</div>${(a.stepsState||[]).map((s,i)=>`<label class="mini-row"><span>${escapeHTML(s.label)}</span><input type="checkbox" ${s.done?"checked":""} onchange="toggleProtocolStep('${a.id}',${i})"></label>`).join("")}<div style="margin-top:10px">${a.status!=="controlled"&&a.status!=="closed"?`<button class="secondary-button" onclick="setProtocolStatus('${a.id}','controlled')">Marcar controlado</button>`:""}${currentSession?.role==="admin"&&a.status!=="closed"?`<button class="primary-button" onclick="setProtocolStatus('${a.id}','closed')">Cerrar protocolo</button>`:""}</div></div>`).join("")||'<div class="category">No hay activaciones registradas.</div>';
+}
+
+/* ---------- Onboarding ---------- */
+function defaultOnboardingItems(role){
+ const base=[{key:"profile",label:"Revisar datos personales y horario"},{key:"protocols",label:"Leer protocolos internos obligatorios"},{key:"academy",label:"Completar capacitación inicial de inocuidad"},{key:"allergens",label:"Revisar capacitación de alérgenos"}];if(role==="garzon")base.push({key:"recipebook",label:"Revisar recetario y consulta rápida de alérgenos"},{key:"inventory",label:"Revisar responsabilidad de inventario de Bebestibles"});if(role==="cocina")base.push({key:"recipes",label:"Revisar recetas operativas y mise en place"},{key:"temperatures",label:"Revisar controles de temperatura"});if(role==="bar")base.push({key:"bar",label:"Revisar recetas y controles de Barra"});return base;
+}
+function ensureOnboardingForCurrent(){
+ const staffId=integralStaffId();if(!staffId)return null;let o=onboardingRecords.find(x=>String(x.staffId)===String(staffId));if(!o){o={id:Date.now(),staffId,role:integralRole(),items:defaultOnboardingItems(integralRole()).map(x=>({...x,done:false})),status:"pending",progress:0};onboardingRecords.push(o);saveIntegralData();}return o;
+}
+function toggleOnboardingItem(index){const o=ensureOnboardingForCurrent();if(!o)return;o.items[index].done=!o.items[index].done;o.progress=o.items.length?Math.round(o.items.filter(x=>x.done).length/o.items.length*100):100;o.status=o.progress===100?"completed":"in_progress";saveIntegralData();renderOnboarding();}
+function renderOnboarding(){
+ const sum=document.getElementById("onboardingSummary");if(!sum)return;if(currentSession?.role==="worker"){const o=ensureOnboardingForCurrent();sum.innerHTML=`<div class="integral-stat"><span>Tu progreso</span><strong>${o?.progress||0}%</strong></div><div class="integral-stat"><span>Tareas completadas</span><strong>${o?.items?.filter(x=>x.done).length||0}</strong></div><div class="integral-stat"><span>Pendientes</span><strong>${o?.items?.filter(x=>!x.done).length||0}</strong></div><div class="integral-stat"><span>Estado</span><strong>${o?.status==="completed"?"Completo":"En curso"}</strong></div>`;onboardingContent.innerHTML=`<div class="integral-panel"><h2>Tu incorporación</h2><div class="progress-track" style="margin:12px 0"><span style="width:${o?.progress||0}%"></span></div>${(o?.items||[]).map((x,i)=>`<label class="mini-row"><span>${escapeHTML(x.label)}</span><input type="checkbox" ${x.done?"checked":""} onchange="toggleOnboardingItem(${i})"></label>`).join("")}</div>`;}else{const rows=staff.map(w=>{let o=onboardingRecords.find(x=>String(x.staffId)===String(w.id));if(!o){o={staffId:w.id,role:mapStaffRoleToAccessRole(w.role),items:defaultOnboardingItems(mapStaffRoleToAccessRole(w.role)).map(x=>({...x,done:false})),progress:0,status:"pending"};}return {w,o};});const avg=rows.length?Math.round(rows.reduce((s,x)=>s+Number(x.o.progress||0),0)/rows.length):0;sum.innerHTML=`<div class="integral-stat"><span>Trabajadores</span><strong>${rows.length}</strong></div><div class="integral-stat"><span>Onboarding completo</span><strong>${rows.filter(x=>x.o.progress===100).length}</strong></div><div class="integral-stat"><span>En curso</span><strong>${rows.filter(x=>x.o.progress>0&&x.o.progress<100).length}</strong></div><div class="integral-stat"><span>Promedio equipo</span><strong>${avg}%</strong></div>`;onboardingContent.innerHTML=`<div class="integral-panel"><h2>Estado del equipo</h2>${rows.map(x=>`<div class="mini-row"><span>${escapeHTML(x.w.name)} · ${escapeHTML(x.w.role)}</span><strong>${x.o.progress||0}%</strong></div>`).join("")||'<div class="category">Sin trabajadores.</div>'}</div>`;}}
+
+/* ---------- Ingeniería de menú ---------- */
+function currentMonthRange(){const d=new Date(),start=new Date(d.getFullYear(),d.getMonth(),1),end=new Date(d.getFullYear(),d.getMonth()+1,0);return [start.toISOString().slice(0,10),end.toISOString().slice(0,10)];}
+function renderMenuEngineering(){
+ if(!document.getElementById("menuEngBody"))return;const range=currentMonthRange();if(!menuEngFrom.value){menuEngFrom.value=range[0];menuEngTo.value=range[1];}const from=menuEngFrom.value,to=menuEngTo.value;const cats=[...new Set(recipes.map(r=>r.category).filter(Boolean))].sort();const cur=menuEngCategory.value;menuEngCategory.innerHTML='<option value="">Todas</option>'+cats.map(c=>`<option>${escapeHTML(c)}</option>`).join("");menuEngCategory.value=cur;const relevant=sales.filter(s=>s.status!=="anulada"&&(!from||s.date>=from)&&(!to||s.date<=to));let rows=recipes.filter(r=>!menuEngCategory.value||r.category===menuEngCategory.value).map(r=>{const ss=relevant.filter(s=>String(s.recipeId)===String(r.id)),units=ss.reduce((x,s)=>x+Number(s.quantity||0),0),revenue=ss.reduce((x,s)=>x+Number(s.total||0),0),price=units?revenue/units:Number(calculateSavedRecipe(r).finalPerPortion||0),cost=Number(calculateSavedRecipe(r).costPerPortion||0),cm=price-cost,food=price>0?cost/price*100:0;return {r,units,revenue,price,cost,cm,food};}).filter(x=>x.units>0);const totalUnits=rows.reduce((s,x)=>s+x.units,0),avgUnits=rows.length?totalUnits/rows.length:0,avgCM=rows.length?rows.reduce((s,x)=>s+x.cm,0)/rows.length:0;rows.forEach(x=>{x.mix=totalUnits?x.units/totalUnits*100:0;if(x.units>=avgUnits&&x.cm>=avgCM){x.cls="Estrella";x.cl="engineering-star";x.advice="Mantener visibilidad, calidad y disponibilidad.";}else if(x.units>=avgUnits){x.cls="Caballo de batalla";x.cl="engineering-workhorse";x.advice="Muy popular; revisar costo, porción o precio.";}else if(x.cm>=avgCM){x.cls="Rompecabezas";x.cl="engineering-puzzle";x.advice="Rentable pero poco vendido; mejorar ubicación y comunicación.";}else{x.cls="Perro";x.cl="engineering-dog";x.advice="Revisar continuidad, receta, precio o reemplazo.";}});menuEngStats.innerHTML=`<div class="integral-stat"><span>Ventas analizadas</span><strong>$${formatMoney(rows.reduce((s,x)=>s+x.revenue,0))}</strong></div><div class="integral-stat"><span>Unidades</span><strong>${formatNumber(totalUnits)}</strong></div><div class="integral-stat"><span>Margen contrib. promedio</span><strong>$${formatMoney(avgCM)}</strong></div><div class="integral-stat"><span>Estrellas</span><strong>${rows.filter(x=>x.cls==="Estrella").length}</strong></div>`;menuEngBody.innerHTML=rows.length?rows.sort((a,b)=>b.revenue-a.revenue).map(x=>`<tr><td><strong>${escapeHTML(x.r.name)}</strong></td><td>${formatNumber(x.units)}</td><td>${x.mix.toFixed(1)}%</td><td>$${formatMoney(x.price)}</td><td>$${formatMoney(x.cost)}</td><td>$${formatMoney(x.cm)}</td><td>${x.food.toFixed(1)}%</td><td class="engineering-class ${x.cl}">${x.cls}</td><td>${escapeHTML(x.advice)}</td></tr>`).join(""):'<tr><td colspan="9"><div class="empty-state"><strong>No hay ventas en el período</strong></div></td></tr>';
+}
+
+/* ---------- Simulador ---------- */
+function scenarioBaseline(){
+ const since=new Date();since.setDate(since.getDate()-30);const sinceStr=since.toISOString().slice(0,10),ss=sales.filter(s=>s.status!=="anulada"&&s.date>=sinceStr),revenue=ss.reduce((x,s)=>x+Number(s.total||0),0);let food=0;ss.forEach(s=>{const r=recipes.find(x=>String(x.id)===String(s.recipeId));if(r)food+=Number(calculateSavedRecipe(r).costPerPortion||0)*Number(s.quantity||0);});const month=getCurrentMonthPrefix(),labor=attendance.filter(a=>(a.date||"").startsWith(month)).reduce((x,a)=>x+Number(a.payment||0),0),waste=wastes.filter(w=>w.status!=="anulado"&&(w.date||"").startsWith(month)).reduce((x,w)=>x+Number(w.cost||0),0);return {revenue,food,labor,waste,contribution:revenue-food-labor-waste};}
+function runScenario(){
+ const b=scenarioBaseline(),salesPct=Number(scenarioSalesPct.value)||0,pricePct=Number(scenarioPricePct.value)||0,foodPct=Number(scenarioFoodPct.value)||0,laborPct=Number(scenarioLaborPct.value)||0,wastePct=Number(scenarioWastePct.value)||0,volume=1+salesPct/100,price=1+pricePct/100;const r={revenue:b.revenue*volume*price,food:b.food*volume*(1+foodPct/100),labor:b.labor*(1+laborPct/100),waste:b.waste*Math.max(0,1-wastePct/100)};r.contribution=r.revenue-r.food-r.labor-r.waste;r.delta=r.contribution-b.contribution;lastScenarioResult={baseline:b,result:r,assumptions:{salesPct,pricePct,foodPct,laborPct,wastePct}};scenarioResults.innerHTML=`<div class="scenario-metric"><span>Ventas estimadas</span><strong>$${formatMoney(r.revenue)}</strong></div><div class="scenario-metric"><span>Costo alimentos</span><strong>$${formatMoney(r.food)}</strong></div><div class="scenario-metric"><span>Costo laboral</span><strong>$${formatMoney(r.labor)}</strong></div><div class="scenario-metric"><span>Mermas</span><strong>$${formatMoney(r.waste)}</strong></div><div class="scenario-metric"><span>Resultado vs base</span><strong>${r.delta>=0?"+":""}$${formatMoney(r.delta)}</strong></div>`;return lastScenarioResult;
+}
+function saveScenario(){const r=runScenario(),name=scenarioName.value.trim()||"Escenario "+new Date().toLocaleDateString("es-CL");savedScenarios.unshift({id:Date.now(),name,...r,createdAt:new Date().toISOString()});saveIntegralData();renderScenarioHistory();}
+function renderScenarioHistory(){const el=document.getElementById("scenarioHistory");if(!el)return;el.innerHTML=savedScenarios.slice(0,12).map(s=>`<div class="mini-row"><span>${escapeHTML(s.name)} · ${new Date(s.createdAt).toLocaleDateString("es-CL")}</span><strong>${s.result?.delta>=0?"+":""}$${formatMoney(s.result?.delta||0)}</strong></div>`).join("")||'<div class="category">No hay escenarios guardados.</div>';}
+
+/* ---------- Hook de recetas ---------- */
+const _integralNewRecipe=newRecipe;
+newRecipe=function(){_integralNewRecipe();if(document.getElementById("recipeType"))recipeType.value="sale";recipeOutputUnit.value="porción";recipeStorageMethod.value="Uso inmediato";recipeShelfLife.value=0;recipeInstructions.value="";document.getElementById("recipeBaseComponents").innerHTML="";renderAllergenOptions([],[]);};
+const _integralEditRecipe=editRecipe;
+editRecipe=function(id){_integralEditRecipe(id);const r=recipes.find(x=>String(x.id)===String(id));if(!r)return;recipeType.value=r.recipeType||"sale";recipeOutputUnit.value=r.outputUnit||"porción";recipeStorageMethod.value=r.storageMethod||"Uso inmediato";recipeShelfLife.value=Number(r.shelfLifeDays||0);recipeInstructions.value=r.instructions||"";document.getElementById("recipeBaseComponents").innerHTML="";(r.baseComponents||[]).forEach(addRecipeBaseComponent);renderAllergenOptions(r.allergens||[],r.crossAllergens||[]);};
+const _integralSaveRecipe=saveRecipe;
+saveRecipe=function(){const targetId=editingRecipeId,name=recipeName.value.trim(),extra={recipeType:recipeType.value,outputUnit:recipeOutputUnit.value.trim()||"porción",storageMethod:recipeStorageMethod.value,shelfLifeDays:Number(recipeShelfLife.value)||0,instructions:recipeInstructions.value.trim(),allergens:[...document.querySelectorAll(".recipeAllergen:checked")].map(x=>x.value),crossAllergens:[...document.querySelectorAll(".recipeCrossAllergen:checked")].map(x=>x.value),baseComponents:collectRecipeBaseComponents()};_integralSaveRecipe();const r=targetId!==null?recipes.find(x=>String(x.id)===String(targetId)):recipes.find(x=>x.name===name);if(r){Object.assign(r,extra);saveRecipes();syncRecipeGuideToCloud(r);renderRecipeBook();renderPreparations();}};
+renderAllergenOptions([],[]);
+
+/* ---------- Hook staff cumpleaños + onboarding ---------- */
+const _integralClearStaffForm=clearStaffForm;
+clearStaffForm=function(){_integralClearStaffForm();if(document.getElementById("staffBirthDate"))staffBirthDate.value="";};
+const _integralEditStaffMember=editStaffMember;
+editStaffMember=function(id){_integralEditStaffMember(id);const w=staff.find(x=>String(x.id)===String(id));if(w&&document.getElementById("staffBirthDate"))staffBirthDate.value=w.birthDate||"";};
+const _integralSaveStaffMember=saveStaffMember;
+saveStaffMember=async function(inviteAfter=false){const idBefore=editingStaffId,nameBefore=staffName.value.trim(),birth=document.getElementById("staffBirthDate")?.value||"";await _integralSaveStaffMember(inviteAfter);const w=idBefore!==null?staff.find(x=>String(x.id)===String(idBefore)):staff.find(x=>x.name===nameBefore);if(w){w.birthDate=birth;let o=onboardingRecords.find(x=>String(x.staffId)===String(w.id));if(!o){const role=mapStaffRoleToAccessRole(w.role);o={id:Date.now(),staffId:w.id,role,items:defaultOnboardingItems(role).map(x=>({...x,done:false})),progress:0,status:"pending"};onboardingRecords.push(o);}saveStaff();saveIntegralData();renderOnboarding();renderControlCenter();}};
+
+/* ---------- Hook inventario por área ---------- */
+const _integralClearProductForm=clearProductForm;
+clearProductForm=function(){_integralClearProductForm();if(document.getElementById("productArea"))productArea.value="cocina";};
+const _integralEditProduct=editProduct;
+editProduct=function(id){_integralEditProduct(id);const p=inventory.find(x=>String(x.id)===String(id));normalizeAreaStocks();if(p&&document.getElementById("productArea"))productArea.value=p.primaryArea||inferInventoryArea(p);};
+const _integralSaveProduct=saveProduct;
+saveProduct=function(){const targetId=editingId,area=document.getElementById("productArea")?.value||"cocina",qty=Number(quantity.value)||0,name=productName.value.trim();_integralSaveProduct();const p=targetId!==null?inventory.find(x=>String(x.id)===String(targetId)):inventory.find(x=>x.name===name);if(p){normalizeAreaStocks();p.primaryArea=area;if(targetId===null)p.areaStocks={[area]:qty};else{const other=Object.entries(p.areaStocks||{}).filter(([k])=>k!==area).reduce((s,[,v])=>s+Number(v||0),0);p.areaStocks[area]=Math.max(0,qty-other);p.quantity=Object.values(p.areaStocks).reduce((s,v)=>s+Number(v||0),0);}saveInventory();renderInventory();renderInventoryAreas();}};
+const _integralRegisterMovement=registerMovement;
+registerMovement=function(){const id=movementProduct.value,p=inventory.find(x=>String(x.id)===String(id));if(p)normalizeAreaStocks();const before=p?Number(p.quantity):0;_integralRegisterMovement();if(p){const delta=Number(p.quantity)-before,a=p.primaryArea||inferInventoryArea(p);p.areaStocks[a]=Math.max(0,Number(p.areaStocks[a]||0)+delta);p.quantity=Object.values(p.areaStocks).reduce((s,v)=>s+Number(v||0),0);saveInventory();}};
+const _integralRenderInventory=renderInventory;
+renderInventory=function(){normalizeAreaStocks();const table=document.getElementById("inventoryTable"),search=(searchInput?.value||"").toLowerCase();let list=inventory.filter(p=>p.name.toLowerCase().includes(search));if(lowStockFilter)list=list.filter(p=>Number(p.quantity)<=Number(p.minimum));if(!list.length){table.innerHTML='<tr><td colspan="8"><div class="empty-state"><strong>No hay insumos</strong><span>Registra tu primer insumo.</span></div></td></tr>';return;}table.innerHTML=list.map(p=>{const low=Number(p.quantity)<=Number(p.minimum),areas=Object.entries(p.areaStocks||{}).filter(([,v])=>Number(v)>0).map(([a,v])=>`${areaName(a)} ${formatNumber(v)}`).join(" · ");return `<tr><td><div class="product-name">${escapeHTML(p.name)}</div></td><td>${escapeHTML(p.category)}</td><td>${escapeHTML(areas||areaName(p.primaryArea))}</td><td>${formatNumber(p.quantity)} ${escapeHTML(p.unit)}</td><td>${formatNumber(p.minimum)} ${escapeHTML(p.unit)}</td><td>$${formatMoney(p.cost)} / ${escapeHTML(p.unit)}</td><td><span class="badge ${low?"badge-danger":"badge-success"}">${low?"Stock crítico":"Normal"}</span></td><td><div class="actions"><button class="secondary-button" onclick="editProduct(${p.id})">Editar</button><button class="secondary-button" onclick="prepareMovement(${p.id})">Movimiento</button><button class="danger-button" onclick="deleteProduct(${p.id})">Eliminar</button></div></td></tr>`}).join("");};
+
+/* ---------- Hooks POS: turno, club, mise ---------- */
+const _integralOpenPOSTable=openPOSTable;
+openPOSTable=function(tableId){_integralOpenPOSTable(tableId);const o=getActivePOSOrder();if(o&&!o.tipShiftKey){const s=shiftForDateTime(o.openedAt);o.tipShiftKey=s.key;o.tipShiftName=s.name;savePOSOrders();}loadPOSClubCustomers();};
+const _integralOpenPOSPayment=openPOSPayment;
+openPOSPayment=function(){_integralOpenPOSPayment();const o=getActivePOSOrder();loadPOSClubCustomers();if(o&&document.getElementById("posClubCustomer"))posClubCustomer.value=o.customerId||"";};
+const _integralGetRecipeAvailability=getRecipeAvailability;
+getRecipeAvailability=function(recipe){
+ const base=_integralGetRecipeAvailability(recipe);const comps=recipe?.baseComponents||[];if(!comps.length)return base;const committed=getOpenCommittedPrepared();let portions=base.portions||Infinity,status=base.status,details=[...(base.details||[])],yieldValue=Math.max(1,Number(recipe.yield)||1);comps.forEach(c=>{const per=Number(c.quantity||0)/yieldValue,free=prepAvailable(c.recipeId)-Number(committed[c.recipeId]||0),possible=per>0?Math.floor(Math.max(0,free)/per+1e-9):0;portions=Math.min(portions,possible);if(possible<1)status="out";else if(possible<=3&&status!=="out")status="low";details.push(`${c.recipeName}: ${possible} porción(es) aprox.`);});if(portions===Infinity)portions=0;return {status,portions,details};
+};
+const _integralFinalizePOSPayment=finalizePOSPayment;
+finalizePOSPayment=function(){const o=getActivePOSOrder(),prepReq=preparedRequirementsForOrder(o),customer=o?clubCustomers.find(c=>String(c.id)===String(o.customerId)):null,was=o?.status;_integralFinalizePOSPayment();if(o&&was==="open"&&o.status==="paid"){consumePreparedRequirements(prepReq);if(customer)addCustomerPoints(customer,Number(o.total||0),o.id);renderPreparations();renderTips();renderClub();renderControlCenter();}};
+
+/* ---------- Roles y navegación ---------- */
+workerCanAccess=function(pageId){
+ const access=currentSession?.accessRole||"trabajador";
+ const base=["dashboard","checklists","shifts","academy","protocols","onboarding","recipebook","inventoryareas"];
+ if(access==="garzon")return [...base,"reservations","commandas","cash","club"].includes(pageId);
+ if(access==="cajero")return [...base,"cash","reservations","club"].includes(pageId);
+ if(access==="cocina")return [...base,"production","preparations","temperatures","kds"].includes(pageId);
+ if(access==="bar")return [...base,"temperatures","kds","preparations"].includes(pageId);
+ if(access==="bodega")return [...base,"inventory","purchases","suppliers","traceability","reconciliation","preparations"].includes(pageId);
+ return base.includes(pageId);
+};
+const _integralApplyAccessMode=applyAccessMode;
+applyAccessMode=function(){_integralApplyAccessMode();document.querySelectorAll(".admin-only").forEach(el=>{el.style.display=currentSession?.role==="worker"?"none":"";});renderControlCenter();};
+
+/* ---------- Integración showPage ---------- */
+const _integralShowPage=showPage;
+showPage=function(pageId,button){_integralShowPage(pageId,button);if(pageId==="inventoryareas")renderInventoryAreas();if(pageId==="preparations")renderPreparations();if(pageId==="recipebook")renderRecipeBook();if(pageId==="tips")renderTips();if(pageId==="club")renderClub();if(pageId==="academy")renderAcademy();if(pageId==="protocols")renderProtocols();if(pageId==="onboarding")renderOnboarding();if(pageId==="menuengineering")renderMenuEngineering();if(pageId==="simulator")renderScenarioHistory();if(pageId==="dashboard")renderControlCenter();};
+
+/* ---------- Hook sesión Supabase ---------- */
+const _integralHandleCloudSession=handleCloudSession;
+handleCloudSession=async function(session){await _integralHandleCloudSession(session);if(currentSession?.cloud&&cloudOrganization){await loadIntegralCloudData();renderIntegralModules();}};
+
+/* ---------- Render global ---------- */
+function renderIntegralModules(){normalizeAreaStocks();initializeTrainingDefaults();renderControlCenter();renderInventoryAreas();renderPreparations();renderRecipeBook();renderTips();renderClub();renderAcademy();renderProtocols();renderOnboarding();renderScenarioHistory();}
+
+
+const _integralUpdateDashboard=updateDashboard;
+updateDashboard=function(){_integralUpdateDashboard();renderControlCenter();};
+
+/* ---------- Ajustes de marca ---------- */
+const _integralApplyBrandSettings=applyBrandSettings;
+applyBrandSettings=function(){_integralApplyBrandSettings();document.querySelectorAll(".brand-name,.login-brand").forEach(el=>{el.style.fontFamily='Montserrat,"Arial Black",Arial,sans-serif';el.style.fontWeight="900";});};
+
+/* Inicialización */
+normalizeAreaStocks();
+initializeTrainingDefaults();
+if(document.getElementById("tipDate"))tipDate.value=getToday();
+renderAllergenOptions([],[]);
+renderIntegralModules();
 
 
 /* =====================================================
