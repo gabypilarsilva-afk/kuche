@@ -8,23 +8,24 @@
 <style>
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap");
 :root{
---green-dark:#131936;
---green:#131936;
---green-soft:#ececf3;
---cream:#AEA989;
---white:#fffdf8;
---text:#1d2032;
---muted:#686a72;
---border:#d7d3bc;
---danger:#b83f46;
---danger-soft:#f8e8e9;
---warning:#9c6b23;
---warning-soft:#f8eedb;
---success:#3d6856;
---success-soft:#e7f0eb;
---blue:#3f4b7a;
---blue-soft:#eceef6;
---shadow:0 6px 22px rgba(19,25,54,.10);
+--green-dark:#173f35;
+--green:#24594b;
+--green-soft:#e8f0ec;
+--cream:#f6f3ec;
+--white:#fff;
+--text:#202825;
+--muted:#78817d;
+--border:#e3e7e3;
+--danger:#c94b4b;
+--danger-soft:#fbecec;
+--warning:#b87921;
+--warning-soft:#fff3dc;
+--success:#34785a;
+--success-soft:#e8f4ed;
+--blue:#416a91;
+--blue-soft:#edf3f8;
+--primary-contrast:#ffffff;
+--shadow:0 4px 18px rgba(23,63,53,.06);
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -538,7 +539,7 @@ COMPRAS / MERMAS / VENTAS / IA
 .table-config-grid{display:grid;grid-template-columns:2fr 1fr auto;gap:12px;align-items:end}.agenda-list{display:grid;gap:10px}.agenda-item{background:#fff;border:1px solid var(--border);border-left:4px solid var(--green);border-radius:10px;padding:14px;display:flex;justify-content:space-between;gap:12px;align-items:center}.agenda-time{font-size:18px;font-weight:700;color:var(--green-dark)}
 .shift-form-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr;gap:12px;align-items:end}.week-nav{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.week-board{display:grid;grid-template-columns:repeat(7,minmax(170px,1fr));gap:10px;overflow-x:auto}.day-column{background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px;min-height:160px}.day-column h4{font-size:12px;color:var(--green-dark);margin-bottom:10px}.shift-chip{border:1px solid var(--border);background:#f8f9f7;border-radius:8px;padding:9px;margin-bottom:8px;font-size:11px}.shift-chip strong{display:block;color:var(--green-dark);font-size:12px;margin-bottom:3px}
 .trace-form-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr 1fr;gap:12px}.trace-alert{padding:12px 14px;border-radius:9px;margin-bottom:8px;background:var(--warning-soft);color:var(--warning);font-size:12px}.trace-alert.danger{background:var(--danger-soft);color:var(--danger)}
-.login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#173f35,#24594b);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px}.login-overlay.hidden{display:none}.login-box{width:min(480px,96vw);background:white;border-radius:18px;padding:28px;box-shadow:0 25px 60px rgba(0,0,0,.25)}.login-brand{font-size:26px;font-weight:800;letter-spacing:4px;color:var(--green-dark)}.login-sub{color:var(--muted);font-size:12px;margin:5px 0 22px}.login-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}.login-tabs button.active{background:var(--green-dark);color:white}.login-error{display:none;background:var(--danger-soft);color:var(--danger);padding:10px;border-radius:8px;font-size:12px;margin-top:12px}.logout-btn{margin-top:8px;width:100%;border:1px solid rgba(255,255,255,.18);background:transparent;color:rgba(255,255,255,.75);padding:7px;border-radius:7px;font-size:10px}
+.login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,var(--green-dark),var(--green));z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px}.login-overlay.hidden{display:none}.login-box{width:min(480px,96vw);background:white;border-radius:18px;padding:28px;box-shadow:0 25px 60px rgba(0,0,0,.25)}.login-brand{font-size:26px;font-weight:800;letter-spacing:4px;color:var(--green-dark)}.login-sub{color:var(--muted);font-size:12px;margin:5px 0 22px}.login-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}.login-tabs button.active{background:var(--green-dark);color:white}.login-error{display:none;background:var(--danger-soft);color:var(--danger);padding:10px;border-radius:8px;font-size:12px;margin-top:12px}.logout-btn{margin-top:8px;width:100%;border:1px solid rgba(255,255,255,.18);background:transparent;color:rgba(255,255,255,.75);padding:7px;border-radius:7px;font-size:10px}
 .worker-mode .admin-sensitive{display:none!important}
 .cloud-status{padding:7px 11px;border-radius:20px;background:var(--warning-soft);color:var(--warning);font-size:11px;font-weight:700;white-space:nowrap}.cloud-status.online{background:var(--success-soft);color:var(--success)}.cloud-status.offline{background:var(--danger-soft);color:var(--danger)}.topbar-status-wrap{display:flex;align-items:center;gap:8px}.login-note{font-size:11px;line-height:1.45;color:var(--muted);margin-top:10px;padding:9px 10px;background:var(--cream);border-radius:8px}.login-link{border:0;background:transparent;color:var(--green);font-weight:700;font-size:11px;padding:8px 0;text-decoration:underline}.cloud-message{padding:10px 12px;border-radius:8px;font-size:12px;margin-top:12px;background:var(--success-soft);color:var(--success);display:none}.cloud-message.bad{background:var(--danger-soft);color:var(--danger)}
 
@@ -650,6 +651,49 @@ COMPRAS / MERMAS / VENTAS / IA
 .worker-mode .admin-only{display:none!important}
 @media(max-width:1000px){.integral-grid,.guide-grid,.protocol-grid,.training-grid,.customer-grid,.prep-grid{grid-template-columns:repeat(2,1fr)}.scenario-result{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:700px){.control-attention,.integral-grid,.integral-two,.integral-three,.guide-grid,.protocol-grid,.training-grid,.customer-grid,.prep-grid,.allergen-grid,.scenario-result{grid-template-columns:1fr}.count-grid,.count-line{grid-template-columns:1fr}}
+
+
+/* =====================================================
+   PERSONALIZACIÓN VISUAL
+===================================================== */
+.sidebar{color:var(--primary-contrast)}
+.brand-subtitle{color:color-mix(in srgb,var(--primary-contrast) 60%,transparent)}
+.nav-title{color:color-mix(in srgb,var(--primary-contrast) 40%,transparent)}
+.nav-item{color:color-mix(in srgb,var(--primary-contrast) 72%,transparent)}
+.nav-item:hover{color:var(--primary-contrast);background:color-mix(in srgb,var(--primary-contrast) 9%,transparent)}
+.nav-item.active{color:var(--primary-contrast)}
+.user-info span{color:color-mix(in srgb,var(--primary-contrast) 55%,transparent)}
+.logout-btn{color:color-mix(in srgb,var(--primary-contrast) 78%,transparent);border-color:color-mix(in srgb,var(--primary-contrast) 18%,transparent)}
+.primary-button,.control-hero,.ai-hero,.cid-result,.cost-card.final{color:var(--primary-contrast)}
+.theme-layout{display:grid;grid-template-columns:1.3fr .7fr;gap:18px;align-items:start}
+.theme-preset-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.theme-preset{border:1px solid var(--border);background:#fff;border-radius:10px;padding:9px;text-align:left;min-height:70px;transition:.15s}
+.theme-preset:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+.theme-preset.selected{outline:2px solid var(--green-dark);outline-offset:1px}
+.theme-preset-color{height:27px;border-radius:7px;margin-bottom:7px;border:1px solid rgba(0,0,0,.08)}
+.theme-preset-name{display:block;font-size:10px;font-weight:750;color:var(--text)}
+.theme-preset-code{display:block;font-size:9px;color:var(--muted);margin-top:2px}
+.theme-custom-box{background:#faf9f5;border:1px solid var(--border);border-radius:12px;padding:14px}
+.theme-color-row{display:grid;grid-template-columns:70px 1fr;gap:9px;align-items:end}
+.theme-color-row input[type="color"]{height:43px;padding:3px;cursor:pointer}
+.theme-preview{border:1px solid var(--border);border-radius:11px;overflow:hidden;margin-top:12px;background:#fff}
+.theme-preview-head{height:40px;background:var(--green-dark);color:var(--primary-contrast);display:flex;align-items:center;padding:0 12px;font-weight:750;font-size:11px}
+.theme-preview-body{background:#f6f3ec;padding:12px}
+.theme-preview-card{background:#fff;border:1px solid #e3e7e3;border-radius:8px;padding:10px;font-size:10px}
+.theme-preview-button{display:inline-block;margin-top:8px;background:var(--green-dark);color:var(--primary-contrast);padding:6px 9px;border-radius:6px;font-weight:700}
+.theme-fixed-note{margin-top:10px;padding:9px 10px;border:1px solid #e3e7e3;background:#f6f3ec;border-radius:8px;font-size:10px;color:#68716d}
+.staff-week-toolbar{display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin-bottom:13px}
+.staff-week-grid{display:grid;grid-template-columns:repeat(7,minmax(130px,1fr));gap:9px}
+.staff-week-day{background:#fff;border:1px solid var(--border);border-radius:11px;padding:12px;min-height:145px}
+.staff-week-day.today{border:2px solid var(--green-dark);padding:11px}
+.staff-week-day-name{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:4px}
+.staff-week-date{font-size:11px;color:var(--green-dark);font-weight:700;margin-bottom:11px}
+.staff-week-recipe{font-size:13px;font-weight:700;color:var(--text);line-height:1.35}
+.staff-week-meta{font-size:10px;color:var(--muted);margin-top:7px;line-height:1.4}
+.staff-week-editor-row{display:grid;grid-template-columns:110px 2fr 110px 2fr;gap:8px;align-items:end;padding:9px 0;border-bottom:1px solid var(--border)}
+.staff-week-editor-row:last-child{border-bottom:0}
+@media(max-width:1100px){.theme-preset-grid{grid-template-columns:repeat(3,1fr)}.staff-week-grid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:760px){.theme-layout{grid-template-columns:1fr}.theme-preset-grid{grid-template-columns:repeat(2,1fr)}.staff-week-grid{grid-template-columns:repeat(2,1fr)}.staff-week-editor-row{grid-template-columns:1fr}}
 
 </style>
 </head>
@@ -2391,8 +2435,33 @@ Cerrar
 
 <!-- ALIMENTACIÓN PERSONAL -->
 <section id="staffmeals" class="page">
-<div class="page-header"><div><h1>Alimentación del personal</h1><p>Controla porciones consumidas, costo interno y descuento automático de ingredientes.</p></div><button class="primary-button" onclick="openStaffMealForm()">+ Registrar alimentación</button></div>
-<div class="operation-summary">
+<div class="page-header"><div><h1>Alimentación del personal</h1><p>Planifica el menú semanal del equipo y controla las porciones realmente consumidas.</p></div><button class="primary-button admin-only" onclick="openStaffMealForm()">+ Registrar alimentación</button></div>
+
+<div class="integral-panel">
+<div class="page-header" style="margin-bottom:14px">
+<div><h2>Menú semanal del personal</h2><p>El equipo puede revisar la planificación de su colación para toda la semana.</p></div>
+<button class="secondary-button admin-only" onclick="toggleStaffWeeklyMenuEditor()">Editar semana</button>
+</div>
+<div class="staff-week-toolbar">
+<button class="secondary-button" onclick="changeStaffMealWeek(-7)">Semana anterior</button>
+<div class="field" style="min-width:180px"><label>Semana</label><input id="staffMealWeekStart" type="date" onchange="setStaffMealWeekFromInput()"></div>
+<button class="secondary-button" onclick="goCurrentStaffMealWeek()">Esta semana</button>
+<button class="secondary-button" onclick="changeStaffMealWeek(7)">Semana siguiente</button>
+</div>
+<div id="staffWeeklyMenuGrid" class="staff-week-grid"></div>
+</div>
+
+<div id="staffWeeklyMenuEditor" class="integral-panel admin-only" style="display:none">
+<h2>Planificar menú semanal</h2>
+<div class="sub">Selecciona una receta para cada día. Puedes dejar días sin menú programado.</div>
+<div id="staffWeeklyMenuEditorRows"></div>
+<div class="form-actions">
+<button class="primary-button" onclick="saveStaffWeeklyMenu()">Guardar menú semanal</button>
+<button class="secondary-button" onclick="toggleStaffWeeklyMenuEditor(false)">Cancelar</button>
+</div>
+</div>
+
+<div class="operation-summary admin-only">
 <div class="operation-stat"><div class="label">Registros del mes</div><div class="number" id="staffMealMonthCount">0</div></div>
 <div class="operation-stat"><div class="label">Porciones del mes</div><div class="number" id="staffMealMonthPortions">0</div></div>
 <div class="operation-stat"><div class="label">Costo del mes</div><div class="number" id="staffMealMonthCost">$0</div></div>
@@ -2410,7 +2479,7 @@ Cerrar
 <div class="field" style="margin-top:12px"><label>Observaciones</label><textarea id="staffMealNotes"></textarea></div>
 <div class="form-actions"><button class="primary-button" onclick="saveStaffMeal()">Guardar y descontar ingredientes</button><button class="secondary-button" onclick="closeStaffMealForm()">Cancelar</button></div>
 </div>
-<div class="table-card"><div class="table-wrapper"><table><thead><tr><th>Fecha</th><th>Trabajador</th><th>Preparación</th><th>Porciones</th><th>Costo</th><th>Acciones</th></tr></thead><tbody id="staffMealTable"></tbody></table></div></div>
+<div class="table-card admin-only"><div class="table-wrapper"><table><thead><tr><th>Fecha</th><th>Trabajador</th><th>Preparación</th><th>Porciones</th><th>Costo</th><th>Acciones</th></tr></thead><tbody id="staffMealTable"></tbody></table></div></div>
 </section>
 
 <!-- VENTAS -->
@@ -3008,6 +3077,37 @@ Cerrar
 </div>
 </div>
 
+
+<div class="config-card full admin-only">
+<h3>Apariencia</h3>
+<p>El fondo beige de KÜCHE se mantiene fijo. Cada restaurante puede elegir libremente su color principal.</p>
+<div class="theme-layout">
+<div>
+<div id="themePresetGrid" class="theme-preset-grid"></div>
+</div>
+<div class="theme-custom-box">
+<div class="field">
+<label>Color personalizado</label>
+<div class="theme-color-row">
+<input id="themeColorPicker" type="color" value="#173f35" oninput="previewCustomTheme(this.value)">
+<input id="themeColorHex" type="text" value="#173f35" maxlength="7" placeholder="#173f35" oninput="previewCustomTheme(this.value)">
+</div>
+</div>
+<div class="theme-preview">
+<div class="theme-preview-head">KÜCHE</div>
+<div class="theme-preview-body">
+<div class="theme-preview-card">
+Vista previa de la interfaz
+<div class="theme-preview-button">Botón principal</div>
+</div>
+</div>
+</div>
+<div class="theme-fixed-note">Fondo principal fijo: beige original #F6F3EC.</div>
+<button type="button" class="secondary-button" style="margin-top:10px" onclick="resetThemeToOriginal()">Volver al verde original</button>
+</div>
+</div>
+</div>
+
 <div class="config-card full">
 <h3>Parámetros financieros</h3>
 <p>Estos valores se sincronizan con la configuración predeterminada de Recetas y Costos.</p>
@@ -3155,6 +3255,7 @@ currency:"CLP"
 };
 
 appSettings.adminPin = appSettings.adminPin || "";
+appSettings.primaryColor = appSettings.primaryColor || "#173f35";
 
 let checklists =
 JSON.parse(localStorage.getItem("kucheChecklists")) || [];
@@ -3166,6 +3267,8 @@ let suppliers = JSON.parse(localStorage.getItem("kucheSuppliers")) || [];
 let purchases = JSON.parse(localStorage.getItem("kuchePurchases")) || [];
 let wastes = JSON.parse(localStorage.getItem("kucheWaste")) || [];
 let staffMeals = JSON.parse(localStorage.getItem("kucheStaffMeals")) || [];
+let staffMealPlans = JSON.parse(localStorage.getItem("kucheStaffMealPlans")) || [];
+let activeStaffMealWeekStart = "";
 let sales = JSON.parse(localStorage.getItem("kucheSales")) || [];
 let promotions = JSON.parse(localStorage.getItem("kuchePromotions")) || [];
 let reconciliations = JSON.parse(localStorage.getItem("kucheReconciliations")) || [];
@@ -3262,6 +3365,7 @@ function saveIntegralData(){
  localStorage.setItem("kucheInventoryAreaCounts",JSON.stringify(inventoryAreaCounts));
  localStorage.setItem("kucheInventoryTransfers",JSON.stringify(inventoryTransfers));
  localStorage.setItem("kucheSavedScenarios",JSON.stringify(savedScenarios));
+ localStorage.setItem("kucheStaffMealPlans",JSON.stringify(staffMealPlans));
 }
 
 
@@ -3419,6 +3523,7 @@ function saveSuppliers(){localStorage.setItem("kucheSuppliers",JSON.stringify(su
 function savePurchases(){localStorage.setItem("kuchePurchases",JSON.stringify(purchases));}
 function saveWasteData(){localStorage.setItem("kucheWaste",JSON.stringify(wastes));}
 function saveStaffMeals(){localStorage.setItem("kucheStaffMeals",JSON.stringify(staffMeals));}
+function saveStaffMealPlans(){localStorage.setItem("kucheStaffMealPlans",JSON.stringify(staffMealPlans));}
 function saveSales(){localStorage.setItem("kucheSales",JSON.stringify(sales));}
 function saveReconciliations(){localStorage.setItem("kucheReconciliations",JSON.stringify(reconciliations));}
 function savePOSOrders(){localStorage.setItem("kuchePOSOrders",JSON.stringify(posOrders));}
@@ -9171,8 +9276,79 @@ function setWasteFilter(x){wasteFilter=x;renderWaste();}
 function renderWaste(){const table=document.getElementById("wasteTable");if(!table)return;const q=(document.getElementById("wasteSearch")?.value||"").toLowerCase();let list=wastes.filter(x=>(x.productName+" "+x.cause+" "+(x.responsible||"")).toLowerCase().includes(q));if(wasteFilter!=="all")list=list.filter(x=>x.type===wasteFilter);if(!list.length){table.innerHTML='<tr><td colspan="9"><div class="empty-state"><strong>No hay mermas ni desperdicios</strong></div></td></tr>';return;}table.innerHTML=list.map(w=>`<tr><td>${formatDate(w.date)}</td><td><strong>${escapeHTML(w.productName)}</strong></td><td><span class="badge ${w.type==="merma"?"badge-warning":"badge-danger"}">${w.type==="merma"?"Merma":"Desperdicio"}</span></td><td>${w.quantity} ${escapeHTML(w.unit)}</td><td>${escapeHTML(w.cause)}</td><td>${w.recoverable?"Sí":"No"}</td><td><strong>$${formatMoney(w.cost)}</strong></td><td>${w.status==="anulado"?'<span class="badge badge-danger">Anulado</span>':'<span class="badge badge-success">Activo</span>'}</td><td>${w.status!=="anulado"?`<button class="danger-button" onclick="cancelWaste(${w.id})">Anular</button>`:""}</td></tr>`).join("");}
 function updateWasteStats(){const month=getCurrentMonthPrefix();const list=wastes.filter(x=>x.status!=="anulado"&&(x.date||"").startsWith(month));const cause={};list.forEach(x=>cause[x.cause]=(cause[x.cause]||0)+Number(x.cost||0));const top=Object.entries(cause).sort((a,b)=>b[1]-a[1])[0];document.getElementById("wasteMonthCount")&&(document.getElementById("wasteMonthCount").textContent=list.length);document.getElementById("wasteMonthCost")&&(document.getElementById("wasteMonthCost").textContent="$"+formatMoney(list.reduce((a,b)=>a+Number(b.cost||0),0)));document.getElementById("wasteRecoverableCost")&&(document.getElementById("wasteRecoverableCost").textContent="$"+formatMoney(list.filter(x=>x.recoverable).reduce((a,b)=>a+Number(b.cost||0),0)));document.getElementById("wasteTopCause")&&(document.getElementById("wasteTopCause").textContent=top?top[0]:"—");}
 
+
+/* =====================================================
+   MENÚ SEMANAL DEL PERSONAL
+===================================================== */
+const STAFF_WEEK_DAYS=["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
+function mondayISO(value=getToday()){
+ const d=new Date(String(value).slice(0,10)+"T12:00:00");
+ const day=d.getDay(),diff=d.getDate()-(day===0?6:day-1);
+ d.setDate(diff);
+ return d.toISOString().slice(0,10);
+}
+function addDaysISO(dateStr,days){
+ const d=new Date(dateStr+"T12:00:00");d.setDate(d.getDate()+days);return d.toISOString().slice(0,10);
+}
+function ensureStaffMealWeek(){
+ if(!activeStaffMealWeekStart)activeStaffMealWeekStart=mondayISO(getToday());
+ const input=document.getElementById("staffMealWeekStart");if(input)input.value=activeStaffMealWeekStart;
+}
+function changeStaffMealWeek(days){ensureStaffMealWeek();activeStaffMealWeekStart=addDaysISO(activeStaffMealWeekStart,days);renderStaffWeeklyMenu();if(document.getElementById("staffWeeklyMenuEditor")?.style.display==="block")renderStaffWeeklyMenuEditor();}
+function goCurrentStaffMealWeek(){activeStaffMealWeekStart=mondayISO(getToday());renderStaffWeeklyMenu();if(document.getElementById("staffWeeklyMenuEditor")?.style.display==="block")renderStaffWeeklyMenuEditor();}
+function setStaffMealWeekFromInput(){const v=document.getElementById("staffMealWeekStart")?.value;if(v)activeStaffMealWeekStart=mondayISO(v);renderStaffWeeklyMenu();if(document.getElementById("staffWeeklyMenuEditor")?.style.display==="block")renderStaffWeeklyMenuEditor();}
+function planForDate(date){return staffMealPlans.find(x=>x.date===date&&x.active!==false);}
+function recipeForMealPlan(plan){return recipes.find(r=>String(r.id)===String(plan?.recipeId));}
+function renderStaffWeeklyMenu(){
+ const grid=document.getElementById("staffWeeklyMenuGrid");if(!grid)return;ensureStaffMealWeek();
+ grid.innerHTML=STAFF_WEEK_DAYS.map((day,i)=>{
+   const date=addDaysISO(activeStaffMealWeekStart,i),plan=planForDate(date),recipe=recipeForMealPlan(plan),isToday=date===getToday();
+   const cost=recipe&&currentSession?.role!=="worker"?Number(calculateSavedRecipe(recipe).costPerPortion||0)*Number(plan?.portions||0):null;
+   return `<div class="staff-week-day ${isToday?"today":""}"><div class="staff-week-day-name">${day}</div><div class="staff-week-date">${formatDate(date)}</div>${plan?`<div class="staff-week-recipe">${escapeHTML(plan.recipeName||recipe?.name||"Preparación")}</div><div class="staff-week-meta">${Number(plan.portions||0)>0?`${formatNumber(plan.portions)} porción(es) planificadas`:"Porciones por definir"}${plan.notes?`<br>${escapeHTML(plan.notes)}`:""}${cost!==null?`<br>Costo estimado: $${formatMoney(cost)}`:""}</div>`:'<div class="staff-week-meta">Sin menú programado.</div>'}</div>`;
+ }).join("");
+ const input=document.getElementById("staffMealWeekStart");if(input)input.value=activeStaffMealWeekStart;
+}
+function toggleStaffWeeklyMenuEditor(force){
+ const box=document.getElementById("staffWeeklyMenuEditor");if(!box)return;const open=typeof force==="boolean"?force:box.style.display!=="block";box.style.display=open?"block":"none";if(open)renderStaffWeeklyMenuEditor();
+}
+function renderStaffWeeklyMenuEditor(){
+ ensureStaffMealWeek();const box=document.getElementById("staffWeeklyMenuEditorRows");if(!box)return;
+ const options='<option value="">Sin menú</option>'+recipes.map(r=>`<option value="${r.id}">${escapeHTML(r.name)}</option>`).join("");
+ box.innerHTML=STAFF_WEEK_DAYS.map((day,i)=>{const date=addDaysISO(activeStaffMealWeekStart,i),plan=planForDate(date);return `<div class="staff-week-editor-row"><div><strong>${day}</strong><div class="role-note">${formatDate(date)}</div></div><div class="field"><label>Preparación</label><select class="weekly-meal-recipe" data-date="${date}">${options}</select></div><div class="field"><label>Porciones</label><input class="weekly-meal-portions" data-date="${date}" type="number" min="0" step="1" value="${Number(plan?.portions||0)}"></div><div class="field"><label>Observaciones</label><input class="weekly-meal-notes" data-date="${date}" value="${escapeHTML(plan?.notes||"")}"></div></div>`}).join("");
+ document.querySelectorAll(".weekly-meal-recipe").forEach(sel=>{const plan=planForDate(sel.dataset.date);if(plan)sel.value=String(plan.recipeId||"");});
+}
+async function saveStaffWeeklyMenu(){
+ ensureStaffMealWeek();
+ for(let i=0;i<7;i++){
+   const date=addDaysISO(activeStaffMealWeekStart,i);
+   const sel=document.querySelector(`.weekly-meal-recipe[data-date="${date}"]`);
+   const port=document.querySelector(`.weekly-meal-portions[data-date="${date}"]`);
+   const note=document.querySelector(`.weekly-meal-notes[data-date="${date}"]`);
+   const recipe=recipes.find(r=>String(r.id)===String(sel?.value||""));
+   const existing=planForDate(date);
+   if(!recipe){
+     staffMealPlans=staffMealPlans.filter(x=>x.date!==date);
+     if(kucheCloud&&existing?.cloudId){try{await kucheCloud.from("staff_weekly_menus").delete().eq("id",existing.cloudId);}catch(e){console.warn(e);}}
+     continue;
+   }
+   const plan=existing||{id:Date.now()+i,date,active:true};
+   Object.assign(plan,{weekStart:activeStaffMealWeekStart,recipeId:recipe.id,recipeName:recipe.name,portions:Math.max(0,Number(port?.value)||0),notes:note?.value.trim()||"",active:true});
+   if(!existing)staffMealPlans.push(plan);
+   if(kucheCloud&&cloudOrganization){
+     try{
+       const payload={organization_id:cloudOrganization.id,week_start:activeStaffMealWeekStart,menu_date:date,source_recipe_local_id:String(recipe.id),recipe_name_snapshot:recipe.name,portions_planned:Number(plan.portions||0),notes:plan.notes||null,active:true};
+       const {data,error}=await kucheCloud.from("staff_weekly_menus").upsert(payload,{onConflict:"organization_id,menu_date"}).select().single();
+       if(error)throw error;plan.cloudId=data.id;
+     }catch(e){console.warn("Menú semanal nube",e.message);}
+   }
+ }
+ saveStaffMealPlans();toggleStaffWeeklyMenuEditor(false);renderStaffWeeklyMenu();alert("Menú semanal guardado.");
+}
+function plannedMealForToday(){return planForDate(getToday());}
+
+
 function loadStaffMealSelectors(){const w=document.getElementById("staffMealWorker"),r=document.getElementById("staffMealRecipe");if(w)w.innerHTML='<option value="">Seleccionar trabajador</option>'+staff.filter(x=>x.status==="activo").map(x=>`<option value="${x.id}">${escapeHTML(x.name)}</option>`).join("");if(r)r.innerHTML='<option value="">Seleccionar receta</option>'+recipes.map(x=>`<option value="${x.id}">${escapeHTML(x.name)}</option>`).join("");}
-function openStaffMealForm(){loadStaffMealSelectors();document.getElementById("staffMealDate").value=getToday();document.getElementById("staffMealPortions").value=1;document.getElementById("staffMealNotes").value="";updateStaffMealPreview();document.getElementById("staffMealForm").classList.add("open");}
+function openStaffMealForm(){loadStaffMealSelectors();document.getElementById("staffMealDate").value=getToday();document.getElementById("staffMealPortions").value=1;document.getElementById("staffMealNotes").value="";const planned=plannedMealForToday();if(planned&&document.getElementById("staffMealRecipe"))staffMealRecipe.value=String(planned.recipeId||"");updateStaffMealPreview();document.getElementById("staffMealForm").classList.add("open");}
 function closeStaffMealForm(){document.getElementById("staffMealForm").classList.remove("open");}
 function updateStaffMealPreview(){const recipe=recipes.find(x=>String(x.id)===String(document.getElementById("staffMealRecipe")?.value));const portions=Number(document.getElementById("staffMealPortions")?.value)||0;const calc=recipe?calculateSavedRecipe(recipe):null;const cost=calc?Number(calc.costPerPortion||0)*portions:0;const el=document.getElementById("staffMealPreview");if(el)el.innerHTML=`Costo estimado: <strong>$${formatMoney(cost)}</strong> · ${portions} porción(es)`;}
 function recipeConsumptions(recipe,portions){const factor=portions/Math.max(1,Number(recipe.yield)||1);return (recipe.ingredients||[]).map(i=>{const p=inventory.find(x=>String(x.id)===String(i.productId));return {productId:i.productId,productName:i.productName,unit:i.unit,quantity:Number(i.quantity||0)*factor,product:p};});}
@@ -9640,6 +9816,99 @@ URL.revokeObjectURL(url);
 }
 
 
+
+/* =====================================================
+   TEMA DE COLOR POR RESTAURANTE
+===================================================== */
+const KUCHE_THEME_PRESETS=[
+ {name:"Verde original",color:"#173F35"},
+ {name:"Verde bosque",color:"#254E42"},
+ {name:"Azul oscuro",color:"#263C5A"},
+ {name:"Azul marino",color:"#1E2E4A"},
+ {name:"Azul tinta",color:"#303E63"},
+ {name:"Petróleo",color:"#28535A"},
+ {name:"Rosado suave",color:"#986C78"},
+ {name:"Rosa viejo",color:"#875E69"},
+ {name:"Borgoña",color:"#703744"},
+ {name:"Terracota",color:"#8A5140"},
+ {name:"Salvia profunda",color:"#586A5C"},
+ {name:"Morado elegante",color:"#594C70"},
+ {name:"Cacao",color:"#604B3D"},
+ {name:"Grafito",color:"#41464C"},
+ {name:"Ciruela",color:"#69475E"},
+ {name:"Azul grisáceo",color:"#4A5B6C"}
+];
+
+function cleanThemeHex(value){
+ const v=String(value||"").trim().toUpperCase();
+ if(/^#[0-9A-F]{6}$/.test(v))return v;
+ return null;
+}
+function hexToRgb(hex){
+ const h=cleanThemeHex(hex);if(!h)return {r:23,g:63,b:53};
+ return {r:parseInt(h.slice(1,3),16),g:parseInt(h.slice(3,5),16),b:parseInt(h.slice(5,7),16)};
+}
+function rgbToHex(r,g,b){
+ return "#"+[r,g,b].map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,"0")).join("").toUpperCase();
+}
+function mixTheme(hex,target,ratio){
+ const a=hexToRgb(hex),b=hexToRgb(target),t=Math.max(0,Math.min(1,ratio));
+ return rgbToHex(a.r+(b.r-a.r)*t,a.g+(b.g-a.g)*t,a.b+(b.b-a.b)*t);
+}
+function themeContrast(hex){
+ const {r,g,b}=hexToRgb(hex);
+ const lum=(0.299*r+0.587*g+0.114*b);
+ return lum>165?"#202825":"#FFFFFF";
+}
+function applyThemeColor(value,save=false){
+ const color=cleanThemeHex(value)||"#173F35";
+ const root=document.documentElement;
+ root.style.setProperty("--green-dark",color);
+ root.style.setProperty("--green",mixTheme(color,"#FFFFFF",0.11));
+ root.style.setProperty("--green-soft",mixTheme(color,"#FFFFFF",0.89));
+ root.style.setProperty("--primary-contrast",themeContrast(color));
+ const {r,g,b}=hexToRgb(color);
+ root.style.setProperty("--shadow",`0 4px 18px rgba(${r},${g},${b},.08)`);
+ root.style.setProperty("--cream","#F6F3EC");
+ if(save){appSettings.primaryColor=color;saveAppSettings();}
+ const picker=document.getElementById("themeColorPicker"),hex=document.getElementById("themeColorHex");
+ if(picker)picker.value=color.toLowerCase();
+ if(hex&&document.activeElement!==hex)hex.value=color;
+ document.querySelectorAll(".theme-preset").forEach(btn=>btn.classList.toggle("selected",cleanThemeHex(btn.dataset.color)===color));
+}
+function previewCustomTheme(value){
+ const color=cleanThemeHex(value);
+ if(!color)return;
+ appSettings.primaryColor=color;
+ applyThemeColor(color,false);
+ renderThemeCustomizer();
+}
+function chooseThemePreset(color){
+ appSettings.primaryColor=cleanThemeHex(color)||"#173F35";
+ applyThemeColor(appSettings.primaryColor,false);
+ renderThemeCustomizer();
+}
+function resetThemeToOriginal(){
+ appSettings.primaryColor="#173F35";
+ applyThemeColor(appSettings.primaryColor,false);
+ renderThemeCustomizer();
+}
+function renderThemeCustomizer(){
+ const grid=document.getElementById("themePresetGrid");if(!grid)return;
+ const current=cleanThemeHex(appSettings.primaryColor)||"#173F35";
+ grid.innerHTML=KUCHE_THEME_PRESETS.map(x=>`<button type="button" class="theme-preset ${cleanThemeHex(x.color)===current?"selected":""}" data-color="${x.color}" onclick="chooseThemePreset('${x.color}')"><span class="theme-preset-color" style="background:${x.color}"></span><span class="theme-preset-name">${escapeHTML(x.name)}</span><span class="theme-preset-code">${x.color}</span></button>`).join("");
+ const p=document.getElementById("themeColorPicker"),h=document.getElementById("themeColorHex");if(p)p.value=current.toLowerCase();if(h&&document.activeElement!==h)h.value=current;
+}
+async function syncThemeToCloud(){
+ if(!kucheCloud||!cloudOrganization||currentSession?.role!=="admin")return;
+ try{
+   const color=cleanThemeHex(appSettings.primaryColor)||"#173F35";
+   const {error}=await kucheCloud.from("organization_themes").upsert({organization_id:cloudOrganization.id,primary_color:color},{onConflict:"organization_id"});
+   if(error)throw error;
+ }catch(e){console.warn("No se pudo sincronizar el color del restaurante",e.message);}
+}
+
+
 /* =====================================================
 CONFIGURACIÓN
 ===================================================== */
@@ -9678,6 +9947,7 @@ if(eq) eq.textContent=temperatureEquipment.length;
 if(st) st.textContent=staff.length;
 if(ac) ac.textContent=staff.filter(worker=>worker.status==="activo").length;
 applyBrandSettings();
+renderThemeCustomizer();
 }
 
 function saveAllSettings(){
@@ -9703,9 +9973,12 @@ profit:Number(getValue("settingsProfit"))||0,
 vat:Number(getValue("settingsVat"))||0,
 profitMethod:getValue("settingsProfitMethod")||"markup"
 };
+appSettings.primaryColor=cleanThemeHex(appSettings.primaryColor)||"#173F35";
 saveAppSettings();
 localStorage.setItem("kucheCostSettings",JSON.stringify(costSettings));
+applyThemeColor(appSettings.primaryColor,false);
 syncOrganizationSettingsToCloud();
+syncThemeToCloud();
 loadCostSettingsFields();
 applyBrandSettings();
 loadSettingsForm();
@@ -9713,6 +9986,7 @@ alert("Configuración guardada correctamente.");
 }
 
 function applyBrandSettings(){
+applyThemeColor(appSettings.primaryColor||"#173F35",false);
 const business=appSettings.businessName?.trim();
 const admin=appSettings.adminName?.trim()||"Administrador";
 const subtitle=document.getElementById("brandSubtitle");
@@ -9752,6 +10026,7 @@ suppliers,
 purchases,
 wastes,
 staffMeals,
+staffMealPlans,
 sales,
 reconciliations
 };
@@ -9779,7 +10054,7 @@ reader.onload=function(){
 try{
 const data=JSON.parse(reader.result);
 if(!data||typeof data!=="object") throw new Error("Formato inválido");
-const keys=["inventory","movements","productions","recipes","promotions","temperatureEquipment","temperatureRecords","staff","attendance","checklists","checklistRecords","suppliers","purchases","wastes","staffMeals","sales","reconciliations"];
+const keys=["inventory","movements","productions","recipes","promotions","temperatureEquipment","temperatureRecords","staff","attendance","checklists","checklistRecords","suppliers","purchases","wastes","staffMeals","staffMealPlans","sales","reconciliations"];
 const hasData=keys.some(key=>Array.isArray(data[key]))||data.appSettings||data.costSettings;
 if(!hasData) throw new Error("El archivo no parece ser un respaldo de KÜCHE");
 if(!confirm("¿Importar este respaldo? Los datos actuales de KÜCHE serán reemplazados.")){
@@ -9804,6 +10079,7 @@ suppliers:"kucheSuppliers",
 purchases:"kuchePurchases",
 wastes:"kucheWaste",
 staffMeals:"kucheStaffMeals",
+staffMealPlans:"kucheStaffMealPlans",
 sales:"kucheSales",
 reconciliations:"kucheReconciliations"
 };
@@ -11223,7 +11499,7 @@ async function loadIntegralCloudData(){
  if(!kucheCloud||!cloudOrganization)return;
  const [
   guides,batches,tipCfg,tipDist,tipAll,clubCfg,customers,rewards,mods,assignments,
-  cloudProtocols,activations,areas,areaRoles,onboards
+  cloudProtocols,activations,areas,areaRoles,onboards,cloudThemes,cloudMealPlans
  ]=await Promise.all([
   safeCloudRows("recipe_guides"),safeCloudRows("preparation_batches"),
   safeCloudRows("tip_shift_settings"),safeCloudRows("tip_distributions"),safeCloudRows("tip_allocations"),
@@ -11231,7 +11507,8 @@ async function loadIntegralCloudData(){
   safeCloudRows("training_modules"),safeCloudRows("training_assignments"),
   safeCloudRows("internal_protocols"),safeCloudRows("protocol_activations"),
   safeCloudRows("inventory_areas"),safeCloudRows("inventory_area_role_assignments"),
-  safeCloudRows("onboarding_assignments")
+  safeCloudRows("onboarding_assignments"),safeCloudRows("organization_themes"),
+  safeCloudRows("staff_weekly_menus")
  ]);
  if(guides)recipeGuidesCloud=guides;
  if(batches)preparedBatches=batches.map(x=>({cloudId:x.id,recipeId:x.source_recipe_local_id||x.recipe_id,recipeName:x.recipe_name,lot:x.lot_code,producedQty:Number(x.produced_qty),remainingQty:Number(x.remaining_qty),unit:x.unit,productionDate:x.production_date,expiryDate:x.expiry_date,storageMethod:x.storage_method,responsible:x.responsible_name,status:x.status,costPerUnit:Number(x.cost_per_unit||0)}));
@@ -11248,8 +11525,13 @@ async function loadIntegralCloudData(){
  if(areas?.length)inventoryAreas=areas.map(x=>({cloudId:x.id,key:x.area_key,name:x.name}));
  if(areaRoles?.length)inventoryAreaAssignments=areaRoles.map(x=>({cloudId:x.id,role:x.access_role,area:inventoryAreas.find(a=>a.cloudId===x.area_id)?.key||"",closing:x.count_closing,opening:x.count_opening}));
  if(onboards&&currentSession?.role==="worker")onboardingRecords=onboards.map(x=>({cloudId:x.id,staffId:x.staff_id,status:x.status,progress:Number(x.progress_pct||0),items:Array.isArray(x.items_state)?x.items_state:[]}));
+ if(cloudThemes?.length){appSettings.primaryColor=cleanThemeHex(cloudThemes[0].primary_color)||"#173F35";saveAppSettings();applyThemeColor(appSettings.primaryColor,false);}
+ if(cloudMealPlans)staffMealPlans=cloudMealPlans.map(x=>({cloudId:x.id,id:x.id,weekStart:x.week_start,date:x.menu_date,recipeId:x.source_recipe_local_id,recipeName:x.recipe_name_snapshot,portions:Number(x.portions_planned||0),notes:x.notes||"",active:x.active}));
+
  saveIntegralData();
  renderIntegralModules();
+ renderStaffWeeklyMenu();
+ renderThemeCustomizer();
 }
 async function syncRecipeGuideToCloud(recipe){
  if(!kucheCloud||!cloudOrganization||currentSession?.role!=="admin"||!recipe)return;
@@ -11517,7 +11799,7 @@ finalizePOSPayment=function(){const o=getActivePOSOrder(),prepReq=preparedRequir
 /* ---------- Roles y navegación ---------- */
 workerCanAccess=function(pageId){
  const access=currentSession?.accessRole||"trabajador";
- const base=["dashboard","checklists","shifts","academy","protocols","onboarding","recipebook","inventoryareas"];
+ const base=["dashboard","checklists","shifts","academy","protocols","onboarding","recipebook","inventoryareas","staffmeals"];
  if(access==="garzon")return [...base,"reservations","commandas","cash","club"].includes(pageId);
  if(access==="cajero")return [...base,"cash","reservations","club"].includes(pageId);
  if(access==="cocina")return [...base,"production","preparations","temperatures","kds"].includes(pageId);
@@ -11530,14 +11812,14 @@ applyAccessMode=function(){_integralApplyAccessMode();document.querySelectorAll(
 
 /* ---------- Integración showPage ---------- */
 const _integralShowPage=showPage;
-showPage=function(pageId,button){_integralShowPage(pageId,button);if(pageId==="inventoryareas")renderInventoryAreas();if(pageId==="preparations")renderPreparations();if(pageId==="recipebook")renderRecipeBook();if(pageId==="tips")renderTips();if(pageId==="club")renderClub();if(pageId==="academy")renderAcademy();if(pageId==="protocols")renderProtocols();if(pageId==="onboarding")renderOnboarding();if(pageId==="menuengineering")renderMenuEngineering();if(pageId==="simulator")renderScenarioHistory();if(pageId==="dashboard")renderControlCenter();};
+showPage=function(pageId,button){_integralShowPage(pageId,button);if(pageId==="inventoryareas")renderInventoryAreas();if(pageId==="preparations")renderPreparations();if(pageId==="recipebook")renderRecipeBook();if(pageId==="tips")renderTips();if(pageId==="club")renderClub();if(pageId==="academy")renderAcademy();if(pageId==="protocols")renderProtocols();if(pageId==="onboarding")renderOnboarding();if(pageId==="menuengineering")renderMenuEngineering();if(pageId==="simulator")renderScenarioHistory();if(pageId==="staffmeals")renderStaffWeeklyMenu();if(pageId==="settings")renderThemeCustomizer();if(pageId==="dashboard")renderControlCenter();};
 
 /* ---------- Hook sesión Supabase ---------- */
 const _integralHandleCloudSession=handleCloudSession;
 handleCloudSession=async function(session){await _integralHandleCloudSession(session);if(currentSession?.cloud&&cloudOrganization){await loadIntegralCloudData();renderIntegralModules();}};
 
 /* ---------- Render global ---------- */
-function renderIntegralModules(){normalizeAreaStocks();initializeTrainingDefaults();renderControlCenter();renderInventoryAreas();renderPreparations();renderRecipeBook();renderTips();renderClub();renderAcademy();renderProtocols();renderOnboarding();renderScenarioHistory();}
+function renderIntegralModules(){normalizeAreaStocks();initializeTrainingDefaults();renderControlCenter();renderInventoryAreas();renderPreparations();renderRecipeBook();renderTips();renderClub();renderAcademy();renderProtocols();renderOnboarding();renderScenarioHistory();renderStaffWeeklyMenu();renderThemeCustomizer();}
 
 
 const _integralUpdateDashboard=updateDashboard;
@@ -11548,6 +11830,7 @@ const _integralApplyBrandSettings=applyBrandSettings;
 applyBrandSettings=function(){_integralApplyBrandSettings();document.querySelectorAll(".brand-name,.login-brand").forEach(el=>{el.style.fontFamily='Montserrat,"Arial Black",Arial,sans-serif';el.style.fontWeight="900";});};
 
 /* Inicialización */
+applyThemeColor(appSettings.primaryColor||"#173F35",false);
 normalizeAreaStocks();
 initializeTrainingDefaults();
 if(document.getElementById("tipDate"))tipDate.value=getToday();
