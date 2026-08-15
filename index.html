@@ -695,6 +695,10 @@ COMPRAS / MERMAS / VENTAS / IA
 @media(max-width:1100px){.theme-preset-grid{grid-template-columns:repeat(3,1fr)}.staff-week-grid{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:760px){.theme-layout{grid-template-columns:1fr}.theme-preset-grid{grid-template-columns:repeat(2,1fr)}.staff-week-grid{grid-template-columns:repeat(2,1fr)}.staff-week-editor-row{grid-template-columns:1fr}}
 
+
+.theme-save-ok{border-color:color-mix(in srgb,var(--green-dark) 35%,#e3e7e3);color:var(--green-dark);font-weight:700}
+.theme-save-error{border-color:#c94b4b;color:#a33c42;font-weight:700}
+
 </style>
 </head>
 
@@ -3089,8 +3093,8 @@ Cerrar
 <div class="field">
 <label>Color personalizado</label>
 <div class="theme-color-row">
-<input id="themeColorPicker" type="color" value="#173f35" oninput="previewCustomTheme(this.value)">
-<input id="themeColorHex" type="text" value="#173f35" maxlength="7" placeholder="#173f35" oninput="previewCustomTheme(this.value)">
+<input id="themeColorPicker" type="color" value="#173f35" onchange="themePickerChanged(this.value)">
+<input id="themeColorHex" type="text" value="#173f35" maxlength="7" placeholder="#173F35" oninput="themeHexTyping(this.value)">
 </div>
 </div>
 <div class="theme-preview">
@@ -3102,8 +3106,11 @@ Vista previa de la interfaz
 </div>
 </div>
 </div>
-<div class="theme-fixed-note">Fondo principal fijo: beige original #F6F3EC.</div>
-<button type="button" class="secondary-button" style="margin-top:10px" onclick="resetThemeToOriginal()">Volver al verde original</button>
+<div id="themeSaveStatus" class="theme-fixed-note">Fondo principal fijo: beige original #F6F3EC.</div>
+<div class="form-actions" style="margin-top:10px">
+<button type="button" class="primary-button" onclick="applyCustomThemeFromField()">Aplicar color</button>
+<button type="button" class="secondary-button" onclick="resetThemeToOriginal()">Volver al verde original</button>
+</div>
 </div>
 </div>
 </div>
@@ -9876,36 +9883,101 @@ function applyThemeColor(value,save=false){
  if(hex&&document.activeElement!==hex)hex.value=color;
  document.querySelectorAll(".theme-preset").forEach(btn=>btn.classList.toggle("selected",cleanThemeHex(btn.dataset.color)===color));
 }
+function setThemeStatus(message,type=""){
+ const el=document.getElementById("themeSaveStatus");
+ if(!el)return;
+ el.textContent=message;
+ el.classList.remove("theme-save-ok","theme-save-error");
+ if(type==="ok")el.classList.add("theme-save-ok");
+ if(type==="error")el.classList.add("theme-save-error");
+}
 function previewCustomTheme(value){
  const color=cleanThemeHex(value);
- if(!color)return;
+ if(!color)return false;
  appSettings.primaryColor=color;
  applyThemeColor(color,false);
- renderThemeCustomizer();
+ return true;
 }
-function chooseThemePreset(color){
- appSettings.primaryColor=cleanThemeHex(color)||"#173F35";
- applyThemeColor(appSettings.primaryColor,false);
- renderThemeCustomizer();
+async function persistThemeColor(color,showMessage=true){
+ const valid=cleanThemeHex(color);
+ if(!valid){
+   if(showMessage)setThemeStatus("El color debe tener formato HEX, por ejemplo #173F35.","error");
+   return false;
+ }
+ appSettings.primaryColor=valid;
+ saveAppSettings();
+ applyThemeColor(valid,false);
+ renderThemeCustomizer(false);
+ let cloudOk=true;
+ if(kucheCloud&&cloudOrganization&&currentSession?.role==="admin"){
+   try{
+     const {error}=await kucheCloud
+       .from("organization_themes")
+       .upsert(
+         {organization_id:cloudOrganization.id,primary_color:valid},
+         {onConflict:"organization_id"}
+       );
+     if(error)throw error;
+   }catch(e){
+     cloudOk=false;
+     console.warn("No se pudo guardar el color en Supabase",e);
+   }
+ }
+ if(showMessage){
+   setThemeStatus(
+     cloudOk
+       ?`Color ${valid} guardado para este restaurante. El fondo beige se mantiene sin cambios.`
+       :`Color ${valid} aplicado en este dispositivo, pero no se pudo sincronizar con Supabase.`,
+     cloudOk?"ok":"error"
+   );
+ }
+ return cloudOk;
 }
-function resetThemeToOriginal(){
- appSettings.primaryColor="#173F35";
- applyThemeColor(appSettings.primaryColor,false);
- renderThemeCustomizer();
+async function chooseThemePreset(color){
+ const valid=cleanThemeHex(color)||"#173F35";
+ appSettings.primaryColor=valid;
+ applyThemeColor(valid,false);
+ renderThemeCustomizer(false);
+ await persistThemeColor(valid,true);
 }
-function renderThemeCustomizer(){
+function themePickerChanged(value){
+ const valid=cleanThemeHex(value);
+ if(!valid)return;
+ const hex=document.getElementById("themeColorHex");
+ if(hex)hex.value=valid;
+ previewCustomTheme(valid);
+ setThemeStatus(`Vista previa ${valid}. Presiona Aplicar color para guardarlo.`);
+}
+function themeHexTyping(value){
+ const valid=cleanThemeHex(value);
+ if(!valid){
+   setThemeStatus("Escribe un color completo en formato HEX, por ejemplo #263C5A.");
+   return;
+ }
+ const picker=document.getElementById("themeColorPicker");
+ if(picker)picker.value=valid.toLowerCase();
+ previewCustomTheme(valid);
+ setThemeStatus(`Vista previa ${valid}. Presiona Aplicar color para guardarlo.`);
+}
+async function applyCustomThemeFromField(){
+ const value=document.getElementById("themeColorHex")?.value||document.getElementById("themeColorPicker")?.value;
+ await persistThemeColor(value,true);
+}
+async function resetThemeToOriginal(){
+ await persistThemeColor("#173F35",true);
+}
+function renderThemeCustomizer(resetStatus=true){
  const grid=document.getElementById("themePresetGrid");if(!grid)return;
  const current=cleanThemeHex(appSettings.primaryColor)||"#173F35";
  grid.innerHTML=KUCHE_THEME_PRESETS.map(x=>`<button type="button" class="theme-preset ${cleanThemeHex(x.color)===current?"selected":""}" data-color="${x.color}" onclick="chooseThemePreset('${x.color}')"><span class="theme-preset-color" style="background:${x.color}"></span><span class="theme-preset-name">${escapeHTML(x.name)}</span><span class="theme-preset-code">${x.color}</span></button>`).join("");
- const p=document.getElementById("themeColorPicker"),h=document.getElementById("themeColorHex");if(p)p.value=current.toLowerCase();if(h&&document.activeElement!==h)h.value=current;
+ const p=document.getElementById("themeColorPicker"),h=document.getElementById("themeColorHex");
+ if(p)p.value=current.toLowerCase();
+ if(h&&document.activeElement!==h)h.value=current;
+ if(resetStatus)setThemeStatus(`Color actual: ${current}. Fondo fijo: beige original #F6F3EC.`);
 }
 async function syncThemeToCloud(){
- if(!kucheCloud||!cloudOrganization||currentSession?.role!=="admin")return;
- try{
-   const color=cleanThemeHex(appSettings.primaryColor)||"#173F35";
-   const {error}=await kucheCloud.from("organization_themes").upsert({organization_id:cloudOrganization.id,primary_color:color},{onConflict:"organization_id"});
-   if(error)throw error;
- }catch(e){console.warn("No se pudo sincronizar el color del restaurante",e.message);}
+ const color=cleanThemeHex(appSettings.primaryColor)||"#173F35";
+ await persistThemeColor(color,false);
 }
 
 
