@@ -1,0 +1,11 @@
+{
+  "name": "KÜCHE · Gestión Gastronómica",
+  "short_name": "KÜCHE",
+  "description": "Gestión operativa para restaurantes.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F6F3EC",
+  "theme_color": "#173F35",
+  "lang": "es-CL"
+}
