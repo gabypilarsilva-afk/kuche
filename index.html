@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KÜCHE | Gestión Gastronómica</title>
+<meta name="theme-color" content="#173F35">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="KÜCHE">
+<link rel="manifest" href="./manifest.webmanifest">
 
 <style>
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@700;800;900&display=swap");
@@ -943,6 +948,86 @@ COMPRAS / MERMAS / VENTAS / IA
  .operational-activity-grid{grid-template-columns:1fr}
 }
 
+
+/* Fecha de nacimiento manual */
+.staff-birth-grid{display:grid;grid-template-columns:.7fr 1.35fr 1fr;gap:8px;margin-top:2px}
+.staff-birth-part{display:grid;gap:4px}
+.staff-birth-part span{font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:800}
+.staff-birth-part input,.staff-birth-part select{width:100%;min-width:0}
+#staffBirthDateHint.birth-date-error{color:var(--danger);font-weight:750}
+@media(max-width:560px){.staff-birth-grid{grid-template-columns:.7fr 1.25fr 1fr}}
+
+
+/* =====================================================
+   KÜCHE OFFLINE + AYUDA GUIADA + SISTEMA
+===================================================== */
+.offline-queue-status{padding:7px 10px;border-radius:20px;background:var(--success-soft);color:var(--success);font-size:10px;font-weight:800;white-space:nowrap;cursor:pointer}
+.offline-queue-status.pending{background:var(--warning-soft);color:var(--warning)}
+.offline-queue-status.offline{background:#f0eee8;color:#5d625f}
+.offline-queue-status.error{background:var(--danger-soft);color:var(--danger)}
+.manual-start-note{padding:14px 15px;border:1px solid var(--border);border-left:4px solid var(--green-dark);border-radius:11px;background:#fff;font-size:12px;line-height:1.6;margin-bottom:15px}
+.manual-step-detail{margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:10px;line-height:1.55;color:var(--muted)}
+.manual-step-detail strong{color:var(--green-dark)}
+.manual-step-how{margin-top:5px;white-space:pre-line}
+.context-info-button{width:18px;height:18px;min-height:18px!important;padding:0!important;border:1px solid color-mix(in srgb,var(--green-dark) 35%,var(--border));border-radius:50%;display:inline-grid;place-items:center;background:transparent;color:var(--green-dark);font-size:10px;line-height:1;font-weight:900;vertical-align:middle;margin-left:6px;box-shadow:none!important}
+.context-info-button:hover{background:var(--green-soft)}
+.context-info-popover{position:fixed;z-index:3000;width:min(360px,calc(100vw - 24px));display:none;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 16px 45px rgba(20,32,27,.18);padding:13px}
+.context-info-popover.show{display:block}
+.context-info-head{display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--green-dark);font-size:12px}
+.context-info-close{border:0;background:transparent;color:var(--muted);font-size:20px;line-height:1;padding:0 2px;min-height:auto}
+.context-info-text{font-size:11px;line-height:1.6;color:var(--text);margin-top:8px;white-space:pre-line}
+.system-technical-banner{border:1px solid var(--border);border-radius:12px;background:#fff;padding:13px 14px;margin-bottom:14px;font-size:12px;font-weight:750;color:var(--green-dark)}
+.system-technical-banner.offline{background:#f5f2eb;color:#5a5e5b}
+.system-technical-banner.pending{background:var(--warning-soft);color:#7a571e}
+.system-info-list{display:grid;gap:8px}
+.system-info-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:10px 11px;border:1px solid var(--border);border-radius:9px;background:#fff;font-size:11px}
+.system-info-row .sys-label{color:var(--muted)}
+.system-info-row strong{color:var(--green-dark);text-align:right}
+.system-capability-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.system-capability-card{border:1px solid var(--border);border-radius:10px;background:#fff;padding:11px}
+.system-capability-card strong{display:block;color:var(--green-dark);font-size:11px;margin-bottom:4px}
+.system-capability-card span{font-size:10px;color:var(--muted);line-height:1.45}
+.system-integration-state{font-size:9px;font-weight:850;text-transform:uppercase;letter-spacing:.04em}
+.system-integration-state.active{color:var(--success)}
+.system-integration-state.config{color:var(--warning)}
+.system-integration-state.required{color:#657086}
+.system-diagnostic-list{display:grid;gap:7px;margin-top:10px}
+.system-diagnostic-row{padding:9px 10px;border:1px solid var(--border);border-radius:9px;background:#fff;font-size:11px;display:flex;justify-content:space-between;gap:10px}
+.system-diagnostic-row.ok strong{color:var(--success)}
+.system-diagnostic-row.warn strong{color:var(--warning)}
+.system-diagnostic-row.bad strong{color:var(--danger)}
+.system-offline-explanation{font-size:11px;line-height:1.65;color:var(--text)}
+.system-offline-explanation p+p{margin-top:9px}
+.staff-owner-badge{font-size:9px;font-weight:850;padding:4px 7px;border-radius:999px;background:var(--green-soft);color:var(--green-dark);margin-left:5px}
+@media(max-width:900px){
+ .system-capability-grid{grid-template-columns:1fr}
+ .offline-queue-status{font-size:9px;padding:6px 8px}
+}
+
+
+/* =====================================================
+   ASISTENCIA / GASTOS / BIENES
+===================================================== */
+.attendance-policy-card{border:1px solid var(--border);border-left:4px solid var(--green-dark);background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:11px;line-height:1.55;color:var(--text)}
+.attendance-policy-card.warn{border-left-color:var(--warning);background:var(--warning-soft)}
+.attendance-policy-card.late{border-left-color:var(--danger);background:var(--danger-soft)}
+.expandable-panel{display:none}
+.expandable-panel.open{display:block}
+.compact-search{min-width:220px;max-width:320px}
+.asset-annual-banner{border:1px solid var(--border);border-radius:12px;background:#fff;padding:13px 14px;margin-bottom:14px;font-size:11px;line-height:1.55}
+.asset-annual-banner.due{background:var(--warning-soft);border-color:color-mix(in srgb,var(--warning) 30%,var(--border))}
+.asset-annual-banner.overdue{background:var(--danger-soft);border-color:color-mix(in srgb,var(--danger) 30%,var(--border))}
+.asset-annual-banner.done{background:var(--success-soft);border-color:color-mix(in srgb,var(--success) 30%,var(--border))}
+.asset-row-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.asset-condition-line{font-size:9px;color:var(--muted);margin-top:3px}
+.expense-cancelled{opacity:.58}
+@media(max-width:750px){
+ .compact-search{min-width:0;width:100%;max-width:none}
+ .card-topline{align-items:flex-start}
+}
+
+/* KÜCHE V1.4 pagos y convenios */
+.payment-method-create{display:grid;grid-template-columns:1.4fr 1fr auto;gap:9px;align-items:end;margin:12px 0}.payment-method-settings-list{display:grid;gap:8px}.payment-method-setting-row{display:grid;grid-template-columns:1.2fr .9fr .65fr .65fr .65fr .65fr auto;gap:8px;align-items:end;border:1px solid var(--border);background:#fff;border-radius:10px;padding:10px}.payment-method-setting-row .field{margin:0}.payment-method-setting-row label{font-size:8px}.payment-method-pos-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.payment-method-pos-item{border:1px solid var(--border);border-radius:10px;background:#fff;padding:10px}.payment-method-pos-item label{display:flex;justify-content:space-between;gap:8px}.payment-method-pos-meta{font-size:8px;color:var(--muted)}.pos-agreement-box{margin-top:12px;border:1px solid var(--border);border-radius:11px;background:#fafbf9;padding:11px}.pos-agreement-input{display:grid;grid-template-columns:1fr auto auto;gap:7px}.agreement-pos-status{font-size:10px;color:var(--muted);margin-top:7px}.agreement-pos-status.ok{color:var(--success);font-weight:750}.agreement-pos-status.bad{color:var(--danger);font-weight:750}.agreement-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}.agreement-card{border:1px solid var(--border);border-radius:12px;background:#fff;padding:13px}.agreement-card.inactive{opacity:.6}.agreement-code{display:inline-block;margin-top:5px;padding:4px 7px;border-radius:6px;background:var(--green-soft);color:var(--green-dark);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;font-weight:850}.agreement-card-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}.agreement-card-metric{border:1px solid var(--border);border-radius:8px;padding:8px}.agreement-card-metric span{display:block;font-size:8px;color:var(--muted)}.agreement-weekdays,.agreement-payment-methods{display:flex;gap:7px;flex-wrap:wrap;margin-top:5px}.agreement-weekdays label,.agreement-payment-methods label{display:flex;align-items:center;gap:5px;border:1px solid var(--border);border-radius:8px;padding:6px 8px;background:#fff;font-size:10px}.agreement-weekdays input,.agreement-payment-methods input,.checkbox-line input{width:auto}.checkbox-line{display:flex!important;gap:8px;align-items:center!important}.report-dynamic-list{display:grid;gap:7px;margin-top:9px}.report-dynamic-row{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--border);padding:7px 0;font-size:10px}.payment-commission-note{font-size:8px;color:var(--muted);margin-top:3px}@media(max-width:1000px){.payment-method-setting-row{grid-template-columns:repeat(3,1fr)}.payment-method-pos-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:700px){.payment-method-create,.payment-method-setting-row,.payment-method-pos-grid,.pos-agreement-input{grid-template-columns:1fr}.agreement-card-grid{grid-template-columns:1fr}}
 </style>
 </head>
 
@@ -1036,6 +1121,7 @@ COMPRAS / MERMAS / VENTAS / IA
 <button class="nav-item" onclick="showPage('reconciliation',this)"><span>Conciliación stock</span></button>
 <button class="nav-item" onclick="showPage('reservations',this)"><span>Reservas</span></button>
 <button class="nav-item" onclick="showPage('promotions',this)"><span>Promociones / combos</span></button>
+<button class="nav-item admin-sensitive" onclick="showPage('agreements',this)"><span>Convenios y descuentos</span></button>
 <button class="nav-item" onclick="showPage('commandas',this)"><span>Mesas y comandas</span></button>
 <button class="nav-item" onclick="showPage('kds',this)"><span>Cocina / Bar KDS</span></button>
 <button class="nav-item" onclick="showPage('cash',this)"><span>Caja y cierre de turno</span></button>
@@ -1075,6 +1161,7 @@ COMPRAS / MERMAS / VENTAS / IA
 </button>
 
 <button class="nav-item" onclick="showPage('shifts',this)"><span>Turnos y planificación</span></button>
+<button class="nav-item admin-sensitive" onclick="showPage('assets',this)"><span>Bienes y materiales</span></button>
 <button class="nav-item" onclick="showPage('academy',this)"><span>Academia</span></button>
 <button class="nav-item" onclick="showPage('protocols',this)"><span>Protocolos internos</span></button>
 <button class="nav-item" onclick="showPage('rules',this)"><span>Reglas del local</span></button>
@@ -1084,6 +1171,7 @@ COMPRAS / MERMAS / VENTAS / IA
 <button class="nav-item" onclick="showPage('club',this)"><span>Club de clientes</span></button>
 
 <div class="nav-title">Costos</div>
+<button class="nav-item admin-sensitive" onclick="showPage('expenses',this)"><span>Gastos extraordinarios</span></button>
 <button class="nav-item admin-sensitive" onclick="showPage('cid',this)"><span>Cálculo de CID</span></button>
 <button class="nav-item admin-only" onclick="showPage('tips',this)"><span>Propinas por turno</span></button>
 
@@ -1102,6 +1190,10 @@ COMPRAS / MERMAS / VENTAS / IA
 
 <button class="nav-item" onclick="showPage('manual',this)">
 <span>Ayuda y manual</span>
+</button>
+
+<button class="nav-item" onclick="showPage('systeminfo',this)">
+<span>Información del sistema</span>
 </button>
 
 <button class="nav-item" onclick="showPage('settings',this)">
@@ -1138,7 +1230,11 @@ COMPRAS / MERMAS / VENTAS / IA
 <button id="serviceReadyAlert" class="service-ready-alert" style="display:none" onclick="openReadyOrderFromAlert()">Mesa lista</button>
 <button id="workerStockAlert" class="stock-alert-pill" style="display:none" onclick="openGarzonCommandasFromAlert()">Disponibilidad</button>
 </div>
-<div class="topbar-status-wrap"><div id="cloudStatus" class="cloud-status">Conectando nube…</div><div class="system-status">Sistema operativo</div></div>
+<div class="topbar-status-wrap">
+<div id="offlineQueueStatus" class="offline-queue-status" onclick="openOfflineStatus()" title="Estado de sincronización">Sincronizado</div>
+<div id="cloudStatus" class="cloud-status">Conectando nube…</div>
+<div class="system-status">Sistema operativo</div>
+</div>
 </header>
 
 <div class="content">
@@ -2315,8 +2411,18 @@ Proceso
 <option value="cajero">Caja</option>
 <option value="bodega">Bodega / Inventario</option>
 <option value="manager">Encargado / Manager</option>
+<option value="admin">Administrador · acceso completo</option>
 </select>
 <div id="staffCloudAccessStatus" class="status-box">El perfil define qué módulos puede ver. El cargo puede ser más específico.</div>
+</div>
+
+<div class="field">
+<label>Relación con el local</label>
+<select id="staffOwnership" onchange="onStaffOwnershipChange()">
+<option value="employee">Trabajador / colaborador</option>
+<option value="owner">Propietario / dueño</option>
+</select>
+<div class="inline-note">Un propietario puede tener acceso completo. Solo otro propietario puede otorgar o retirar esta condición.</div>
 </div>
 
 <div class="field staff-stations-field" style="grid-column:1/-1">
@@ -2352,9 +2458,29 @@ Proceso
 <label>Fecha de ingreso</label>
 <input id="staffJoinDate" type="date">
 </div>
-<div class="field">
+<div class="field staff-birth-field">
 <label>Fecha de nacimiento</label>
-<input id="staffBirthDate" type="date">
+<input id="staffBirthDate" type="hidden">
+<div class="staff-birth-grid">
+  <div class="staff-birth-part">
+    <span>Día</span>
+    <input id="staffBirthDay" type="number" inputmode="numeric" min="1" max="31" placeholder="19" oninput="syncStaffBirthDateFromParts()">
+  </div>
+  <div class="staff-birth-part">
+    <span>Mes</span>
+    <select id="staffBirthMonth" onchange="syncStaffBirthDateFromParts()">
+      <option value="">Mes</option>
+      <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option><option value="04">Abril</option>
+      <option value="05">Mayo</option><option value="06">Junio</option><option value="07">Julio</option><option value="08">Agosto</option>
+      <option value="09">Septiembre</option><option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+    </select>
+  </div>
+  <div class="staff-birth-part">
+    <span>Año</span>
+    <input id="staffBirthYear" type="number" inputmode="numeric" min="1900" max="2100" placeholder="1999" oninput="syncStaffBirthDateFromParts()">
+  </div>
+</div>
+<div id="staffBirthDateHint" class="inline-note">Puedes escribir el año directamente.</div>
 </div>
 
 
@@ -2537,6 +2663,8 @@ Selecciona un trabajador y completa el horario.
 <div id="selfAttendanceNoStaff" class="self-attendance-warning" style="display:none">
 Esta cuenta no está vinculada a una ficha activa de trabajador. Un administrador debe vincularla desde Personal.
 </div>
+
+<div id="selfAttendancePolicy" class="attendance-policy-card">Cargando horario permitido…</div>
 
 <div id="selfAttendanceContent">
 <div class="self-attendance-hero">
@@ -3017,6 +3145,36 @@ Cerrar
 <div id="promotionList" class="promo-list"></div>
 </section>
 
+<!-- CONVENIOS Y CÓDIGOS DE DESCUENTO -->
+<section id="agreements" class="page">
+<div class="page-header"><div><h1>Convenios y códigos de descuento</h1><p>Crea beneficios para empresas, universidades, instituciones o convenios internos.</p></div><button class="primary-button" onclick="openAgreementForm()">Crear convenio</button></div>
+<div class="operation-summary"><div class="operation-stat"><div class="label">Convenios activos</div><div class="number" id="agreementActiveCount">0</div></div><div class="operation-stat"><div class="label">Usos este mes</div><div class="number" id="agreementMonthUses">0</div></div><div class="operation-stat"><div class="label">Descuentos este mes</div><div class="number" id="agreementMonthDiscount">$0</div></div><div class="operation-stat"><div class="label">Ventas con convenio</div><div class="number" id="agreementMonthSales">$0</div></div></div>
+<div id="agreementFormPanel" class="integral-panel expandable-panel">
+<div class="card-topline"><div><h2 id="agreementFormTitle">Nuevo convenio</h2><div class="sub">El código se guarda en mayúsculas.</div></div><button class="secondary-button" onclick="closeAgreementForm()">Cerrar</button></div>
+<div class="config-form-grid three" style="margin-top:12px">
+<div class="field"><label>Nombre del convenio</label><input id="agreementName" type="text" placeholder="Ej. Universidad Central"></div>
+<div class="field"><label>Código</label><input id="agreementCode" type="text" autocomplete="off" placeholder="Ej. UCENTRAL15" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9_-]/g,'')"></div>
+<div class="field"><label>Estado</label><select id="agreementActive"><option value="true">Activo</option><option value="false">Inactivo</option></select></div>
+<div class="field"><label>Tipo de descuento</label><select id="agreementDiscountType"><option value="percent">Porcentaje</option><option value="fixed">Monto fijo</option></select></div>
+<div class="field"><label>Valor descuento</label><input id="agreementDiscountValue" type="number" min="0" step=".01" value="10"></div>
+<div class="field"><label>Descuento máximo $</label><input id="agreementMaxDiscount" type="number" min="0" step="1" value="0"></div>
+<div class="field"><label>Compra mínima $</label><input id="agreementMinPurchase" type="number" min="0" step="1" value="0"></div>
+<div class="field"><label>Vigencia desde</label><input id="agreementStartsOn" type="date"></div>
+<div class="field"><label>Vigencia hasta</label><input id="agreementEndsOn" type="date"></div>
+<div class="field"><label>Horario desde</label><input id="agreementStartTime" type="time"></div>
+<div class="field"><label>Horario hasta</label><input id="agreementEndTime" type="time"></div>
+<div class="field"><label>Máximo de usos total</label><input id="agreementMaxUses" type="number" min="0" step="1" value="0"></div>
+</div>
+<div class="field" style="margin-top:12px"><label>Días permitidos</label><div class="agreement-weekdays" id="agreementWeekdays"><label><input type="checkbox" value="1" checked> Lun</label><label><input type="checkbox" value="2" checked> Mar</label><label><input type="checkbox" value="3" checked> Mié</label><label><input type="checkbox" value="4" checked> Jue</label><label><input type="checkbox" value="5" checked> Vie</label><label><input type="checkbox" value="6" checked> Sáb</label><label><input type="checkbox" value="7" checked> Dom</label></div></div>
+<div class="field" style="margin-top:12px"><label>Medios de pago permitidos</label><div id="agreementPaymentMethods" class="agreement-payment-methods"></div><div class="inline-note">Sin selección = cualquier medio activo.</div></div>
+<div class="field" style="margin-top:12px"><label class="checkbox-line"><input id="agreementAllowPromotions" type="checkbox" checked> Permitir junto a promociones / combos</label></div>
+<div class="field" style="margin-top:10px"><label>Observaciones internas</label><textarea id="agreementNotes" rows="3"></textarea></div>
+<div class="form-actions"><button class="primary-button" onclick="saveAgreement()">Guardar convenio</button></div>
+</div>
+<div class="integral-panel" style="margin-top:14px"><div class="card-topline"><div><h2>Convenios configurados</h2></div><input id="agreementSearch" class="compact-search" type="search" placeholder="Buscar convenio" oninput="renderAgreements()"></div><div id="agreementList" class="agreement-list" style="margin-top:12px"></div></div>
+<div class="integral-panel" style="margin-top:14px"><h2>Historial de uso</h2><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Convenio</th><th>Código</th><th>Mesa</th><th>Subtotal</th><th>Descuento</th><th>Total</th><th>Aplicado por</th></tr></thead><tbody id="agreementUsageTable"></tbody></table></div></div>
+</section>
+
 <!-- MESAS Y COMANDAS / POS -->
 <section id="commandas" class="page">
 <div class="page-header">
@@ -3098,21 +3256,15 @@ Cerrar
   <div class="status-box" id="posPaymentSummary"></div>
   <div class="tip-buttons"><button class="secondary-button" onclick="setPOSTip(0)">Sin propina</button><button class="secondary-button" onclick="setPOSTip(10)">10%</button><button class="secondary-button" onclick="setPOSTip(15)">15%</button><button class="secondary-button" onclick="setPOSTip(20)">20%</button></div>
   <div class="payment-grid">
-    
 <div class="field"><label>Cliente del club</label><select id="posClubCustomer" onchange="setPOSClubCustomer(this.value)"><option value="">Sin cliente asociado</option></select></div>
-
-    <div class="field"><label>Propina $</label><input id="posTipAmount" type="number" min="0" value="0" oninput="updatePOSPaymentCheck()"></div>
-    <div class="field"><label>Medio propina</label><select id="posTipMethod" onchange="updatePOSPaymentCheck()"><option value="efectivo">Efectivo</option><option value="debito">Débito</option><option value="credito">Crédito</option><option value="transferencia">Transferencia</option></select></div>
-    <div class="field"><label>Descuento $</label><input id="posDiscount" type="number" min="0" value="0" oninput="updatePOSPaymentCheck()"></div>
-    <div class="field"><label>Nota de pago</label><input id="posPaymentNote" type="text" placeholder="Opcional"></div>
-  </div>
-  <h3 style="margin:16px 0 8px">Distribución del pago de la venta</h3>
-  <div class="payment-grid">
-    <div class="field"><label>Efectivo $</label><input id="payCash" type="number" min="0" value="0" oninput="updatePOSPaymentCheck()"></div>
-    <div class="field"><label>Débito $</label><input id="payDebit" type="number" min="0" value="0" oninput="updatePOSPaymentCheck()"></div>
-    <div class="field"><label>Crédito $</label><input id="payCredit" type="number" min="0" value="0" oninput="updatePOSPaymentCheck()"></div>
-    <div class="field"><label>Transferencia $</label><input id="payTransfer" type="number" min="0" value="0" oninput="updatePOSPaymentCheck()"></div>
-  </div>
+<div class="field"><label>Propina $</label><input id="posTipAmount" type="number" min="0" value="0" oninput="updatePOSPaymentCheck()"></div>
+<div class="field"><label>Medio propina</label><select id="posTipMethod" onchange="updatePOSPaymentCheck()"></select></div>
+<div class="field"><label>Descuento $</label><input id="posDiscount" type="number" min="0" value="0" oninput="onManualPOSDiscountChanged()"></div>
+<div class="field"><label>Nota de pago</label><input id="posPaymentNote" type="text" placeholder="Opcional"></div>
+</div>
+<div class="pos-agreement-box"><div class="field"><label>Código de convenio</label><div class="pos-agreement-input"><input id="posAgreementCode" type="text" autocomplete="off" placeholder="Ej. EMPRESA15" onkeydown="if(event.key==='Enter'){event.preventDefault();applyPOSAgreementCode();}"><button class="secondary-button" type="button" onclick="applyPOSAgreementCode()">Aplicar</button><button class="secondary-button" type="button" onclick="removePOSAgreement()">Quitar</button></div></div><div id="posAgreementStatus" class="agreement-pos-status">Sin convenio aplicado.</div></div>
+<h3 style="margin:16px 0 8px">Distribución del pago de la venta</h3>
+<div id="posPaymentMethodsGrid" class="payment-method-pos-grid"></div>
   <div id="posPaymentCheck" class="payment-check"></div>
   <div class="form-actions"><button class="primary-button" onclick="finalizePOSPayment()">Cerrar cuenta y registrar venta</button><button class="secondary-button" onclick="closePOSPayment()">Cancelar</button></div>
 </div>
@@ -3494,7 +3646,8 @@ Cerrar
 
 <!-- AYUDA Y MANUAL -->
 <section id="manual" class="page">
-<div class="page-header"><div><h1>Ayuda y manual KÜCHE</h1><p>Guía paso a paso para configurar el local y aprender cada función según tu cargo.</p></div><button class="secondary-button" onclick="renderManualPage()">Actualizar progreso</button></div>
+<div class="page-header"><div><h1>Ayuda y manual KÜCHE</h1><p>Guía completa: qué debes hacer, en qué orden, por qué se hace y qué información debes ingresar en cada etapa.</p></div><button class="secondary-button" onclick="renderManualPage()">Actualizar progreso</button></div>
+<div class="manual-start-note"><strong>Orden recomendado.</strong> KÜCHE funciona mejor cuando completas la configuración en secuencia. No necesitas llenar todo el sistema de una vez: termina una etapa, comprueba que quedó correcta y continúa con la siguiente.</div>
 <div class="manual-progress-card"><div class="card-topline"><div><h2>Configuración inicial</h2><p id="manualProgressText">Calculando progreso…</p></div><strong id="manualProgressPct">0%</strong></div><div class="manual-progress-track"><span id="manualProgressBar" style="width:0%"></span></div></div>
 <div id="manualSetupSteps" class="manual-steps"></div>
 <div class="integral-two" style="margin-top:16px">
@@ -3502,6 +3655,192 @@ Cerrar
   <div class="integral-panel"><h2>Práctica guiada</h2><div class="sub">Aprende el flujo sin crear ventas, movimientos ni datos reales.</div><div id="manualPractice"></div></div>
 </div>
 <div class="integral-panel" style="margin-top:16px"><h2>Cómo funciona esta sección</h2><div id="manualTopicDetail" class="manual-topic-detail">Selecciona un tema para ver las instrucciones.</div></div>
+</section>
+
+
+
+<!-- GASTOS EXTRAORDINARIOS -->
+<section id="expenses" class="page">
+<div class="page-header">
+  <div>
+    <h1>Gastos extraordinarios</h1>
+    <p>Registra egresos que no corresponden a compras normales de inventario, por ejemplo remodelaciones, reparaciones, permisos o equipamiento.</p>
+  </div>
+  <button class="primary-button" onclick="openExpenseForm()">Registrar gasto</button>
+</div>
+
+<div class="operation-summary">
+  <div class="operation-stat"><div class="label">Este mes</div><div class="number" id="expenseMonthTotal">$0</div></div>
+  <div class="operation-stat"><div class="label">Este año</div><div class="number" id="expenseYearTotal">$0</div></div>
+  <div class="operation-stat"><div class="label">Registros año</div><div class="number" id="expenseYearCount">0</div></div>
+  <div class="operation-stat"><div class="label">Remodelaciones año</div><div class="number" id="expenseRenovationTotal">$0</div></div>
+</div>
+
+<div id="expenseFormPanel" class="integral-panel expandable-panel">
+  <div class="card-topline"><div><h2 id="expenseFormTitle">Nuevo gasto</h2><div class="sub">Este registro no aumenta ni disminuye el inventario de alimentos.</div></div><button class="secondary-button" onclick="closeExpenseForm()">Cerrar</button></div>
+  <div class="config-form-grid three" style="margin-top:12px">
+    <div class="field"><label>Fecha</label><input id="expenseDate" type="date"></div>
+    <div class="field"><label>Categoría</label><select id="expenseCategory">
+      <option value="Remodelación">Remodelación</option>
+      <option value="Reparación">Reparación</option>
+      <option value="Mantención">Mantención</option>
+      <option value="Equipamiento">Equipamiento</option>
+      <option value="Permisos y patentes">Permisos y patentes</option>
+      <option value="Servicios profesionales">Servicios profesionales</option>
+      <option value="Marketing">Marketing</option>
+      <option value="Transporte">Transporte</option>
+      <option value="Otro">Otro</option>
+    </select></div>
+    <div class="field"><label>Monto total</label><input id="expenseTotal" type="number" min="0" step="1" placeholder="0"></div>
+    <div class="field"><label>Proveedor / persona</label><input id="expensePayee" type="text" placeholder="Opcional"></div>
+    <div class="field"><label>Medio de pago</label><select id="expensePaymentMethod">
+      <option value="">No indicado</option><option value="Efectivo">Efectivo</option><option value="Débito">Débito</option>
+      <option value="Crédito">Crédito</option><option value="Transferencia">Transferencia</option><option value="Otro">Otro</option>
+    </select></div>
+    <div class="field"><label>N.º documento / comprobante</label><input id="expenseDocument" type="text" placeholder="Opcional"></div>
+  </div>
+  <div class="field" style="margin-top:10px"><label>Descripción</label><input id="expenseDescription" type="text" placeholder="Ej. Remodelación de terraza"></div>
+  <div class="field" style="margin-top:10px"><label>Observaciones</label><textarea id="expenseNotes" rows="3"></textarea></div>
+  <div class="form-actions"><button class="primary-button" onclick="saveOperationalExpense()">Guardar gasto</button></div>
+</div>
+
+<div class="integral-panel" style="margin-top:14px">
+  <div class="card-topline"><div><h2>Historial de gastos</h2><div class="sub">Los gastos anulados permanecen visibles para mantener trazabilidad.</div></div>
+  <input id="expenseSearch" class="compact-search" type="search" placeholder="Buscar gasto" oninput="renderOperationalExpenses()"></div>
+  <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Categoría</th><th>Descripción</th><th>Proveedor / persona</th><th>Medio</th><th>Monto</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="expenseTableBody"></tbody></table></div>
+</div>
+</section>
+
+<!-- BIENES Y MATERIALES -->
+<section id="assets" class="page">
+<div class="page-header">
+  <div>
+    <h1>Bienes y materiales</h1>
+    <p>Inventario administrativo de elementos durables: cuchillos, tenedores, vajilla, sillas, mesas, herramientas, equipos menores y otros bienes.</p>
+  </div>
+  <div class="staff-actions"><button class="secondary-button" onclick="openAssetItemForm()">Agregar bien</button><button class="primary-button" onclick="startAnnualAssetInventory()">Iniciar inventario anual</button></div>
+</div>
+
+<div id="assetAnnualBanner" class="asset-annual-banner"></div>
+
+<div class="operation-summary">
+  <div class="operation-stat"><div class="label">Bienes activos</div><div class="number" id="assetItemCount">0</div></div>
+  <div class="operation-stat"><div class="label">Unidades esperadas</div><div class="number" id="assetExpectedTotal">0</div></div>
+  <div class="operation-stat"><div class="label">Conteo anual</div><div class="number" id="assetAnnualProgress">0%</div></div>
+  <div class="operation-stat"><div class="label">Reponer / reparar</div><div class="number" id="assetAttentionCount">0</div></div>
+</div>
+
+<div id="assetItemFormPanel" class="integral-panel expandable-panel">
+  <div class="card-topline"><div><h2 id="assetItemFormTitle">Nuevo bien o material</h2><div class="sub">Crea una línea por tipo de bien. Ej.: “Tenedor mesa”, cantidad esperada 120.</div></div><button class="secondary-button" onclick="closeAssetItemForm()">Cerrar</button></div>
+  <div class="config-form-grid three" style="margin-top:12px">
+    <div class="field"><label>Nombre</label><input id="assetName" type="text" placeholder="Ej. Cuchillo de mesa"></div>
+    <div class="field"><label>Categoría</label><select id="assetCategory">
+      <option value="Cubiertos">Cubiertos</option><option value="Cuchillería">Cuchillería</option><option value="Vajilla">Vajilla</option>
+      <option value="Cristalería">Cristalería</option><option value="Mobiliario">Mobiliario</option><option value="Equipamiento menor">Equipamiento menor</option>
+      <option value="Textiles">Textiles</option><option value="Herramientas">Herramientas</option><option value="Tecnología">Tecnología</option><option value="Otro">Otro</option>
+    </select></div>
+    <div class="field"><label>Área / ubicación</label><input id="assetArea" type="text" placeholder="Ej. Salón, Cocina, Barra"></div>
+    <div class="field"><label>Unidad</label><input id="assetUnit" type="text" value="unidad"></div>
+    <div class="field"><label>Cantidad esperada</label><input id="assetExpectedQty" type="number" min="0" step="1" value="0"></div>
+    <div class="field"><label>Costo referencial unitario</label><input id="assetReferenceCost" type="number" min="0" step="1" value="0"></div>
+  </div>
+  <div class="field" style="margin-top:10px"><label>Observaciones</label><textarea id="assetNotes" rows="3"></textarea></div>
+  <div class="form-actions"><button class="primary-button" onclick="saveAssetItem()">Guardar bien</button></div>
+</div>
+
+<div id="assetCountPanel" class="integral-panel expandable-panel">
+  <div class="card-topline"><div><h2>Registrar conteo anual</h2><div class="sub" id="assetCountCycleLabel">Primero inicia el inventario del año.</div></div><button class="secondary-button" onclick="closeAssetCountPanel()">Cerrar</button></div>
+  <div class="config-form-grid three" style="margin-top:12px">
+    <div class="field"><label>Bien / material</label><select id="assetCountItem" onchange="prefillAssetCount()"></select></div>
+    <div class="field"><label>Cantidad encontrada</label><input id="assetCountQty" type="number" min="0" step="1" value="0"></div>
+    <div class="field"><label>En buen estado</label><input id="assetCountGood" type="number" min="0" step="1" value="0"></div>
+    <div class="field"><label>Requieren reparación</label><input id="assetCountRepair" type="number" min="0" step="1" value="0"></div>
+    <div class="field"><label>Requieren reemplazo</label><input id="assetCountReplace" type="number" min="0" step="1" value="0"></div>
+    <div class="field"><label>Responsable del conteo</label><input id="assetCountResponsible" type="text" placeholder="Nombre"></div>
+  </div>
+  <div class="field" style="margin-top:10px"><label>Observaciones del conteo</label><textarea id="assetCountNotes" rows="3"></textarea></div>
+  <div class="form-actions"><button class="primary-button" onclick="saveAssetAnnualCount()">Guardar conteo</button></div>
+</div>
+
+<div class="integral-two" style="margin-top:14px">
+  <div class="integral-panel">
+    <div class="card-topline"><div><h2>Catálogo de bienes</h2><div class="sub">Cantidad que debería existir según tu registro administrativo.</div></div></div>
+    <div id="assetCatalogList" class="system-info-list" style="margin-top:10px"></div>
+  </div>
+  <div class="integral-panel">
+    <div class="card-topline"><div><h2>Inventario del año</h2><div class="sub">Compara cantidad esperada, encontrada y estado físico.</div></div></div>
+    <div id="assetAnnualList" class="system-info-list" style="margin-top:10px"></div>
+    <div class="form-actions"><button class="secondary-button" onclick="openAssetCountPanel()">Registrar / corregir conteo</button><button id="completeAssetCycleButton" class="primary-button" onclick="completeAnnualAssetInventory()">Finalizar inventario anual</button></div>
+  </div>
+</div>
+
+<div class="integral-panel" style="margin-top:14px">
+  <h2>Historial anual</h2>
+  <div class="table-wrap"><table><thead><tr><th>Año</th><th>Estado</th><th>Fecha objetivo</th><th>Completado</th><th>Progreso</th></tr></thead><tbody id="assetCycleHistory"></tbody></table></div>
+</div>
+</section>
+
+<!-- INFORMACIÓN DEL SISTEMA -->
+<section id="systeminfo" class="page">
+<div class="page-header">
+  <div>
+    <h1>Información del sistema</h1>
+    <p>Qué puede hacer KÜCHE, qué está configurado en este local, qué integraciones están activas y cuál es el estado técnico actual.</p>
+  </div>
+  <div class="staff-actions">
+    <button class="secondary-button" onclick="runKucheDiagnostics()">Comprobar sistema</button>
+    <button class="primary-button" onclick="flushKucheOfflineQueue(true)">Sincronizar ahora</button>
+  </div>
+</div>
+
+<div id="systemTechnicalBanner" class="system-technical-banner"></div>
+
+<div class="operation-summary" id="systemInstallSummary"></div>
+
+<div class="integral-two">
+  <div class="integral-panel">
+    <div class="card-topline"><div><h2>Esta instalación de KÜCHE</h2><div class="sub">Resumen de lo que este restaurante ya tiene configurado.</div></div></div>
+    <div id="systemInstallationDetail" class="system-info-list"></div>
+  </div>
+
+  <div class="integral-panel">
+    <div class="card-topline"><div><h2>Estado técnico</h2><div class="sub">Conexión, funcionamiento offline y sincronización.</div></div></div>
+    <div id="systemTechnicalStatus" class="system-info-list"></div>
+  </div>
+</div>
+
+<div class="integral-two" style="margin-top:16px">
+  <div class="integral-panel">
+    <h2>Qué puede hacer KÜCHE</h2>
+    <div id="systemCapabilities" class="system-capability-grid"></div>
+  </div>
+  <div class="integral-panel">
+    <h2>Integraciones y conexiones</h2>
+    <div id="systemIntegrations" class="system-info-list"></div>
+  </div>
+</div>
+
+<div class="integral-two" style="margin-top:16px">
+  <div class="integral-panel">
+    <h2>Propietarios y administración</h2>
+    <div class="sub">Puede haber varios propietarios con acceso completo. Cada persona utiliza su propia cuenta para conservar la auditoría.</div>
+    <div id="systemOwners" class="system-info-list" style="margin-top:10px"></div>
+  </div>
+  <div class="integral-panel">
+    <h2>Diagnóstico</h2>
+    <div id="systemDiagnostics" class="system-diagnostic-list">
+      <div class="inline-note">Presiona “Comprobar sistema” para realizar una revisión rápida.</div>
+    </div>
+  </div>
+</div>
+
+<div class="integral-panel" style="margin-top:16px">
+  <h2>Funcionamiento sin Internet</h2>
+  <div class="system-offline-explanation">
+    <p><strong>Disponible en este dispositivo:</strong> KÜCHE puede conservar la aplicación, la información local y las operaciones de comandas para continuar trabajando durante una caída de Internet. Las operaciones pendientes quedan en una cola y se sincronizan cuando vuelve la conexión.</p>
+    <p><strong>Varios dispositivos sin Internet:</strong> para que un teléfono de Garzón continúe enviando comandas en vivo a otra tablet de Cocina durante una caída total de Internet, el restaurante necesita un componente local dentro de su propia red denominado <strong>KÜCHE Local Hub</strong>. Una página alojada solamente en Internet no puede comunicar dos equipos distintos cuando ambos perdieron acceso al servidor.</p>
+  </div>
+</div>
 </section>
 
 <!-- REPORTES -->
@@ -3658,6 +3997,7 @@ Cerrar
 <tbody id="reportProductionTable"></tbody>
 </table></div></div>
 
+<div class="report-table-title">Medios de pago y convenios</div><div class="report-grid"><div class="report-section"><div class="report-section-header"><h3>Ventas por medio de pago</h3><span>Período seleccionado</span></div><div id="reportPaymentMethodsBreakdown" class="report-dynamic-list"></div></div><div class="report-section"><div class="report-section-header"><h3>Convenios aplicados</h3><span>Período seleccionado</span></div><div id="reportAgreementBreakdown" class="report-dynamic-list"></div></div></div>
 </section>
 
 
@@ -3752,6 +4092,60 @@ Fondo principal fijo: beige original #F6F3EC.
 
 
 
+
+
+<div class="config-card full">
+<h3>Medios de pago</h3>
+<p>Activa, desactiva o crea los medios que acepta el restaurante. Se reflejan automáticamente al cobrar una mesa.</p>
+<div class="payment-method-create">
+<div class="field"><label>Nombre del nuevo medio</label><input id="newPaymentMethodName" type="text" placeholder="Ej. Tarjeta empresa"></div>
+<div class="field"><label>Tipo</label><select id="newPaymentMethodCategory"><option value="card">Tarjeta / plataforma</option><option value="benefit">Beneficio / alimentación</option><option value="transfer">Transferencia</option><option value="cash">Efectivo</option><option value="other">Otro</option></select></div>
+<button class="secondary-button" type="button" onclick="createPaymentMethodFromSettings()">Agregar medio</button>
+</div>
+<div id="paymentMethodSettingsList" class="payment-method-settings-list"></div>
+<div class="settings-note">La comisión y los días de abono se usan para análisis. Solo los medios clasificados como Efectivo aumentan el efectivo esperado en caja.</div>
+</div>
+
+<div class="config-card full">
+<h3>Control de asistencia</h3>
+<p>Define cuándo puede comenzar a marcar un trabajador y desde qué momento KÜCHE considera que existe atraso.</p>
+<div class="config-form-grid three">
+<div class="field">
+<label>Permitir entrada desde (min antes del turno)</label>
+<input id="settingsAttendanceEarlyMinutes" type="number" min="0" max="180" step="1" value="5">
+<div class="inline-note">Ejemplo: con 5 min y turno a las 09:00, el botón se habilita desde las 08:55.</div>
+</div>
+<div class="field">
+<label>Tolerancia de atraso (min después del inicio)</label>
+<input id="settingsAttendanceGraceMinutes" type="number" min="0" max="180" step="1" value="5">
+<div class="inline-note">Ejemplo: con 5 min, una marcación hasta las 09:05 queda dentro de tolerancia. Desde las 09:06 se registra como atraso.</div>
+</div>
+<div class="field">
+<label>Exigir horario o turno configurado</label>
+<select id="settingsAttendanceRequireShift">
+<option value="true">Sí · exigir horario</option>
+<option value="false">No · permitir marcación sin horario</option>
+</select>
+<div class="inline-note">KÜCHE usa primero el turno planificado del día y, si no existe, el horario habitual de la ficha del trabajador.</div>
+</div>
+</div>
+<div class="settings-note">Una marcación tardía no se bloquea: queda registrada con los minutos de atraso. Esto evita que un trabajador atrasado quede sin asistencia y mantiene el registro real de lo ocurrido.</div>
+</div>
+
+<div class="config-card full">
+<h3>Inventario anual de bienes y materiales</h3>
+<p>Configura cuándo quieres que KÜCHE recuerde realizar el conteo anual de cuchillos, cubiertos, vajilla, sillas, mesas y otros bienes no consumibles.</p>
+<div class="config-form-grid three">
+<div class="field"><label>Mes objetivo</label>
+<select id="settingsAssetInventoryMonth">
+<option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option><option value="4">Abril</option>
+<option value="5">Mayo</option><option value="6">Junio</option><option value="7">Julio</option><option value="8">Agosto</option>
+<option value="9">Septiembre</option><option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+</select></div>
+<div class="field"><label>Día objetivo</label><input id="settingsAssetInventoryDay" type="number" min="1" max="28" step="1" value="15"></div>
+<div class="field"><label>Avisar con anticipación (días)</label><input id="settingsAssetInventoryWarningDays" type="number" min="0" max="120" step="1" value="30"></div>
+</div>
+</div>
 
 <div class="config-card full">
 <h3>Estaciones de producción e impresión</h3>
@@ -11823,7 +12217,16 @@ function editPOSItemNote(itemId){const order=getActivePOSOrder();const item=orde
 function updatePOSPeople(){const order=getActivePOSOrder();if(!order)return;order.people=Math.max(1,Number(document.getElementById("posPeople")?.value)||1);savePOSOrders();renderPOSTables();}
 function renderPOSOrder(){const order=getActivePOSOrder(),empty=document.getElementById("posNoOrder"),content=document.getElementById("posOrderContent");if(!empty||!content)return;if(!order){empty.style.display="block";content.style.display="none";return;}empty.style.display="none";content.style.display="block";posOrderTableName.textContent=order.tableName;posOrderWorker.textContent=order.workerName+" · abierta "+new Date(order.openedAt).toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});posPeople.value=order.people||1;posCart.innerHTML=order.items.length?order.items.map(i=>`<div class="pos-cart-row"><div><div class="pos-cart-name">${escapeHTML(i.recipeName)} ${i.override?'<span class="badge badge-danger">PIN</span>':''}</div><span class="station-badge">${escapeHTML(i.station||'Cocina')}</span><div class="pos-cart-note">${escapeHTML(i.notes||'Sin observaciones')}</div><button class="secondary-button" style="margin-top:5px;padding:4px 7px;font-size:10px" onclick="editPOSItemNote('${i.id}')">Nota</button></div><div><div class="pos-cart-controls"><button class="qty-btn" onclick="changePOSQty('${i.id}',-1)">−</button><strong>${i.quantity}</strong><button class="qty-btn" onclick="changePOSQty('${i.id}',1)">+</button></div><div style="text-align:right;font-size:11px;margin-top:5px">$${formatMoney(i.quantity*i.unitPrice)}</div></div></div>`).join(""):'<div class="pos-empty">Aún no agregas productos.</div>';posSubtotal.textContent="$"+formatMoney(getOrderSubtotal(order));posTotal.textContent="$"+formatMoney(getOrderTotal(order));}
 function cancelCurrentPOSOrder(){const order=getActivePOSOrder();if(!order)return;if(order.items.length&&order.lastPrintedAt&&!authorizeAdminOverride("Cancelar comanda enviada",order.tableName,"Cancelación posterior a impresión"))return;if(!confirm("¿Cancelar esta comanda?"))return;order.status="cancelled";order.cancelledAt=new Date().toISOString();savePOSOrders();activePOSOrderId=null;renderPOS();}
-function printCurrentPOSOrder(station){const order=getActivePOSOrder();if(!order||!order.items.length){alert("No hay productos en la comanda.");return;}const groups={};order.items.forEach(i=>{const st=i.station||'Cocina';if(station!=="all"&&st!==station)return;(groups[st]||(groups[st]=[])).push(i);});if(!Object.keys(groups).length){alert("No hay productos para esa estación.");return;}const win=window.open("","_blank","width=430,height=720");if(!win){alert("El navegador bloqueó la ventana de impresión.");return;}const sections=Object.entries(groups).map(([st,items])=>`<section style="page-break-after:always"><h2>${escapeHTML(st)}</h2><div>Mesa: <strong>${escapeHTML(order.tableName)}</strong> · Personas: ${order.people||1}</div><div>Garzón: ${escapeHTML(order.workerName)} · ${new Date().toLocaleString('es-CL')}</div><hr>${items.map(i=>`<div style="font-size:18px;margin:12px 0"><strong>${i.quantity} × ${escapeHTML(i.recipeName)}</strong>${i.notes?`<div style="font-size:14px">Obs: ${escapeHTML(i.notes)}</div>`:''}</div>`).join('')}</section>`).join('');win.document.write(`<!doctype html><html><head><title>Comanda ${escapeHTML(order.tableName)}</title><style>body{font-family:Arial,sans-serif;padding:16px;color:#111}h2{font-size:22px;margin:0 0 8px}hr{border:0;border-top:1px dashed #333;margin:14px 0}@media print{body{padding:0}section:last-child{page-break-after:auto}}</style></head><body>${sections}</body></html>`);win.document.close();order.lastPrintedAt=new Date().toISOString();savePOSOrders();setTimeout(()=>{win.focus();win.print();},250);}
+function printCurrentPOSOrder(station){const order=getActivePOSOrder();if(!order||!order.items.length){alert("No hay productos en la comanda.");return;}const groups={};order.items.forEach(i=>{const st=i.station||'Cocina';if(station!=="all"&&st!==station)return;(groups[st]||(groups[st]=[])).push(i);});if(!Object.keys(groups).length){alert("No hay productos para esa estación.");return;}const win=window.open("","_blank","width=430,height=720");if(!win){alert("El navegador bloqueó la ventana de impresión.");return;}const sections=Object.entries(groups).map(([st,items])=>`<section style="page-break-after:always"><h2>${escapeHTML(st)}</h2><div>Mesa: <strong>${escapeHTML(order.tableName)}</strong> · Personas: ${order.people||1}</div><div>Garzón: ${escapeHTML(order.workerName)} · ${new Date().toLocaleString('es-CL')}</div><hr>${items.map(i=>`<div style="font-size:18px;margin:12px 0"><strong>${i.quantity} × ${escapeHTML(i.recipeName)}</strong>${i.notes?`<div style="font-size:14px">Obs: ${escapeHTML(i.notes)}</div>`:''}</div>`).join('')}</section>`).join('');win.document.write(`<!doctype html><html><head><title>Comanda ${escapeHTML(order.tableName)}</title><style>body{font-family:Arial,sans-serif;padding:16px;color:#111}h2{font-size:22px;margin:0 0 8px}hr{border:0;border-top:1px dashed #333;margin:14px 0}@media print{body{padding:0}section:last-child{page-break-after:auto}}</style></head><body>${sections}
+<div id="contextInfoPopover" class="context-info-popover" role="dialog" aria-live="polite">
+  <div class="context-info-head">
+    <strong id="contextInfoTitle">Información</strong>
+    <button type="button" class="context-info-close" onclick="closeContextInfo()" aria-label="Cerrar">×</button>
+  </div>
+  <div id="contextInfoText" class="context-info-text"></div>
+</div>
+
+</body></html>`);win.document.close();order.lastPrintedAt=new Date().toISOString();savePOSOrders();setTimeout(()=>{win.focus();win.print();},250);}
 function openPOSPayment(){const order=getActivePOSOrder();if(!order||!order.items.length){alert("La comanda está vacía.");return;}const reg=getActiveCashRegister();if(!reg){alert("Debes abrir una caja antes de cobrar una mesa.");openCashFromPOS();return;}posPaymentPanel.classList.add("open");posDiscount.value=Number(order.discount||0);posTipAmount.value=0;posTipMethod.value="efectivo";payCash.value=getOrderTotal(order);payDebit.value=0;payCredit.value=0;payTransfer.value=0;posPaymentNote.value="";updatePOSPaymentCheck();}
 function closePOSPayment(){document.getElementById("posPaymentPanel")?.classList.remove("open");}
 function setPOSTip(pct){const order=getActivePOSOrder();if(!order)return;posTipAmount.value=Math.round(getOrderTotal(order)*Number(pct||0)/100);updatePOSPaymentCheck();}
@@ -12973,7 +13376,7 @@ async function rtLoadOrdersFromCloud(){
  try{
    const {data:ordersRows,error:ordersErr}=await kucheCloud
      .from("orders")
-     .select("id,source_local_id,dining_table_id,table_name_snapshot,opened_by_staff_id,opened_by_name,people,status,subtotal,discount,total,tip,production_status,production_sent_at,production_sent_by_name,tip_shift_key,tip_shift_name_snapshot,customer_id,payment_payload,payment_note,closed_by_name,opened_at,closed_at")
+     .select("id,source_local_id,dining_table_id,table_name_snapshot,opened_by_staff_id,opened_by_name,people,status,subtotal,discount,total,tip,production_status,production_sent_at,production_sent_by_name,tip_shift_key,tip_shift_name_snapshot,customer_id,payment_payload,payment_note,closed_by_name,opened_at,closed_at,discount_agreement_id,discount_code_snapshot,discount_name_snapshot,discount_type_snapshot,discount_value_snapshot")
      .eq("organization_id",cloudOrganization.id)
      .order("opened_at",{ascending:false})
      .limit(200);
@@ -13740,7 +14143,7 @@ rtLoadOrdersFromCloud=async function(){
  realtimePOSLoading=true;
  try{
    const {data:ordersRows,error:ordersErr}=await kucheCloud.from("orders")
-     .select("id,source_local_id,dining_table_id,table_name_snapshot,opened_by_staff_id,opened_by_name,people,status,subtotal,discount,total,tip,production_status,production_sent_at,production_sent_by_name,tip_shift_key,tip_shift_name_snapshot,customer_id,payment_payload,payment_note,closed_by_name,opened_at,closed_at")
+     .select("id,source_local_id,dining_table_id,table_name_snapshot,opened_by_staff_id,opened_by_name,people,status,subtotal,discount,total,tip,production_status,production_sent_at,production_sent_by_name,tip_shift_key,tip_shift_name_snapshot,customer_id,payment_payload,payment_note,closed_by_name,opened_at,closed_at,discount_agreement_id,discount_code_snapshot,discount_name_snapshot,discount_type_snapshot,discount_value_snapshot")
      .eq("organization_id",cloudOrganization.id).order("opened_at",{ascending:false}).limit(200);
    if(ordersErr)throw ordersErr;
    const orderIds=(ordersRows||[]).map(x=>x.id);
@@ -14355,7 +14758,7 @@ async function ops3LoadCloudAttendance(){
    const mapped=(data||[]).map(row=>{
      const w=staff.find(x=>String(x.cloudStaffId)===String(row.staff_id)||String(x.id)===String(row.staff_id))||(String(cloudStaffRecord?.id)===String(row.staff_id)?cloudStaffRecord:null);
      const rate=Number(w?.hourlyRate||0),hours=Number(row.worked_hours||0);
-     return {id:row.id,cloudId:row.id,staffId:w?.id||row.staff_id,cloudStaffId:row.staff_id,staffName:w?.name||"Trabajador",role:w?.role||"",date:row.attendance_date,start:String(row.actual_start||"").slice(0,5),end:String(row.actual_end||"").slice(0,5),breakMinutes:Number(row.break_minutes||0),status:row.status,hours,notes:row.notes||"",isHoliday:!!row.is_holiday,hourlyRateApplied:rate,payment:hours*rate,clockInAt:row.clock_in_at||null,clockOutAt:row.clock_out_at||null,source:row.source||"admin",createdAt:row.created_at};
+     return {id:row.id,cloudId:row.id,staffId:w?.id||row.staff_id,cloudStaffId:row.staff_id,staffName:w?.name||"Trabajador",role:w?.role||"",date:row.attendance_date,start:String(row.actual_start||"").slice(0,5),end:String(row.actual_end||"").slice(0,5),breakMinutes:Number(row.break_minutes||0),status:row.status,hours,notes:row.notes||"",isHoliday:!!row.is_holiday,hourlyRateApplied:rate,payment:hours*rate,lateMinutes:Number(row.late_minutes||0),overtimeMinutes:Number(row.overtime_minutes||0),clockInAt:row.clock_in_at||null,clockOutAt:row.clock_out_at||null,source:row.source||"admin",createdAt:row.created_at};
    });
    const legacy=attendance.filter(x=>!x.cloudId&&!rtIsUUID(x.id));
    attendance=[...mapped,...legacy];saveAttendanceData();renderAttendanceHistory();updateStaffStats();updateLaborStats();renderSelfAttendance();
@@ -14380,7 +14783,7 @@ function renderSelfAttendance(){
  selfAttendanceWeekHours.textContent=ops3SelfRows().filter(x=>x.date>=cutoffISO).reduce((s,x)=>s+Number(x.hours||0),0).toFixed(2)+" h";
  selfClockInButton.disabled=!!rec?.start;selfClockOutButton.disabled=!open;
  const hist=ops3SelfRows().slice(0,14);
- selfAttendanceHistory.innerHTML=hist.length?hist.map(x=>`<div class="self-attendance-row"><strong>${formatDate(x.date)}</strong><span>Entrada: <strong>${ops3FormatTime(x.start)}</strong></span><span>Salida: <strong>${ops3FormatTime(x.end)}</strong></span><span>${Number(x.hours||0).toFixed(2)} h</span></div>`).join(""):'<div class="inline-note">Aún no tienes registros de asistencia.</div>';
+ selfAttendanceHistory.innerHTML=hist.length?hist.map(x=>`<div class="self-attendance-row"><strong>${formatDate(x.date)}</strong><span>Entrada: <strong>${ops3FormatTime(x.start)}</strong></span><span>Salida: <strong>${ops3FormatTime(x.end)}</strong></span><span>${Number(x.hours||0).toFixed(2)} h${Number(x.lateMinutes||0)>0?` · Atraso ${Number(x.lateMinutes)} min`:""}</span></div>`).join(""):'<div class="inline-note">Aún no tienes registros de asistencia.</div>';
 }
 async function loadSelfAttendance(showStatus=false){
  if(!kucheCloud||!cloudOrganization){renderSelfAttendance();return;}
@@ -14431,7 +14834,7 @@ renderAttendanceHistory=function(){
  const search=(attendanceSearch?.value||"").toLowerCase();let list=attendance.filter(r=>(r.staffName+" "+r.role).toLowerCase().includes(search));
  if(attendanceTodayFilter)list=list.filter(r=>r.date===getToday());
  if(!list.length){table.innerHTML='<tr><td colspan="10"><div class="empty-state"><strong>No hay registros de asistencia</strong></div></td></tr>';return;}
- table.innerHTML=list.map(r=>`<tr><td>${formatDate(r.date)}</td><td><div class="product-name">${escapeHTML(r.staffName)}</div><div class="category">${escapeHTML(r.role)}</div></td><td><span class="badge ${r.status==="presente"?"badge-success":r.status==="ausente"?"badge-danger":"badge-warning"}">${escapeHTML(r.status)}</span></td><td><span class="badge ${r.isHoliday?"badge-warning":"badge-blue"}">${r.isHoliday?"Feriado":"Normal"}</span></td><td>${r.start||"—"}</td><td>${r.end||"—"}</td><td>${Number(r.hours||0).toFixed(2)} h</td><td>$${formatMoney(r.hourlyRateApplied||0)}</td><td><strong>$${formatMoney(r.payment||0)}</strong></td><td>${currentSession?.role!=="worker"?`<button class="danger-button" onclick="deleteAttendance('${ops2EscapeAttr(r.id)}')">Eliminar</button>`:""}</td></tr>`).join("");
+ table.innerHTML=list.map(r=>`<tr><td>${formatDate(r.date)}</td><td><div class="product-name">${escapeHTML(r.staffName)}</div><div class="category">${escapeHTML(r.role)}</div></td><td>${Number(r.lateMinutes||0)>0?`<span class="badge badge-danger">Atraso · ${Number(r.lateMinutes)} min</span>`:`<span class="badge ${r.status==="presente"?"badge-success":r.status==="ausente"?"badge-danger":"badge-warning"}">${escapeHTML(r.status)}</span>`}</td><td><span class="badge ${r.isHoliday?"badge-warning":"badge-blue"}">${r.isHoliday?"Feriado":"Normal"}</span></td><td>${r.start||"—"}</td><td>${r.end||"—"}</td><td>${Number(r.hours||0).toFixed(2)} h</td><td>$${formatMoney(r.hourlyRateApplied||0)}</td><td><strong>$${formatMoney(r.payment||0)}</strong></td><td>${currentSession?.role!=="worker"?`<button class="danger-button" onclick="deleteAttendance('${ops2EscapeAttr(r.id)}')">Eliminar</button>`:""}</td></tr>`).join("");
 };
 const _ops3PreviousDeleteAttendance=deleteAttendance;
 deleteAttendance=async function(id){
@@ -15233,6 +15636,1212 @@ ops3StartRealtime=function(){
 
 setTimeout(()=>{renderOperationalActivities();},80);
 
+
+
+
+/* =====================================================
+   CORRECCIÓN FECHA DE NACIMIENTO — DÍA / MES / AÑO
+===================================================== */
+function isValidStaffBirthDateParts(day,month,year){
+ const d=Number(day),m=Number(month),y=Number(year);
+ if(!Number.isInteger(d)||!Number.isInteger(m)||!Number.isInteger(y))return false;
+ if(y<1900||y>new Date().getFullYear())return false;
+ if(m<1||m>12||d<1||d>31)return false;
+ const test=new Date(Date.UTC(y,m-1,d));
+ return test.getUTCFullYear()===y&&test.getUTCMonth()===m-1&&test.getUTCDate()===d;
+}
+function setStaffBirthDateParts(isoValue){
+ const day=document.getElementById('staffBirthDay'),month=document.getElementById('staffBirthMonth'),year=document.getElementById('staffBirthYear'),hidden=document.getElementById('staffBirthDate'),hint=document.getElementById('staffBirthDateHint');
+ if(!day||!month||!year||!hidden)return;
+ const iso=String(isoValue||'');
+ const match=iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+ if(match){year.value=match[1];month.value=match[2];day.value=String(Number(match[3]));hidden.value=iso;}
+ else{day.value='';month.value='';year.value='';hidden.value='';}
+ if(hint){hint.textContent='Puedes escribir el año directamente.';hint.classList.remove('birth-date-error');}
+}
+function syncStaffBirthDateFromParts(){
+ const day=document.getElementById('staffBirthDay'),month=document.getElementById('staffBirthMonth'),year=document.getElementById('staffBirthYear'),hidden=document.getElementById('staffBirthDate'),hint=document.getElementById('staffBirthDateHint');
+ if(!day||!month||!year||!hidden)return '';
+ const d=day.value.trim(),m=month.value,y=year.value.trim();
+ if(!d&&!m&&!y){hidden.value='';if(hint){hint.textContent='Puedes escribir el año directamente.';hint.classList.remove('birth-date-error');}return '';}
+ if(!d||!m||!y){hidden.value='';if(hint){hint.textContent='Completa día, mes y año.';hint.classList.add('birth-date-error');}return '';}
+ if(!isValidStaffBirthDateParts(Number(d),Number(m),Number(y))){hidden.value='';if(hint){hint.textContent='La fecha ingresada no es válida.';hint.classList.add('birth-date-error');}return '';}
+ const iso=`${String(Number(y)).padStart(4,'0')}-${String(Number(m)).padStart(2,'0')}-${String(Number(d)).padStart(2,'0')}`;
+ hidden.value=iso;if(hint){hint.textContent=`Fecha: ${String(Number(d)).padStart(2,'0')}/${String(Number(m)).padStart(2,'0')}/${Number(y)}`;hint.classList.remove('birth-date-error');}
+ return iso;
+}
+function staffBirthDatePartsArePartiallyFilled(){
+ const vals=['staffBirthDay','staffBirthMonth','staffBirthYear'].map(id=>document.getElementById(id)?.value?.trim()||'');
+ return vals.some(Boolean)&&!vals.every(Boolean);
+}
+const _birthManualClearStaffForm=clearStaffForm;
+clearStaffForm=function(){
+ _birthManualClearStaffForm();
+ setStaffBirthDateParts('');
+};
+const _birthManualEditStaffMember=editStaffMember;
+editStaffMember=function(id){
+ _birthManualEditStaffMember(id);
+ const w=staff.find(x=>String(x.id)===String(id));
+ setStaffBirthDateParts(w?.birthDate||document.getElementById('staffBirthDate')?.value||'');
+};
+const _birthManualSaveStaffMember=saveStaffMember;
+saveStaffMember=async function(inviteAfter=false){
+ const day=document.getElementById('staffBirthDay')?.value?.trim()||'',month=document.getElementById('staffBirthMonth')?.value||'',year=document.getElementById('staffBirthYear')?.value?.trim()||'';
+ if(day||month||year){
+   const iso=syncStaffBirthDateFromParts();
+   if(!iso){alert('Revisa la fecha de nacimiento. Debes completar un día, mes y año válidos.');return;}
+ }
+ return await _birthManualSaveStaffMember(inviteAfter);
+};
+setTimeout(()=>setStaffBirthDateParts(document.getElementById('staffBirthDate')?.value||''),0);
+
+
+
+/* =====================================================
+   KÜCHE CONTINUIDAD OPERATIVA + AYUDA + PROPIETARIOS
+===================================================== */
+const KUCHE_APP_VERSION="1.4 · Continuidad y gestión comercial";
+const KUCHE_OFFLINE_AUTH_KEY="kucheOfflineAuthSnapshot";
+const KUCHE_DEVICE_ID_KEY="kucheDeviceId";
+const KUCHE_OFFLINE_DB="kucheOfflineOperations";
+const KUCHE_OFFLINE_DB_VERSION=1;
+let kucheOfflineDBPromise=null;
+let kucheOfflineFlushBusy=false;
+let kucheOfflineLastSyncAt=localStorage.getItem("kucheOfflineLastSyncAt")||null;
+let kucheSystemOwnersCache=[];
+
+/* ---------- Identidad de dispositivo ---------- */
+function kucheDeviceId(){
+ let id=localStorage.getItem(KUCHE_DEVICE_ID_KEY);
+ if(!id){id=(crypto?.randomUUID?.()||("device-"+Date.now()+"-"+Math.random().toString(36).slice(2)));localStorage.setItem(KUCHE_DEVICE_ID_KEY,id);}
+ return id;
+}
+function kucheDeviceLabel(){
+ const ua=navigator.userAgent||"";
+ if(/iPhone/i.test(ua))return "iPhone";
+ if(/iPad/i.test(ua))return "iPad";
+ if(/Android/i.test(ua))return "Android";
+ if(/Macintosh|Mac OS X/i.test(ua))return "Mac";
+ if(/Windows/i.test(ua))return "Windows";
+ return "Dispositivo";
+}
+
+/* ---------- IndexedDB: cola offline ---------- */
+function openKucheOfflineDB(){
+ if(kucheOfflineDBPromise)return kucheOfflineDBPromise;
+ kucheOfflineDBPromise=new Promise((resolve,reject)=>{
+   if(!("indexedDB" in window)){reject(new Error("IndexedDB no disponible"));return;}
+   const req=indexedDB.open(KUCHE_OFFLINE_DB,KUCHE_OFFLINE_DB_VERSION);
+   req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains("pending"))db.createObjectStore("pending",{keyPath:"key"});};
+   req.onsuccess=()=>resolve(req.result);
+   req.onerror=()=>reject(req.error||new Error("No se pudo abrir almacenamiento offline"));
+ });
+ return kucheOfflineDBPromise;
+}
+async function kucheOfflinePut(row){
+ const db=await openKucheOfflineDB();
+ return new Promise((resolve,reject)=>{
+   const tx=db.transaction("pending","readwrite");tx.objectStore("pending").put(row);
+   tx.oncomplete=()=>resolve(true);tx.onerror=()=>reject(tx.error);
+ });
+}
+async function kucheOfflineDelete(key){
+ const db=await openKucheOfflineDB();
+ return new Promise((resolve,reject)=>{
+   const tx=db.transaction("pending","readwrite");tx.objectStore("pending").delete(key);
+   tx.oncomplete=()=>resolve(true);tx.onerror=()=>reject(tx.error);
+ });
+}
+async function kucheOfflineRows(){
+ try{
+   const db=await openKucheOfflineDB();
+   return await new Promise((resolve,reject)=>{
+     const tx=db.transaction("pending","readonly"),req=tx.objectStore("pending").getAll();
+     req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error);
+   });
+ }catch(e){return [];}
+}
+async function kucheOfflineCount(){return (await kucheOfflineRows()).length;}
+function kucheOfflineClone(value){try{return JSON.parse(JSON.stringify(value));}catch(e){return null;}}
+async function queueKucheOrderSnapshot(order,reason="Comanda modificada"){
+ if(!order||realtimePOSApplyingCloud)return;
+ const copy=kucheOfflineClone(order);if(!copy)return;
+ await kucheOfflinePut({
+   key:`pos:${order.id}`,type:"pos_order",entity_id:String(order.id),reason,
+   payload:copy,device_id:kucheDeviceId(),
+   user_id:currentSession?.userId||null,user_name:currentSession?.name||"Usuario",
+   occurred_at:new Date().toISOString(),updated_at:new Date().toISOString()
+ });
+ refreshKucheConnectivityUI();
+}
+async function queueKucheAuditEvent(operationType,payload={}){
+ const id=crypto?.randomUUID?.()||String(Date.now()+Math.random());
+ await kucheOfflinePut({
+   key:`event:${id}`,type:"audit_event",entity_id:id,reason:operationType,
+   payload:kucheOfflineClone(payload)||{},device_id:kucheDeviceId(),
+   user_id:currentSession?.userId||null,user_name:currentSession?.name||"Usuario",
+   occurred_at:new Date().toISOString(),updated_at:new Date().toISOString()
+ });
+ refreshKucheConnectivityUI();
+}
+
+/* ---------- Sesión offline ya autenticada previamente ---------- */
+function saveKucheOfflineAuthSnapshot(){
+ if(!currentSession?.cloud||!cloudOrganization)return;
+ const snapshot={
+   saved_at:new Date().toISOString(),
+   currentSession:kucheOfflineClone(currentSession),
+   cloudOrganization:kucheOfflineClone(cloudOrganization),
+   cloudMembership:kucheOfflineClone(cloudMembership),
+   cloudStaffRecord:kucheOfflineClone(cloudStaffRecord)
+ };
+ localStorage.setItem(KUCHE_OFFLINE_AUTH_KEY,JSON.stringify(snapshot));
+}
+function restoreKucheOfflineAuthSnapshot(){
+ try{
+   const s=JSON.parse(localStorage.getItem(KUCHE_OFFLINE_AUTH_KEY)||"null");
+   if(!s?.currentSession||!s?.cloudOrganization)return false;
+   currentSession=s.currentSession;cloudOrganization=s.cloudOrganization;cloudMembership=s.cloudMembership||null;cloudStaffRecord=s.cloudStaffRecord||null;
+   sessionStorage.setItem("kucheSession",JSON.stringify(currentSession));
+   document.getElementById("organizationOverlay")?.classList.add("hidden");
+   document.getElementById("signupOverlay")?.classList.add("hidden");
+   document.getElementById("loginOverlay")?.classList.add("hidden");
+   applyAccessMode();setCloudStatus("Modo sin conexión","offline");refreshKucheConnectivityUI();renderSystemInfo();
+   return true;
+ }catch(e){return false;}
+}
+
+/* ---------- Registro Service Worker ---------- */
+async function registerKucheServiceWorker(){
+ if(!("serviceWorker" in navigator))return false;
+ try{
+   const reg=await navigator.serviceWorker.register("./service-worker.js",{scope:"./"});
+   await navigator.serviceWorker.ready;
+   return !!reg;
+ }catch(e){console.warn("Service Worker",e.message);return false;}
+}
+
+/* ---------- Estado y sincronización ---------- */
+async function refreshKucheConnectivityUI(){
+ const count=await kucheOfflineCount(),el=document.getElementById("offlineQueueStatus");
+ if(el){
+   el.className="offline-queue-status";
+   if(!navigator.onLine){el.classList.add("offline");el.textContent=count?`Sin Internet · ${count} pendiente(s)`:"Sin Internet";}
+   else if(count){el.classList.add("pending");el.textContent=`${count} pendiente(s)`;}
+   else{el.textContent="Sincronizado";}
+ }
+ if(document.getElementById("systeminfo")?.classList.contains("active"))renderSystemInfo();
+}
+function openOfflineStatus(){
+ const b=[...document.querySelectorAll(".nav-item")].find(x=>(x.getAttribute("onclick")||"").includes("'systeminfo'"));
+ showPage("systeminfo",b||null);
+}
+async function recordKucheOfflineLog(row,status="synced",message=null){
+ if(!kucheCloud||!cloudOrganization||!cloudAuthSession?.user)return;
+ try{
+   await kucheCloud.from("offline_operation_log").upsert({
+     organization_id:cloudOrganization.id,device_id:row.device_id||kucheDeviceId(),
+     source_local_id:row.key,operation_type:row.reason||row.type,
+     payload:row.payload||{},occurred_at:row.occurred_at||new Date().toISOString(),
+     performed_by_user_id:cloudAuthSession.user.id,performed_by_name:row.user_name||currentSession?.name||null,
+     sync_status:status,sync_message:message,synced_at:new Date().toISOString()
+   },{onConflict:"organization_id,device_id,source_local_id"});
+ }catch(e){console.warn("Offline audit",e.message);}
+}
+async function syncKucheOrderSnapshot(row){
+ let order=posOrders.find(o=>String(o.id)===String(row.entity_id));
+ if(!order&&row.payload){order=row.payload;posOrders.unshift(order);}
+ if(!order)return true;
+ const ok=await rtSyncCurrentOrderToCloud(order);
+ if(!ok||!order.cloudId)throw new Error("No se pudo sincronizar la comanda.");
+ const batches={};
+ (order.items||[]).filter(i=>!i.commercialOnly&&i.sentAt).forEach(i=>{
+   const key=i.dispatchBatchKey||i.sentAt||"legacy";
+   (batches[key]||(batches[key]=[])).push(i);
+ });
+ for(const [batch,items] of Object.entries(batches)){
+   const created=await rtCreateKDSLines(order,items,batch);
+   if(!created)throw new Error("No se pudieron sincronizar las líneas de producción.");
+ }
+ for(const item of (order.items||[]).filter(i=>["ready","delivered"].includes(i.kdsStatus)&&i.cloudId)){
+   const key=`${item.id}::${item.dispatchBatchKey||item.sentAt||"legacy"}`;
+   const update={status:"ready",ready_at:item.readyAt||new Date().toISOString(),ready_by_name:item.readyBy||currentSession?.name||"Equipo"};
+   const {error}=await kucheCloud.from("kds_lines").update(update).eq("organization_id",cloudOrganization.id).eq("source_local_id",key);
+   if(error)throw error;
+ }
+ if(order.status==="paid"){
+   await rtSyncCloudOrder(order);await rtSyncCloudOrderItems(order);
+   if(typeof opsFinalConsumeCloudForOrder==="function")await opsFinalConsumeCloudForOrder(order);
+ }
+ return true;
+}
+async function syncKucheAuditRow(row){
+ await recordKucheOfflineLog(row,"synced",null);return true;
+}
+async function registerKucheDeviceState(pendingCount=0){
+ if(!kucheCloud||!cloudOrganization||!cloudAuthSession?.user)return;
+ try{
+   await kucheCloud.from("device_sync_state").upsert({
+     organization_id:cloudOrganization.id,device_id:kucheDeviceId(),user_id:cloudAuthSession.user.id,
+     device_label:kucheDeviceLabel(),app_version:KUCHE_APP_VERSION,
+     last_seen_at:new Date().toISOString(),last_sync_at:pendingCount===0?new Date().toISOString():kucheOfflineLastSyncAt,
+     pending_count:Number(pendingCount||0),connection_mode:navigator.onLine?"online":"offline"
+   },{onConflict:"organization_id,device_id"});
+ }catch(e){console.warn("Device state",e.message);}
+}
+async function flushKucheOfflineQueue(showResult=false){
+ if(kucheOfflineFlushBusy)return false;
+ if(!navigator.onLine||!kucheCloud||!cloudOrganization||!cloudAuthSession?.user){
+   if(showResult)alert("KÜCHE todavía no tiene conexión con la nube. Las operaciones seguirán guardadas.");
+   refreshKucheConnectivityUI();return false;
+ }
+ kucheOfflineFlushBusy=true;
+ try{
+   const rows=(await kucheOfflineRows()).sort((a,b)=>new Date(a.occurred_at)-new Date(b.occurred_at));
+   let synced=0;
+   for(const row of rows){
+     try{
+       if(row.type==="pos_order")await syncKucheOrderSnapshot(row);
+       else await syncKucheAuditRow(row);
+       await recordKucheOfflineLog(row,"synced",null);
+       await kucheOfflineDelete(row.key);synced++;
+     }catch(e){
+       await recordKucheOfflineLog(row,"pending",e.message||"Pendiente");
+       console.warn("Operación offline pendiente",row.key,e.message);
+     }
+   }
+   kucheOfflineLastSyncAt=new Date().toISOString();localStorage.setItem("kucheOfflineLastSyncAt",kucheOfflineLastSyncAt);
+   const remaining=await kucheOfflineCount();await registerKucheDeviceState(remaining);
+   if(!remaining){
+     try{await rtLoadOrdersFromCloud();}catch(e){}
+     try{await ops3RefreshInventoryFromCloud();}catch(e){}
+   }
+   if(showResult)alert(remaining?`Se sincronizaron ${synced} operación(es). Quedan ${remaining} pendiente(s).`:`Sincronización completa. ${synced} operación(es) procesadas.`);
+   return remaining===0;
+ }finally{kucheOfflineFlushBusy=false;refreshKucheConnectivityUI();renderSystemInfo();}
+}
+
+/* Guardar cambios POS en cola de recuperación */
+const _continuitySavePOSOrders=savePOSOrders;
+savePOSOrders=function(){
+ _continuitySavePOSOrders();
+ if(!realtimePOSApplyingCloud){
+   const order=getActivePOSOrder();
+   if(order){queueKucheOrderSnapshot(order,"Comanda modificada");if(navigator.onLine)setTimeout(()=>flushKucheOfflineQueue(false),700);}
+ }
+};
+const _continuityMarkKDSBatchReady=markKDSBatchReady;
+markKDSBatchReady=async function(orderId,station,batchKey){
+ await _continuityMarkKDSBatchReady(orderId,station,batchKey);
+ const order=posOrders.find(o=>String(o.id)===String(orderId));if(order)await queueKucheOrderSnapshot(order,"Producción marcada lista");
+ if(navigator.onLine)setTimeout(()=>flushKucheOfflineQueue(false),500);
+};
+const _continuityCancelOrder=cancelCurrentPOSOrder;
+cancelCurrentPOSOrder=async function(){
+ const order=getActivePOSOrder();await _continuityCancelOrder();
+ if(order)await queueKucheOrderSnapshot(order,"Comanda cancelada");
+ if(navigator.onLine)setTimeout(()=>flushKucheOfflineQueue(false),500);
+};
+
+/* ---------- Auth: guardar sesión para caída de Internet ---------- */
+const _continuityHandleCloudSession=handleCloudSession;
+handleCloudSession=async function(session){
+ await _continuityHandleCloudSession(session);
+ if(currentSession?.cloud&&cloudOrganization){
+   try{
+     const linked=await loadCloudStaffForUser(session?.user?.id,cloudOrganization.id);
+     if(linked){cloudStaffRecord=linked;currentSession.workerId=linked.id;sessionStorage.setItem("kucheSession",JSON.stringify(currentSession));}
+   }catch(e){}
+   saveKucheOfflineAuthSnapshot();
+   const pending=await kucheOfflineCount();await registerKucheDeviceState(pending);
+   setTimeout(()=>flushKucheOfflineQueue(false),800);
+ }
+};
+const _continuityInitializeLogin=initializeLogin;
+initializeLogin=async function(){
+ if(!navigator.onLine&&restoreKucheOfflineAuthSnapshot())return;
+ try{await _continuityInitializeLogin();}
+ catch(e){
+   if(!restoreKucheOfflineAuthSnapshot()){console.error(e);document.getElementById("loginOverlay")?.classList.remove("hidden");}
+ }
+};
+const _continuityLogout=logoutKuche;
+logoutKuche=async function(){
+ localStorage.removeItem(KUCHE_OFFLINE_AUTH_KEY);
+ await _continuityLogout();
+};
+window.addEventListener("offline",()=>{setCloudStatus("Modo sin conexión","offline");refreshKucheConnectivityUI();renderSystemInfo();});
+window.addEventListener("online",async()=>{
+ setCloudStatus("Reconectando…");
+ refreshKucheConnectivityUI();
+ try{await initializeSupabaseAuth();}catch(e){}
+ setTimeout(()=>flushKucheOfflineQueue(false),900);
+});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&navigator.onLine)setTimeout(()=>flushKucheOfflineQueue(false),500);});
+
+/* ---------- Múltiples propietarios ---------- */
+function currentUserIsKucheOwner(){
+ return cloudMembership?.ownership_role==="owner" || String(cloudOrganization?.owner_id||"")===String(currentSession?.userId||cloudAuthSession?.user?.id||"");
+}
+function onStaffOwnershipChange(){
+ const owner=document.getElementById("staffOwnership")?.value==="owner";
+ if(owner&&document.getElementById("staffAccessRole"))staffAccessRole.value="admin";
+ renderStaffStationAssignments();
+}
+const _continuityClearStaff=clearStaffForm;
+clearStaffForm=function(){_continuityClearStaff();if(document.getElementById("staffOwnership"))staffOwnership.value="employee";};
+const _continuityEditStaff=editStaffMember;
+editStaffMember=function(id){
+ _continuityEditStaff(id);
+ const w=staff.find(x=>String(x.id)===String(id));
+ if(document.getElementById("staffOwnership"))staffOwnership.value=w?.ownershipRole==="owner"?"owner":"employee";
+};
+const _continuityLoadCloudStaff=loadCloudStaffForUser;
+loadCloudStaffForUser=async function(userId,organizationId){
+ if(!kucheCloud||!userId||!organizationId)return null;
+ try{
+   const {data,error}=await kucheCloud.from("staff")
+     .select("id,full_name,job_title,access_role,phone,email,status,work_stations,birth_date,ownership_role")
+     .eq("organization_id",organizationId).eq("auth_user_id",userId).maybeSingle();
+   if(error)throw error;if(!data)return null;
+   return {id:data.id,name:data.full_name,role:data.job_title||data.access_role||"Trabajador",accessRole:data.access_role||cloudMembership?.role||"trabajador",phone:data.phone||"",email:data.email||"",status:data.status||"activo",workStations:data.work_stations||[],birthDate:data.birth_date||"",ownershipRole:data.ownership_role||"employee",cloud:true};
+ }catch(e){return await _continuityLoadCloudStaff(userId,organizationId);}
+};
+const _continuityLoadOrg=loadCloudOrganizationForUser;
+loadCloudOrganizationForUser=async function(user){
+ if(!kucheCloud||!user)return null;
+ try{
+   const {data:members,error}=await kucheCloud.from("organization_members").select("organization_id,role,ownership_role,active").eq("user_id",user.id).eq("active",true).limit(1);
+   if(error)throw error;if(!members?.length){cloudMembership=null;cloudOrganization=null;return null;}
+   const membership=members[0];
+   const {data:org,error:orgErr}=await kucheCloud.from("organizations").select("id,name,rut,address,phone,email,currency,timezone,owner_id").eq("id",membership.organization_id).single();
+   if(orgErr)throw orgErr;cloudMembership=membership;cloudOrganization=org;return org;
+ }catch(e){return await _continuityLoadOrg(user);}
+};
+const _continuityAllStaff=opsFinalLoadAllCloudStaff;
+opsFinalLoadAllCloudStaff=async function(){
+ if(!kucheCloud||!cloudOrganization)return;
+ try{
+   const {data,error}=await kucheCloud.from("staff").select("id,auth_user_id,full_name,job_title,access_role,phone,email,status,usual_start,usual_end,usual_days,join_date,birth_date,notes,work_stations,ownership_role").eq("organization_id",cloudOrganization.id).order("full_name");
+   if(error)throw error;
+   (data||[]).forEach(row=>{
+     let w=staff.find(x=>String(x.cloudStaffId)===String(row.id)||String(x.id)===String(row.id)||String(x.email||"").toLowerCase()===String(row.email||"").toLowerCase());
+     if(!w){w={id:row.id,cloudStaffId:row.id,authUserId:row.auth_user_id,name:row.full_name,role:row.job_title||"Trabajador",accessRole:row.access_role,status:row.status,phone:row.phone||"",email:row.email||"",start:String(row.usual_start||"").slice(0,5),end:String(row.usual_end||"").slice(0,5),days:row.usual_days||[],joinDate:row.join_date||"",birthDate:row.birth_date||"",notes:row.notes||"",workStations:row.work_stations||[],ownershipRole:row.ownership_role||"employee"};staff.push(w);}
+     else Object.assign(w,{cloudStaffId:row.id,authUserId:row.auth_user_id||w.authUserId,birthDate:row.birth_date||w.birthDate||"",accessRole:row.access_role||w.accessRole,workStations:row.work_stations||w.workStations||[],ownershipRole:row.ownership_role||w.ownershipRole||"employee"});
+   });
+   saveStaff();renderStaff();renderBirthdayNotice();
+ }catch(e){await _continuityAllStaff();}
+};
+const _continuitySaveStaff=saveStaffMember;
+saveStaffMember=async function(inviteAfter=false){
+ const idBefore=editingStaffId,nameBefore=staffName.value.trim(),ownership=document.getElementById("staffOwnership")?.value||"employee";
+ if(ownership==="owner"){
+   if(cloudMembership&&cloudMembership.ownership_role!=="owner"&&!currentUserIsKucheOwner()){alert("Solo un propietario puede designar a otro propietario.");return;}
+   if(document.getElementById("staffAccessRole"))staffAccessRole.value="admin";
+ }
+ await _continuitySaveStaff(inviteAfter);
+ const w=idBefore!==null?staff.find(x=>String(x.id)===String(idBefore)):staff.find(x=>x.name===nameBefore);
+ if(!w)return;
+ w.ownershipRole=ownership;saveStaff();
+ if(kucheCloud&&w.cloudStaffId){
+   try{await kucheCloud.from("staff").update({ownership_role:ownership,access_role:ownership==="owner"?"admin":w.accessRole||"trabajador"}).eq("id",w.cloudStaffId);}catch(e){}
+ }
+ if(kucheCloud&&cloudOrganization&&w.authUserId&&currentUserIsKucheOwner()){
+   try{
+     const {error}=await kucheCloud.rpc("set_member_ownership",{p_organization_id:cloudOrganization.id,p_user_id:w.authUserId,p_ownership_role:ownership==="owner"?"owner":"member"});
+     if(error)throw error;
+   }catch(e){alert("El trabajador se guardó, pero no se pudo actualizar la propiedad del local: "+e.message);}
+ }
+ renderStaff();renderSystemInfo();
+};
+const _continuityRenderStaff=renderStaff;
+renderStaff=function(){
+ _continuityRenderStaff();
+ document.querySelectorAll("#staffCardList .staff-card").forEach((card,index)=>{
+   const w=staff[index];if(!w||w.ownershipRole!=="owner")return;
+   const title=card.querySelector(".staff-name, h3, strong");
+   if(title&&!card.querySelector(".staff-owner-badge"))title.insertAdjacentHTML("afterend",'<span class="staff-owner-badge">Propietario</span>');
+ });
+};
+
+/* ---------- Ayuda contextual minimalista ---------- */
+const KUCHE_CONTEXT_HELP={
+ "stock mínimo":"Cantidad mínima que quieres mantener disponible. KÜCHE utiliza este valor para avisarte antes de quedarte sin stock.\n\nEjemplo: si quieres conservar al menos 5 kg de pollo, ingresa 5.",
+ "stock actual · automático":"No se escribe manualmente. Las compras, ventas, producción y ajustes modifican este valor automáticamente.",
+ "costo promedio / unidad · automático":"KÜCHE recalcula el costo promedio cuando registras nuevas compras. No necesitas modificarlo manualmente.",
+ "unidad de compra":"Es la forma en que compras el insumo al proveedor: unidad, kg, caja, botella, paquete, etc.",
+ "unidad base":"Es la unidad que KÜCHE utiliza para convertir el insumo dentro de las recetas, por ejemplo gramos o mililitros.",
+ "rendimiento útil %":"Porcentaje realmente aprovechable después de limpiar, pelar, deshuesar o procesar el insumo.",
+ "modo de consumo":"Define cómo KÜCHE descuenta el insumo: exacto, estándar, por porción o mediante recuento físico.",
+ "perfil de acceso a küche":"Define qué partes del sistema puede utilizar esta persona. El cargo laboral es independiente del permiso informático.",
+ "relación con el local":"Marca Propietario únicamente para una persona que sea dueña del establecimiento. Un propietario puede tener acceso completo y conservará una cuenta individual.",
+ "estaciones de producción asignadas":"Determina qué comandas verá este trabajador en Producción. Puede tener una o varias estaciones.",
+ "fecha de nacimiento":"Se utiliza para el saludo de cumpleaños del trabajador y el aviso interno al equipo. No es necesario mostrar la edad.",
+ "stock mínimo":"Cantidad mínima que deseas conservar antes de recibir una alerta de reposición.",
+ "frecuencia objetivo (días)":"Cada cuántos días debería repetirse esta actividad. Si no conoces la frecuencia, KÜCHE puede aprenderla del historial.",
+ "alerta de demora desde (min)":"Tiempo de respaldo para avisar que una comanda está demorando. Si la receta tiene tiempo objetivo, KÜCHE utiliza preferentemente el tiempo de la receta.",
+ "estación de producción":"Define a qué área llegará el producto: Cuarto caliente, Cuarto frío, Barra, Postres, etc.",
+ "tiempo objetivo de servicio":"Minutos esperados desde que el garzón envía el producto hasta que la estación lo marca como listo.",
+ "precio neto":"Precio sin IVA.",
+ "precio con iva":"Precio final incluyendo IVA.",
+ "iva %":"Porcentaje de IVA utilizado para separar valor neto e impuesto.",
+ "cantidad":"Cantidad física que estás registrando. Revisa siempre que coincida con la unidad seleccionada.",
+ "observaciones":"Información adicional que debe quedar registrada y ser visible para el responsable del proceso.",
+ "correo":"Se utiliza para la cuenta individual de acceso a KÜCHE cuando el trabajador recibe una invitación."
+};
+const KUCHE_BUTTON_HELP={
+ "registrar compra y actualizar inventario":"Guarda la compra, suma automáticamente las cantidades al inventario y actualiza el costo promedio de los insumos.",
+ "enviar a producción":"Envía los productos pendientes a sus estaciones y comienza a medir el tiempo de preparación.",
+ "marcar lista":"Indica que esta estación terminó su parte. KÜCHE registra la hora y calcula el tiempo real de preparación.",
+ "cobrar mesa":"Abre el proceso de pago. KÜCHE verifica que la producción correspondiente esté lista antes de cerrar la cuenta.",
+ "cambiar mesa":"Traslada la comanda completa a otra mesa disponible sin perder productos, tiempos ni historial.",
+ "marcar entrada":"Registra el comienzo de tu jornada con tu propia cuenta.",
+ "marcar salida":"Registra el término de tu jornada y calcula las horas trabajadas.",
+ "anular":"Revierte o invalida el registro seleccionado. Revisa la explicación de la pantalla antes de confirmar porque puede afectar inventario o caja.",
+ "guardar estaciones":"Guarda la división de Cocina/Barra y la configuración de pantalla o impresión de cada estación.",
+ "sincronizar ahora":"Intenta enviar a la nube todas las operaciones que quedaron pendientes en este dispositivo.",
+ "comprobar sistema":"Revisa rápidamente conexión, almacenamiento offline, Service Worker, sesión y sincronización.",
+ "guardar trabajador":"Guarda la ficha, permisos, estaciones, cumpleaños y relación con el local.",
+ "guardar actividad":"Guarda la definición de una tarea periódica para que KÜCHE pueda analizar su frecuencia.",
+ "registrar actividad realizada":"Guarda fecha, responsable y observaciones de una actividad ya ejecutada."
+};
+function normalizeHelpKey(v){return String(v||"").replace(/\s+/g," ").trim().toLowerCase();}
+function showContextInfo(title,text,anchor=null){
+ const pop=document.getElementById("contextInfoPopover");if(!pop)return;
+ contextInfoTitle.textContent=title||"Información";contextInfoText.textContent=text||"";
+ pop.classList.add("show");
+ const rect=anchor?.getBoundingClientRect?.();
+ const width=Math.min(360,window.innerWidth-24);
+ let left=rect?Math.min(window.innerWidth-width-12,Math.max(12,rect.left)):Math.max(12,(window.innerWidth-width)/2);
+ let top=rect?Math.min(window.innerHeight-220,rect.bottom+8):90;
+ if(top<12)top=12;pop.style.left=left+"px";pop.style.top=top+"px";
+}
+function closeContextInfo(){document.getElementById("contextInfoPopover")?.classList.remove("show");}
+function makeContextInfoButton(title,text){
+ const b=document.createElement("button");b.type="button";b.className="context-info-button";b.textContent="i";b.setAttribute("aria-label","Información");
+ b.addEventListener("click",ev=>{ev.preventDefault();ev.stopPropagation();showContextInfo(title,text,b);});return b;
+}
+function enhanceKucheContextHelp(){
+ document.querySelectorAll(".field > label").forEach(label=>{
+   if(label.querySelector(".context-info-button"))return;
+   const original=[...label.childNodes].filter(n=>n.nodeType===Node.TEXT_NODE).map(n=>n.textContent).join(" ").trim()||label.textContent.trim();
+   const key=normalizeHelpKey(original),help=KUCHE_CONTEXT_HELP[key];if(help)label.appendChild(makeContextInfoButton(original,help));
+ });
+ document.querySelectorAll(".page button:not(.context-info-button):not(.context-info-close)").forEach(btn=>{
+   if(btn.dataset.contextHelpAdded==="1")return;
+   const key=normalizeHelpKey(btn.textContent),help=KUCHE_BUTTON_HELP[key];if(!help)return;
+   btn.dataset.contextHelpAdded="1";
+   const info=makeContextInfoButton(btn.textContent.trim(),help);info.style.marginLeft="5px";
+   btn.insertAdjacentElement("afterend",info);
+ });
+}
+document.addEventListener("click",ev=>{const p=document.getElementById("contextInfoPopover");if(p?.classList.contains("show")&&!p.contains(ev.target)&&!ev.target.closest(".context-info-button"))closeContextInfo();});
+
+/* ---------- Manual más detallado ---------- */
+const KUCHE_DETAILED_SETUP=[
+ {page:"settings",title:"1. Datos generales y seguridad",why:"Estos datos identifican al restaurante y establecen la configuración base.",how:"Completa nombre del local, datos generales, parámetros financieros y revisa los permisos. No avances a cargar operación hasta confirmar que el establecimiento correcto aparece en la nube."},
+ {page:"settings",title:"2. Áreas y estaciones",why:"Las estaciones permiten que cada producto llegue a la pantalla correcta.",how:"Crea o revisa Cuarto caliente, Cuarto frío, Parrilla, Postres, Barra y las áreas que realmente existan. Configura impresión solo donde se utilice."},
+ {page:"staff",title:"3. Propietarios, administradores y trabajadores",why:"Cada persona debe utilizar su propia cuenta para que KÜCHE sepa quién hizo cada acción.",how:"Crea la ficha, escribe el cargo real, define acceso, estaciones, fecha de nacimiento y relación con el local. Para un dueño con acceso total selecciona Propietario y Administrador."},
+ {page:"suppliers",title:"4. Proveedores",why:"Las compras necesitan un proveedor para analizar costos y frecuencia.",how:"Registra los proveedores habituales con sus datos. No es necesario crear proveedores que no utilices realmente."},
+ {page:"inventory",title:"5. Catálogo de inventario",why:"Las recetas y compras necesitan saber qué insumos existen y cómo se miden.",how:"Crea cada insumo con unidad de compra, unidad base, equivalencias, rendimiento útil, stock mínimo y modo de consumo. El stock comienza en 0 y se alimenta desde Compras."},
+ {page:"purchases",title:"6. Primera compra",why:"Registrar compras alimenta inventario y establece costos reales.",how:"Selecciona proveedor, agrega cantidades y precios. Indica si el precio ingresado es neto o con IVA. Al guardar, revisa que el inventario haya aumentado."},
+ {page:"recipes",title:"7. Recetas y rendimientos",why:"La receta conecta ventas, costos, inventario y producción.",how:"Agrega ingredientes en la unidad que realmente utilizas, define rendimiento, porciones, tiempos, estación y procedimiento. Revisa el costo neto, IVA y precio final."},
+ {page:"recipes",title:"8. Extras y opciones SIN",why:"Permite que el garzón personalice cada producto sin perder control de inventario.",how:"Marca qué ingredientes se pueden quitar y crea extras con cantidad, precio y efecto en tiempo cuando corresponda."},
+ {page:"reservations",title:"9. Mesas",why:"El POS necesita una estructura de salón para asociar cada comanda.",how:"Crea las mesas, capacidad y orden visual. Verifica que una mesa libre pueda abrir una comanda."},
+ {page:"cash",title:"10. Caja y medios de pago",why:"La venta debe cerrar contra una caja y un medio de pago.",how:"Configura la caja, realiza una apertura de prueba y revisa los medios de pago antes del primer servicio."},
+ {page:"commandas",title:"11. Prueba completa de comanda",why:"Esta prueba comprueba que POS, estaciones, Cocina y cobro estén conectados.",how:"Abre una mesa, agrega un producto, prueba SIN y Extra, envía a producción, marca Lista desde la estación correspondiente y finalmente cobra la mesa."},
+ {page:"activities",title:"12. Actividades periódicas",why:"La bitácora permite demostrar cuándo se realizó una tarea y aprender su frecuencia.",how:"Crea actividades como cambio de aceite, filtros o limpieza profunda. Registra responsable y fecha cada vez que se realicen."},
+ {page:"rules",title:"13. Reglas del local",why:"Los trabajadores necesitan un lugar permanente donde consultar normas vigentes.",how:"Publica reglas claras por categoría. Utiliza confirmación de lectura para las reglas que deban ser conocidas por todo el equipo."},
+ {page:"manual",title:"14. Revisión final y capacitación",why:"Antes de operar es mejor detectar una configuración incompleta que descubrirla durante el servicio.",how:"Revisa el porcentaje de configuración, usa la práctica guiada y abre Información del sistema para comprobar conexión, sincronización y capacidades."}
+];
+const _detailedSetupBase=opsFinalSetupSteps;
+opsFinalSetupSteps=function(){
+ const base=_detailedSetupBase();
+ return base.map((s,i)=>({...s,why:KUCHE_DETAILED_SETUP[i]?.why||"",how:KUCHE_DETAILED_SETUP[i]?.how||"",title:KUCHE_DETAILED_SETUP[i]?.title||s.title})).concat(
+   KUCHE_DETAILED_SETUP.slice(base.length).map(x=>({...x,desc:x.why,done:false}))
+ );
+};
+renderManualPage=function(){
+ const steps=opsFinalSetupSteps(),done=steps.filter(x=>x.done).length,pct=Math.round(done/steps.length*100);
+ if(!document.getElementById("manualProgressPct"))return;
+ manualProgressPct.textContent=pct+"%";manualProgressText.textContent=`${done} de ${steps.length} etapas completadas.`;manualProgressBar.style.width=pct+"%";
+ manualSetupSteps.innerHTML=steps.map((s,i)=>`<div class="manual-step ${s.done?"done":""}">
+   <div class="manual-step-index">${s.done?"✓":i+1}</div>
+   <div><h3>${escapeHTML(s.title)}</h3><p>${escapeHTML(s.desc||s.why||"")}</p>
+     <div class="manual-step-detail"><strong>¿Para qué se hace?</strong> ${escapeHTML(s.why||"")}<div class="manual-step-how"><strong>Qué hacer:</strong> ${escapeHTML(s.how||"")}</div></div>
+   </div>
+   <button class="secondary-button" onclick="openManualSetupStep('${s.page}')">${s.done?"Revisar":"Ir a completar"}</button>
+ </div>`).join("");
+ const access=currentSession?.accessRole||"admin",topics=OPS_FINAL_MANUAL_TOPICS[access]||OPS_FINAL_MANUAL_TOPICS.trabajador;
+ manualRoleTopics.innerHTML=Object.keys(topics).map(k=>`<button class="manual-topic-button" onclick="showManualTopic(${JSON.stringify(k)})">${escapeHTML(k)}</button>`).join("");
+ const practice=["Abrir una mesa disponible.","Agregar un producto y revisar SIN / Extras.","Enviar a producción y comprobar la estación.","Marcar la estación como Lista.","Cobrar y cerrar la mesa.","Abrir Información del sistema y comprobar sincronización."];
+ manualPractice.innerHTML=practice.map((x,i)=>`<div class="practice-step ${i<opsFinalPracticeStep?"done":""}"><strong>Paso ${i+1}</strong><div class="rule-meta">${escapeHTML(x)}</div></div>`).join("")+`<div class="form-actions"><button class="primary-button" onclick="advanceManualPractice()" ${opsFinalPracticeStep>=practice.length?"disabled":""}>Siguiente práctica</button><button class="secondary-button" onclick="resetManualPractice()">Reiniciar</button></div>`;
+ enhanceKucheContextHelp();
+};
+
+/* Agregar temas de ayuda */
+OPS_FINAL_MANUAL_TOPICS.admin["Configuración completa"]="Orden recomendado: 1) datos del local; 2) estaciones; 3) propietarios y trabajadores; 4) proveedores; 5) inventario; 6) compras; 7) recetas; 8) extras; 9) mesas; 10) caja; 11) comanda de prueba; 12) actividades; 13) reglas; 14) diagnóstico.\n\nEn cada etapa revisa para qué sirve el dato antes de continuar. Los botones pequeños con una “i” muestran ayuda justo donde estás trabajando.";
+OPS_FINAL_MANUAL_TOPICS.admin["Modo sin Internet"]="KÜCHE conserva la aplicación y las operaciones críticas del dispositivo en una cola local. Cuando vuelve Internet intenta sincronizar automáticamente. Para comunicación en vivo entre dos dispositivos distintos durante una caída total de Internet se requiere KÜCHE Local Hub dentro de la red del restaurante.";
+OPS_FINAL_MANUAL_TOPICS.admin["Propietarios"]="Puede haber varios propietarios. Cada uno debe tener su propia cuenta. En Personal selecciona Relación con el local: Propietario y Perfil de acceso: Administrador. Solo un propietario puede convertir a otra persona en propietaria.";
+OPS_FINAL_MANUAL_TOPICS.garzon["Sin Internet"]="Si se pierde Internet, mantén KÜCHE abierto. Las comandas continúan guardándose en tu dispositivo y aparecerá el estado Sin Internet. Cuando vuelva la conexión, KÜCHE intentará sincronizar los cambios pendientes.";
+OPS_FINAL_MANUAL_TOPICS.cocina["Sin Internet"]="La pantalla conserva la información que ya estaba en el dispositivo. Para recibir en vivo nuevas comandas desde otro equipo durante una caída total de Internet se necesita KÜCHE Local Hub en la red interna.";
+
+/* ---------- Información del sistema ---------- */
+async function loadKucheSystemOwners(){
+ kucheSystemOwnersCache=[];
+ if(!kucheCloud||!cloudOrganization)return [];
+ try{
+   const {data,error}=await kucheCloud.from("organization_members").select("user_id,role,ownership_role,active,created_at").eq("organization_id",cloudOrganization.id).eq("active",true);
+   if(error)throw error;
+   kucheSystemOwnersCache=(data||[]).filter(m=>m.ownership_role==="owner"||String(m.user_id)===String(cloudOrganization.owner_id||""));
+ }catch(e){}
+ return kucheSystemOwnersCache;
+}
+function systemInfoRow(label,value,state=""){
+ return `<div class="system-info-row"><span class="sys-label">${escapeHTML(label)}</span><strong class="${state}">${escapeHTML(String(value))}</strong></div>`;
+}
+async function renderSystemInfo(){
+ const page=document.getElementById("systeminfo");if(!page)return;
+ const pending=await kucheOfflineCount(),online=navigator.onLine;
+ const sw=!!navigator.serviceWorker?.controller;
+ const owners=await loadKucheSystemOwners();
+ const birthdayCount=staff.filter(w=>!!w.birthDate).length;
+ const stationCount=typeof ops2ActiveStations==="function"?ops2ActiveStations().length:0;
+ const activeRecipes=recipes.filter(r=>r.active!==false).length;
+ const activeStaff=staff.filter(w=>w.status!=="inactivo").length;
+ const openOrders=posOrders.filter(o=>o.status==="open").length;
+ systemTechnicalBanner.className="system-technical-banner"+(!online?" offline":pending?" pending":"");
+ systemTechnicalBanner.textContent=!online?`KÜCHE está trabajando sin conexión. ${pending} operación(es) pendiente(s) quedan protegidas en este dispositivo.`:pending?`Hay ${pending} operación(es) pendientes de sincronizar.`:"KÜCHE está en línea y no tiene operaciones locales pendientes.";
+ systemInstallSummary.innerHTML=`<div class="operation-stat"><div class="label">Propietarios</div><div class="number">${owners.length||1}</div></div><div class="operation-stat"><div class="label">Trabajadores activos</div><div class="number">${activeStaff}</div></div><div class="operation-stat"><div class="label">Estaciones</div><div class="number">${stationCount}</div></div><div class="operation-stat"><div class="label">Recetas</div><div class="number">${activeRecipes}</div></div>`;
+ systemInstallationDetail.innerHTML=[
+   ["Organización",cloudOrganization?.name||appSettings.businessName||"—"],["Mesas configuradas",diningTables.length],["Insumos de inventario",inventory.length],
+   ["Proveedores",suppliers.length],["Recetas activas",activeRecipes],["Estaciones de producción",stationCount],["Trabajadores con cumpleaños",birthdayCount],["Comandas abiertas",openOrders]
+ ].map(x=>systemInfoRow(x[0],x[1])).join("");
+ systemTechnicalStatus.innerHTML=[
+   ["Versión",KUCHE_APP_VERSION],["Internet",online?"Disponible":"Sin conexión"],["Supabase",cloudAuthSession?.user?"Sesión activa":online?"Sin sesión":"No disponible offline"],
+   ["Aplicación offline",sw?"Service Worker activo":"Pendiente de activar / recargar"],["Operaciones pendientes",pending],["Última sincronización",kucheOfflineLastSyncAt?new Date(kucheOfflineLastSyncAt).toLocaleString("es-CL"):"Sin registro"],
+   ["Dispositivo",kucheDeviceLabel()],["ID local",kucheDeviceId().slice(0,13)+"…"]
+ ].map(x=>systemInfoRow(x[0],x[1])).join("");
+ const caps=[
+  ["Inventario y compras","Stock, costos, IVA, equivalencias, rendimientos y análisis de compra."],
+  ["Recetas y costeo","Ingredientes, MOD, CID, tiempos, rendimiento, extras y precios."],
+  ["Mesas y comandas","POS, cambio de mesa, modificadores, estaciones y cobro."],
+  ["Producción","KDS por estación, varias comandas, tiempos objetivo y estado Lista."],
+  ["Personal","Cargos, permisos, estaciones, asistencia, cumpleaños y onboarding."],
+  ["Operación interna","Checklists, reglas, protocolos, temperaturas y mantenimiento."],
+  ["Clientes","Reservas, club, puntos, recompensas y datos de clientes."],
+  ["Análisis","Reportes, ingeniería de menú, simulador y compras inteligentes."],
+  ["Continuidad","Aplicación offline por dispositivo, cola de operaciones y recuperación."],
+  ["Ayuda","Manual por etapas y explicaciones contextuales con botones de información."]
+ ];
+ systemCapabilities.innerHTML=caps.map(c=>`<div class="system-capability-card"><strong>${escapeHTML(c[0])}</strong><span>${escapeHTML(c[1])}</span></div>`).join("");
+ const integrations=[
+  ["Supabase",cloudAuthSession?.user?"Conectado":"Requiere conexión",cloudAuthSession?.user?"active":"config"],
+  ["Impresora térmica 58 / 80 mm","Configurable desde estaciones","config"],
+  ["Pantallas Cocina / Barra","Disponible en teléfonos, tablets y computadores","active"],
+  ["Service Worker offline",sw?"Activo":"Se activa después de instalar archivos y recargar","active"],
+  ["Sincronización posterior","Disponible para operaciones locales pendientes","active"],
+  ["KÜCHE Local Hub","Requerido para varios dispositivos comunicándose durante una caída total de Internet","required"],
+  ["Correo / notificaciones externas","Requiere proveedor externo y configuración","config"]
+ ];
+ systemIntegrations.innerHTML=integrations.map(i=>`<div class="system-info-row"><span><span class="sys-label">${escapeHTML(i[0])}</span><br><small>${escapeHTML(i[1])}</small></span><strong class="system-integration-state ${i[2]}">${i[2]==="active"?"Activo":i[2]==="config"?"Configurable":"Requiere componente"}</strong></div>`).join("");
+ const ownerRows=owners.length?owners.map(m=>{
+   const w=staff.find(s=>String(s.authUserId||"")===String(m.user_id))||staff.find(s=>s.ownershipRole==="owner"&&String(s.cloudStaffId||"")==String(cloudStaffRecord?.id||""));
+   const label=w?.name||(String(m.user_id)===String(currentSession?.userId)?currentSession?.name:"Propietario");
+   return systemInfoRow(label,`Propietario · ${m.role==="admin"?"Acceso completo":m.role}`);
+ }):[systemInfoRow(currentSession?.name||"Cuenta principal","Propietario principal")];
+ systemOwners.innerHTML=ownerRows.join("");
+}
+async function runKucheDiagnostics(){
+ const rows=[];
+ const add=(name,ok,detail,warn=false)=>rows.push({name,ok,detail,warn});
+ add("Internet",navigator.onLine,navigator.onLine?"El dispositivo detecta conexión.":"El dispositivo está sin conexión.");
+ add("Service Worker",!!navigator.serviceWorker?.controller,navigator.serviceWorker?.controller?"La aplicación offline está controlada.":"Recarga la página después de subir service-worker.js.",!navigator.serviceWorker?.controller);
+ add("Sesión",!!(cloudAuthSession?.user||currentSession),cloudAuthSession?.user?"Sesión Supabase activa.":currentSession?"Sesión offline recuperada.":"No hay sesión.");
+ try{await openKucheOfflineDB();add("Almacenamiento offline",true,"IndexedDB disponible.");}catch(e){add("Almacenamiento offline",false,e.message);}
+ const pending=await kucheOfflineCount();add("Cola de sincronización",pending===0,pending?`${pending} operación(es) pendiente(s).`:"No hay operaciones pendientes.",pending>0);
+ add("Organización",!!cloudOrganization,cloudOrganization?.name||"No cargada.");
+ systemDiagnostics.innerHTML=rows.map(r=>`<div class="system-diagnostic-row ${r.ok?"ok":r.warn?"warn":"bad"}"><span>${escapeHTML(r.name)}<br><small>${escapeHTML(r.detail)}</small></span><strong>${r.ok?"OK":r.warn?"REVISAR":"ERROR"}</strong></div>`).join("");
+ await renderSystemInfo();
+}
+
+/* ---------- Navegación ---------- */
+const _continuityWorkerCanAccess=workerCanAccess;
+workerCanAccess=function(pageId){
+ if(["systeminfo","manual","rules","myattendance"].includes(pageId))return true;
+ return _continuityWorkerCanAccess(pageId);
+};
+const _continuityShowPage=showPage;
+showPage=function(pageId,button){
+ _continuityShowPage(pageId,button);
+ if(pageId==="systeminfo")renderSystemInfo();
+ if(pageId==="manual")renderManualPage();
+ setTimeout(enhanceKucheContextHelp,20);
+};
+
+/* ---------- Inicialización fase ---------- */
+registerKucheServiceWorker().then(()=>refreshKucheConnectivityUI());
+setTimeout(async()=>{
+ await refreshKucheConnectivityUI();enhanceKucheContextHelp();renderSystemInfo();
+ if(navigator.onLine)setTimeout(()=>flushKucheOfflineQueue(false),1200);
+},120);
+
+
+
+
+/* =====================================================
+   KÜCHE CONTROL ADMINISTRATIVO
+   Asistencia · Gastos extraordinarios · Bienes anuales
+===================================================== */
+appSettings.attendanceEarlyMinutes=Number.isFinite(Number(appSettings.attendanceEarlyMinutes))?Number(appSettings.attendanceEarlyMinutes):5;
+appSettings.attendanceGraceMinutes=Number.isFinite(Number(appSettings.attendanceGraceMinutes))?Number(appSettings.attendanceGraceMinutes):5;
+appSettings.attendanceRequireShift=appSettings.attendanceRequireShift!==false;
+appSettings.assetInventoryMonth=Math.min(12,Math.max(1,Number(appSettings.assetInventoryMonth)||1));
+appSettings.assetInventoryDay=Math.min(28,Math.max(1,Number(appSettings.assetInventoryDay)||15));
+appSettings.assetInventoryWarningDays=Math.max(0,Number(appSettings.assetInventoryWarningDays)||30);
+
+let operationalExpenses=JSON.parse(localStorage.getItem("kucheOperationalExpenses")||"[]");
+let assetItems=JSON.parse(localStorage.getItem("kucheAssetItems")||"[]");
+let assetInventoryCycles=JSON.parse(localStorage.getItem("kucheAssetInventoryCycles")||"[]");
+let assetInventoryCounts=JSON.parse(localStorage.getItem("kucheAssetInventoryCounts")||"[]");
+let editingExpenseId=null,editingAssetItemId=null;
+let myAttendanceWindow=null;
+
+function kucheNewUUID(){
+ if(crypto?.randomUUID)return crypto.randomUUID();
+ return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{const r=Math.random()*16|0,v=c==="x"?r:(r&3|8);return v.toString(16);});
+}
+function saveAdminControlLocal(){
+ localStorage.setItem("kucheOperationalExpenses",JSON.stringify(operationalExpenses));
+ localStorage.setItem("kucheAssetItems",JSON.stringify(assetItems));
+ localStorage.setItem("kucheAssetInventoryCycles",JSON.stringify(assetInventoryCycles));
+ localStorage.setItem("kucheAssetInventoryCounts",JSON.stringify(assetInventoryCounts));
+}
+
+/* ---------- Configuración de asistencia e inventario anual ---------- */
+const _adminControlLoadSettingsForm=loadSettingsForm;
+loadSettingsForm=function(){
+ _adminControlLoadSettingsForm();
+ const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=String(val);};
+ set("settingsAttendanceEarlyMinutes",appSettings.attendanceEarlyMinutes??5);
+ set("settingsAttendanceGraceMinutes",appSettings.attendanceGraceMinutes??5);
+ set("settingsAttendanceRequireShift",appSettings.attendanceRequireShift===false?"false":"true");
+ set("settingsAssetInventoryMonth",appSettings.assetInventoryMonth||1);
+ set("settingsAssetInventoryDay",appSettings.assetInventoryDay||15);
+ set("settingsAssetInventoryWarningDays",appSettings.assetInventoryWarningDays??30);
+};
+const _adminControlSaveAllSettings=saveAllSettings;
+saveAllSettings=function(){
+ const n=id=>Number(document.getElementById(id)?.value);
+ appSettings.attendanceEarlyMinutes=Math.max(0,Math.min(180,n("settingsAttendanceEarlyMinutes")||0));
+ appSettings.attendanceGraceMinutes=Math.max(0,Math.min(180,n("settingsAttendanceGraceMinutes")||0));
+ appSettings.attendanceRequireShift=document.getElementById("settingsAttendanceRequireShift")?.value!=="false";
+ appSettings.assetInventoryMonth=Math.max(1,Math.min(12,n("settingsAssetInventoryMonth")||1));
+ appSettings.assetInventoryDay=Math.max(1,Math.min(28,n("settingsAssetInventoryDay")||15));
+ appSettings.assetInventoryWarningDays=Math.max(0,Math.min(120,n("settingsAssetInventoryWarningDays")||0));
+ _adminControlSaveAllSettings();
+ setTimeout(syncAdminControlSettingsToCloud,250);
+ renderAssets();
+};
+async function syncAdminControlSettingsToCloud(){
+ if(!kucheCloud||!cloudOrganization||!["admin","manager"].includes(currentSession?.accessRole||""))return;
+ try{
+   const {data}=await kucheCloud.from("organization_settings").select("settings").eq("organization_id",cloudOrganization.id).maybeSingle();
+   const settings={...(data?.settings||{}),
+     attendance_early_minutes:Number(appSettings.attendanceEarlyMinutes||0),
+     attendance_grace_minutes:Number(appSettings.attendanceGraceMinutes||0),
+     attendance_require_shift:appSettings.attendanceRequireShift!==false,
+     asset_inventory_month:Number(appSettings.assetInventoryMonth||1),
+     asset_inventory_day:Number(appSettings.assetInventoryDay||15),
+     asset_inventory_warning_days:Number(appSettings.assetInventoryWarningDays||30)
+   };
+   const {error}=await kucheCloud.from("organization_settings").update({settings}).eq("organization_id",cloudOrganization.id);
+   if(error)throw error;
+ }catch(e){console.warn("Configuración administrativa cloud",e.message);}
+}
+const _adminControlHydrate=hydrateCloudBasicSettings;
+hydrateCloudBasicSettings=async function(){
+ await _adminControlHydrate();
+ if(!kucheCloud||!cloudOrganization)return;
+ try{
+   const {data}=await kucheCloud.from("organization_settings").select("settings").eq("organization_id",cloudOrganization.id).maybeSingle();
+   const s=data?.settings||{};
+   if(s.attendance_early_minutes!==undefined)appSettings.attendanceEarlyMinutes=Math.max(0,Number(s.attendance_early_minutes)||0);
+   if(s.attendance_grace_minutes!==undefined)appSettings.attendanceGraceMinutes=Math.max(0,Number(s.attendance_grace_minutes)||0);
+   if(s.attendance_require_shift!==undefined)appSettings.attendanceRequireShift=!!s.attendance_require_shift;
+   if(s.asset_inventory_month!==undefined)appSettings.assetInventoryMonth=Math.max(1,Math.min(12,Number(s.asset_inventory_month)||1));
+   if(s.asset_inventory_day!==undefined)appSettings.assetInventoryDay=Math.max(1,Math.min(28,Number(s.asset_inventory_day)||15));
+   if(s.asset_inventory_warning_days!==undefined)appSettings.assetInventoryWarningDays=Math.max(0,Number(s.asset_inventory_warning_days)||0);
+   saveAppSettings();loadSettingsForm();
+ }catch(e){console.warn("Lectura configuración administrativa",e.message);}
+};
+
+/* ---------- Turnos en nube: necesarios para validar asistencia ---------- */
+async function loadCloudShiftsForAttendance(){
+ if(!kucheCloud||!cloudOrganization)return;
+ try{
+   const start=new Date();start.setDate(start.getDate()-45);
+   const end=new Date();end.setDate(end.getDate()+120);
+   const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+   const {data,error}=await kucheCloud.from("shifts").select("id,staff_id,shift_date,planned_start,planned_end,break_minutes,is_holiday,notes")
+     .eq("organization_id",cloudOrganization.id).gte("shift_date",iso(start)).lte("shift_date",iso(end));
+   if(error)throw error;
+   const pending=shifts.filter(s=>!s.cloudId);
+   const mapped=(data||[]).map(row=>{
+     const w=staff.find(x=>String(x.cloudStaffId||x.id)===String(row.staff_id));
+     return {id:row.id,cloudId:row.id,staffId:w?.id||row.staff_id,cloudStaffId:row.staff_id,staffName:w?.name||"Trabajador",
+       date:row.shift_date,start:String(row.planned_start||"").slice(0,5),end:String(row.planned_end||"").slice(0,5),
+       breakMinutes:Number(row.break_minutes||0),isHoliday:!!row.is_holiday,
+       plannedHours:calculateWorkedHours(String(row.planned_start||"").slice(0,5),String(row.planned_end||"").slice(0,5),Number(row.break_minutes||0)),
+       notes:row.notes||""};
+   });
+   shifts=[...mapped,...pending.filter(p=>!mapped.some(m=>String(m.cloudStaffId)===String(p.cloudStaffId)&&m.date===p.date))];
+   saveShiftData();renderShifts();updateShiftStats();
+ }catch(e){console.warn("Turnos cloud",e.message);}
+}
+const _adminControlSaveShift=saveShift;
+saveShift=async function(){
+ const worker=staff.find(w=>String(w.id)===String(document.getElementById("shiftStaff")?.value));
+ const captured={worker,date:document.getElementById("shiftDate")?.value,start:document.getElementById("shiftStart")?.value,end:document.getElementById("shiftEnd")?.value,
+   breakMinutes:Number(document.getElementById("shiftBreak")?.value)||0,isHoliday:!!document.getElementById("shiftHoliday")?.checked};
+ _adminControlSaveShift();
+ if(!worker||!captured.date||!kucheCloud||!cloudOrganization||!worker.cloudStaffId)return;
+ const local=shifts.find(s=>String(s.staffId)===String(worker.id)&&s.date===captured.date);
+ try{
+   const payload={organization_id:cloudOrganization.id,staff_id:worker.cloudStaffId,shift_date:captured.date,planned_start:captured.start,planned_end:captured.end,break_minutes:captured.breakMinutes,is_holiday:captured.isHoliday,notes:local?.notes||null};
+   const {data,error}=await kucheCloud.from("shifts").upsert(payload,{onConflict:"staff_id,shift_date"}).select("id").single();
+   if(error)throw error;if(local){local.cloudId=data.id;saveShiftData();}
+ }catch(e){alert("El turno quedó guardado en este dispositivo, pero no se pudo sincronizar: "+e.message);}
+};
+const _adminControlDeleteShift=deleteShift;
+deleteShift=async function(id){
+ const before=shifts.find(s=>String(s.id)===String(id));
+ _adminControlDeleteShift(id);
+ const still=shifts.some(s=>String(s.id)===String(id));
+ if(before&&!still&&before.cloudId&&kucheCloud){
+   try{const {error}=await kucheCloud.from("shifts").delete().eq("id",before.cloudId);if(error)throw error;}catch(e){console.warn("Eliminar turno cloud",e.message);}
+ }
+};
+const _adminShiftMetrics=shiftMetrics;
+shiftMetrics=function(shift){
+ const att=attendance.find(a=>String(a.staffId)===String(shift.staffId)&&a.date===shift.date&&a.status==="presente");
+ const base=_adminShiftMetrics(shift);
+ if(att&&Number.isFinite(Number(att.lateMinutes)))base.late=Number(att.lateMinutes||0);
+ return base;
+};
+
+/* ---------- Ventana personal de marcación ---------- */
+async function loadMyAttendanceWindow(){
+ const box=document.getElementById("selfAttendancePolicy");if(!box)return;
+ if(!kucheCloud||!navigator.onLine){
+   box.className="attendance-policy-card warn";
+   box.textContent="Sin conexión: la validación oficial de horario se realizará cuando KÜCHE vuelva a conectarse. La asistencia personal requiere conexión con la nube.";
+   return;
+ }
+ try{
+   const {data,error}=await kucheCloud.rpc("get_my_attendance_window");
+   if(error)throw error;myAttendanceWindow=data||null;
+   if(!data?.has_schedule){
+     box.className="attendance-policy-card warn";
+     box.textContent=data?.require_shift?"No tienes un turno u horario habitual válido para hoy. Pide al administrador que revise tu planificación.":"Hoy no existe horario configurado. La marcación está permitida porque el administrador no exige turno.";
+     return;
+   }
+   const late=!!data.is_late;
+   const early=!!data.too_early;
+   box.className="attendance-policy-card"+(late?" late":early?" warn":"");
+   const range=`Turno: ${String(data.planned_start||"").slice(0,5)}–${String(data.planned_end||"").slice(0,5)}. Puedes marcar desde ${String(data.earliest_clock_in||"").slice(0,5)}. Tolerancia hasta ${String(data.grace_until||"").slice(0,5)}.`;
+   box.textContent=early?`${range} Aún es demasiado temprano para marcar.`:late?`${range} Si marcas ahora, KÜCHE registrará atraso.`:`${range} Estás dentro del horario permitido.`;
+   const btn=document.getElementById("selfClockInButton");
+   if(btn&&!ops3TodaySelfRecord()?.start)btn.disabled=early;
+ }catch(e){
+   box.className="attendance-policy-card warn";box.textContent="No se pudo comprobar el horario permitido: "+e.message;
+ }
+}
+const _adminControlLoadSelfAttendance=loadSelfAttendance;
+loadSelfAttendance=async function(showStatus=false){await _adminControlLoadSelfAttendance(showStatus);await loadMyAttendanceWindow();};
+const _adminControlRenderSelfAttendance=renderSelfAttendance;
+renderSelfAttendance=function(){
+ _adminControlRenderSelfAttendance();
+ const rec=ops3TodaySelfRecord();
+ if(rec?.lateMinutes>0){
+   selfAttendanceDetail.textContent=`Entrada registrada a las ${ops3FormatTime(rec.start)} · Atraso registrado: ${Number(rec.lateMinutes)} min.`;
+ }
+};
+const _adminControlClockInSelf=clockInSelf;
+clockInSelf=async function(){await _adminControlClockInSelf();await loadMyAttendanceWindow();};
+
+/* ---------- Gastos extraordinarios ---------- */
+function openExpenseForm(id=null){
+ editingExpenseId=id;
+ const r=id?operationalExpenses.find(x=>String(x.id)===String(id)):null;
+ expenseFormTitle.textContent=r?"Editar gasto":"Nuevo gasto";
+ expenseDate.value=r?.date||getToday();expenseCategory.value=r?.category||"Remodelación";expenseTotal.value=Number(r?.total||0)||"";
+ expensePayee.value=r?.payee||"";expensePaymentMethod.value=r?.paymentMethod||"";expenseDocument.value=r?.documentNumber||"";
+ expenseDescription.value=r?.description||"";expenseNotes.value=r?.notes||"";expenseFormPanel.classList.add("open");
+}
+function closeExpenseForm(){editingExpenseId=null;document.getElementById("expenseFormPanel")?.classList.remove("open");}
+async function saveOperationalExpense(){
+ const date=expenseDate.value,category=expenseCategory.value,total=Math.max(0,Number(expenseTotal.value)||0),description=expenseDescription.value.trim();
+ if(!date||!category||total<=0||!description){alert("Completa fecha, categoría, descripción y monto.");return;}
+ let r=editingExpenseId?operationalExpenses.find(x=>String(x.id)===String(editingExpenseId)):null;
+ if(!r){r={id:kucheNewUUID(),createdAt:new Date().toISOString(),status:"activo"};operationalExpenses.unshift(r);}
+ Object.assign(r,{date,category,total,description,payee:expensePayee.value.trim(),paymentMethod:expensePaymentMethod.value,documentNumber:expenseDocument.value.trim(),notes:expenseNotes.value.trim(),status:r.status||"activo",updatedAt:new Date().toISOString(),pendingSync:true});
+ saveAdminControlLocal();closeExpenseForm();renderOperationalExpenses();
+ await kucheOfflinePut({key:`expense:${r.id}`,type:"operational_expense",entity_id:r.id,reason:"Gasto extraordinario",payload:kucheOfflineClone(r),device_id:kucheDeviceId(),user_id:currentSession?.userId||null,user_name:currentSession?.name||"Usuario",occurred_at:new Date().toISOString(),updated_at:new Date().toISOString()});
+ refreshKucheConnectivityUI();if(navigator.onLine)setTimeout(()=>flushKucheOfflineQueue(false),350);
+}
+async function voidOperationalExpense(id){
+ const r=operationalExpenses.find(x=>String(x.id)===String(id));if(!r||r.status==="anulado")return;
+ if(!confirm("¿Anular este gasto? Permanecerá en el historial."))return;
+ r.status="anulado";r.updatedAt=new Date().toISOString();r.pendingSync=true;saveAdminControlLocal();renderOperationalExpenses();
+ await kucheOfflinePut({key:`expense:${r.id}`,type:"operational_expense",entity_id:r.id,reason:"Gasto anulado",payload:kucheOfflineClone(r),device_id:kucheDeviceId(),user_id:currentSession?.userId||null,user_name:currentSession?.name||"Usuario",occurred_at:new Date().toISOString(),updated_at:new Date().toISOString()});
+ if(navigator.onLine)setTimeout(()=>flushKucheOfflineQueue(false),350);
+}
+function renderOperationalExpenses(){
+ if(!document.getElementById("expenseTableBody"))return;
+ const q=(document.getElementById("expenseSearch")?.value||"").toLowerCase(),year=String(new Date().getFullYear()),month=getCurrentMonthPrefix();
+ const active=operationalExpenses.filter(x=>x.status!=="anulado");
+ const thisYear=active.filter(x=>String(x.date||"").startsWith(year)),thisMonth=active.filter(x=>String(x.date||"").startsWith(month));
+ expenseMonthTotal.textContent="$"+formatMoney(thisMonth.reduce((s,x)=>s+Number(x.total||0),0));
+ expenseYearTotal.textContent="$"+formatMoney(thisYear.reduce((s,x)=>s+Number(x.total||0),0));
+ expenseYearCount.textContent=thisYear.length;
+ expenseRenovationTotal.textContent="$"+formatMoney(thisYear.filter(x=>x.category==="Remodelación").reduce((s,x)=>s+Number(x.total||0),0));
+ const list=operationalExpenses.filter(x=>(`${x.category} ${x.description} ${x.payee||""} ${x.documentNumber||""}`).toLowerCase().includes(q)).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+ expenseTableBody.innerHTML=list.length?list.map(x=>`<tr class="${x.status==="anulado"?"expense-cancelled":""}"><td>${formatDate(x.date)}</td><td>${escapeHTML(x.category)}</td><td><strong>${escapeHTML(x.description)}</strong>${x.notes?`<div class="category">${escapeHTML(x.notes)}</div>`:""}</td><td>${escapeHTML(x.payee||"—")}</td><td>${escapeHTML(x.paymentMethod||"—")}</td><td><strong>$${formatMoney(x.total)}</strong></td><td><span class="badge ${x.status==="anulado"?"badge-danger":"badge-success"}">${x.status==="anulado"?"Anulado":"Activo"}</span></td><td><div class="actions">${x.status!=="anulado"?`<button class="secondary-button" onclick="openExpenseForm('${ops2EscapeAttr(x.id)}')">Editar</button><button class="danger-button" onclick="voidOperationalExpense('${ops2EscapeAttr(x.id)}')">Anular</button>`:"—"}</div></td></tr>`).join(""):'<tr><td colspan="8"><div class="empty-state"><strong>Sin gastos registrados</strong></div></td></tr>';
+}
+async function syncOperationalExpenseRow(row){
+ const x=row.payload;if(!x||!kucheCloud||!cloudOrganization)throw new Error("Nube no disponible");
+ const payload={id:x.id,organization_id:cloudOrganization.id,expense_date:x.date,category:x.category,description:x.description,payee:x.payee||null,total_amount:Number(x.total||0),payment_method:x.paymentMethod||null,document_number:x.documentNumber||null,notes:x.notes||null,status:x.status||"activo",updated_at:new Date().toISOString()};
+ const {error}=await kucheCloud.from("operational_expenses").upsert(payload,{onConflict:"id"});if(error)throw error;
+ const local=operationalExpenses.find(e=>String(e.id)===String(x.id));if(local)local.pendingSync=false;saveAdminControlLocal();return true;
+}
+
+/* ---------- Bienes y materiales ---------- */
+function currentAssetCycle(){const y=new Date().getFullYear();return assetInventoryCycles.find(c=>Number(c.year)===y&&c.status!=="anulado")||null;}
+function assetDueDate(year=new Date().getFullYear()){return `${year}-${String(appSettings.assetInventoryMonth||1).padStart(2,"0")}-${String(appSettings.assetInventoryDay||15).padStart(2,"0")}`;}
+function openAssetItemForm(id=null){
+ editingAssetItemId=id;const x=id?assetItems.find(a=>String(a.id)===String(id)):null;
+ assetItemFormTitle.textContent=x?"Editar bien o material":"Nuevo bien o material";assetName.value=x?.name||"";assetCategory.value=x?.category||"Cubiertos";
+ assetArea.value=x?.area||"";assetUnit.value=x?.unit||"unidad";assetExpectedQty.value=Number(x?.expectedQty||0);assetReferenceCost.value=Number(x?.referenceCost||0);assetNotes.value=x?.notes||"";
+ assetItemFormPanel.classList.add("open");
+}
+function closeAssetItemForm(){editingAssetItemId=null;document.getElementById("assetItemFormPanel")?.classList.remove("open");}
+async function saveAssetItem(){
+ const name=assetName.value.trim(),expected=Math.max(0,Number(assetExpectedQty.value)||0);if(!name){alert("Escribe el nombre del bien o material.");return;}
+ let x=editingAssetItemId?assetItems.find(a=>String(a.id)===String(editingAssetItemId)):null;
+ if(!x){x={id:kucheNewUUID(),createdAt:new Date().toISOString(),active:true};assetItems.push(x);}
+ Object.assign(x,{name,category:assetCategory.value,area:assetArea.value.trim(),unit:assetUnit.value.trim()||"unidad",expectedQty:expected,referenceCost:Math.max(0,Number(assetReferenceCost.value)||0),notes:assetNotes.value.trim(),active:true,updatedAt:new Date().toISOString(),pendingSync:true});
+ saveAdminControlLocal();closeAssetItemForm();renderAssets();
+ await kucheOfflinePut({key:`asset-item:${x.id}`,type:"asset_item",entity_id:x.id,reason:"Bien o material actualizado",payload:kucheOfflineClone(x),device_id:kucheDeviceId(),user_id:currentSession?.userId||null,user_name:currentSession?.name||"Usuario",occurred_at:new Date().toISOString(),updated_at:new Date().toISOString()});
+ if(navigator.onLine)setTimeout(()=>flushKucheOfflineQueue(false),350);
+}
+async function deactivateAssetItem(id){
+ const x=assetItems.find(a=>String(a.id)===String(id));if(!x)return;if(!confirm("¿Desactivar este bien? Se conservará el historial anual."))return;
+ x.active=false;x.updatedAt=new Date().toISOString();x.pendingSync=true;saveAdminControlLocal();renderAssets();
+ await kucheOfflinePut({key:`asset-item:${x.id}`,type:"asset_item",entity_id:x.id,reason:"Bien desactivado",payload:kucheOfflineClone(x),device_id:kucheDeviceId(),user_id:currentSession?.userId||null,user_name:currentSession?.name||"Usuario",occurred_at:new Date().toISOString(),updated_at:new Date().toISOString()});
+ if(navigator.onLine)setTimeout(()=>flushKucheOfflineQueue(false),350);
+}
+async function startAnnualAssetInventory(){
+ const year=new Date().getFullYear();let cycle=currentAssetCycle();
+ if(cycle){openAssetCountPanel();return;}
+ if(!assetItems.some(x=>x.active!==false)){alert("Primero agrega los bienes o materiales que quieres contar cada año.");return;}
+ cycle={id:kucheNewUUID(),year,dueDate:assetDueDate(year),status:"abierto",startedAt:new Date().toISOString(),completedAt:null,notes:"",pendingSync:true};
+ assetInventoryCycles.unshift(cycle);saveAdminControlLocal();renderAssets();openAssetCountPanel();
+ await kucheOfflinePut({key:`asset-cycle:${cycle.id}`,type:"asset_cycle",entity_id:cycle.id,reason:"Inventario anual iniciado",payload:kucheOfflineClone(cycle),device_id:kucheDeviceId(),user_id:currentSession?.userId||null,user_name:currentSession?.name||"Usuario",occurred_at:new Date().toISOString(),updated_at:new Date().toISOString()});
+ if(navigator.onLine)setTimeout(()=>flushKucheOfflineQueue(false),350);
+}
+function openAssetCountPanel(){
+ const cycle=currentAssetCycle();if(!cycle){startAnnualAssetInventory();return;}
+ assetCountCycleLabel.textContent=`Inventario ${cycle.year} · fecha objetivo ${formatDate(cycle.dueDate)}.`;
+ const active=assetItems.filter(x=>x.active!==false);assetCountItem.innerHTML=active.map(x=>`<option value="${ops2EscapeAttr(x.id)}">${escapeHTML(x.name)} · esperado ${formatNumber(x.expectedQty)}</option>`).join("");
+ assetCountResponsible.value=currentSession?.name||"";assetCountNotes.value="";assetCountPanel.classList.add("open");prefillAssetCount();
+}
+function closeAssetCountPanel(){document.getElementById("assetCountPanel")?.classList.remove("open");}
+function prefillAssetCount(){
+ const cycle=currentAssetCycle(),item=assetItems.find(x=>String(x.id)===String(assetCountItem.value));if(!cycle||!item)return;
+ const old=assetInventoryCounts.find(c=>String(c.cycleId)===String(cycle.id)&&String(c.assetItemId)===String(item.id));
+ assetCountQty.value=old?Number(old.countedQty||0):Number(item.expectedQty||0);assetCountGood.value=old?Number(old.goodQty||0):Number(item.expectedQty||0);
+ assetCountRepair.value=Number(old?.repairQty||0);assetCountReplace.value=Number(old?.replaceQty||0);assetCountResponsible.value=old?.responsible||currentSession?.name||"";assetCountNotes.value=old?.notes||"";
+}
+async function saveAssetAnnualCount(){
+ const cycle=currentAssetCycle(),item=assetItems.find(x=>String(x.id)===String(assetCountItem.value));if(!cycle||!item)return;
+ const counted=Math.max(0,Number(assetCountQty.value)||0),good=Math.max(0,Number(assetCountGood.value)||0),repair=Math.max(0,Number(assetCountRepair.value)||0),replace=Math.max(0,Number(assetCountReplace.value)||0);
+ if(Math.abs((good+repair+replace)-counted)>0.001){alert("Buen estado + reparación + reemplazo debe ser igual a la cantidad encontrada.");return;}
+ let c=assetInventoryCounts.find(x=>String(x.cycleId)===String(cycle.id)&&String(x.assetItemId)===String(item.id));
+ if(!c){c={id:kucheNewUUID(),cycleId:cycle.id,assetItemId:item.id,year:cycle.year};assetInventoryCounts.push(c);}
+ Object.assign(c,{countedQty:counted,goodQty:good,repairQty:repair,replaceQty:replace,responsible:assetCountResponsible.value.trim()||currentSession?.name||"",notes:assetCountNotes.value.trim(),countedAt:new Date().toISOString(),pendingSync:true});
+ saveAdminControlLocal();renderAssets();prefillAssetCount();
+ await kucheOfflinePut({key:`asset-count:${c.id}`,type:"asset_count",entity_id:c.id,reason:"Conteo anual de bien",payload:kucheOfflineClone(c),device_id:kucheDeviceId(),user_id:currentSession?.userId||null,user_name:currentSession?.name||"Usuario",occurred_at:new Date().toISOString(),updated_at:new Date().toISOString()});
+ if(navigator.onLine)setTimeout(()=>flushKucheOfflineQueue(false),350);
+}
+async function completeAnnualAssetInventory(){
+ const cycle=currentAssetCycle();if(!cycle||cycle.status==="completado")return;
+ const active=assetItems.filter(x=>x.active!==false),counts=assetInventoryCounts.filter(c=>String(c.cycleId)===String(cycle.id));
+ const missing=active.filter(a=>!counts.some(c=>String(c.assetItemId)===String(a.id)));
+ if(missing.length){alert(`Faltan ${missing.length} bien(es) por contar. Completa todo el catálogo antes de finalizar.`);return;}
+ if(!confirm("¿Finalizar el inventario anual? Quedará cerrado con la fecha actual."))return;
+ cycle.status="completado";cycle.completedAt=new Date().toISOString();cycle.pendingSync=true;saveAdminControlLocal();renderAssets();
+ await kucheOfflinePut({key:`asset-cycle:${cycle.id}`,type:"asset_cycle",entity_id:cycle.id,reason:"Inventario anual finalizado",payload:kucheOfflineClone(cycle),device_id:kucheDeviceId(),user_id:currentSession?.userId||null,user_name:currentSession?.name||"Usuario",occurred_at:new Date().toISOString(),updated_at:new Date().toISOString()});
+ if(navigator.onLine)setTimeout(()=>flushKucheOfflineQueue(false),350);
+}
+function assetAnnualStatus(){
+ const year=new Date().getFullYear(),cycle=assetInventoryCycles.find(c=>Number(c.year)===year&&c.status!=="anulado"),today=getToday(),due=assetDueDate(year);
+ if(cycle?.status==="completado")return{state:"done",text:`Inventario anual ${year} completado el ${formatDate(String(cycle.completedAt).slice(0,10))}.`,cycle};
+ const warning=new Date(due+"T12:00:00");warning.setDate(warning.getDate()-Number(appSettings.assetInventoryWarningDays||0));const warnISO=getLocalDateString(warning);
+ if(today>due)return{state:"overdue",text:`Inventario anual ${year} vencido. La fecha objetivo era ${formatDate(due)}.`,cycle};
+ if(today>=warnISO)return{state:"due",text:`Inventario anual ${year} próximo. Fecha objetivo: ${formatDate(due)}.`,cycle};
+ return{state:"normal",text:`Próximo inventario anual: ${formatDate(due)}.`,cycle};
+}
+function renderAssets(){
+ if(!document.getElementById("assetCatalogList"))return;
+ const active=assetItems.filter(x=>x.active!==false),cycle=currentAssetCycle(),counts=cycle?assetInventoryCounts.filter(c=>String(c.cycleId)===String(cycle.id)):[];
+ const status=assetAnnualStatus();assetAnnualBanner.className="asset-annual-banner "+status.state;assetAnnualBanner.textContent=status.text;
+ assetItemCount.textContent=active.length;assetExpectedTotal.textContent=formatNumber(active.reduce((s,x)=>s+Number(x.expectedQty||0),0));
+ assetAnnualProgress.textContent=active.length?Math.round(counts.filter(c=>active.some(a=>String(a.id)===String(c.assetItemId))).length/active.length*100)+"%":"0%";
+ assetAttentionCount.textContent=counts.reduce((s,c)=>s+Number(c.repairQty||0)+Number(c.replaceQty||0),0);
+ assetCatalogList.innerHTML=active.length?active.sort((a,b)=>a.name.localeCompare(b.name)).map(x=>`<div class="system-info-row"><span><strong>${escapeHTML(x.name)}</strong><br><small>${escapeHTML(x.category)} · ${escapeHTML(x.area||"Sin área")} · ${formatNumber(x.expectedQty)} ${escapeHTML(x.unit||"unidad")}</small></span><div class="asset-row-actions"><button class="secondary-button" onclick="openAssetItemForm('${ops2EscapeAttr(x.id)}')">Editar</button><button class="danger-button" onclick="deactivateAssetItem('${ops2EscapeAttr(x.id)}')">Desactivar</button></div></div>`).join(""):'<div class="inline-note">Todavía no has creado el catálogo de bienes.</div>';
+ assetAnnualList.innerHTML=active.length?active.sort((a,b)=>a.name.localeCompare(b.name)).map(x=>{const c=counts.find(z=>String(z.assetItemId)===String(x.id));const diff=c?Number(c.countedQty||0)-Number(x.expectedQty||0):null;return `<div class="system-info-row"><span><strong>${escapeHTML(x.name)}</strong><div class="asset-condition-line">${c?`Esperado ${formatNumber(x.expectedQty)} · Encontrado ${formatNumber(c.countedQty)} · Diferencia ${diff>0?"+":""}${formatNumber(diff)}<br>Buen estado ${formatNumber(c.goodQty)} · Reparar ${formatNumber(c.repairQty)} · Reemplazar ${formatNumber(c.replaceQty)}`:"Pendiente de contar"}</div></span><strong>${c?(Number(c.repairQty||0)+Number(c.replaceQty||0)>0?"Revisar":"Contado"):"Pendiente"}</strong></div>`}).join(""):'<div class="inline-note">Agrega bienes para comenzar.</div>';
+ const cycles=assetInventoryCycles.slice().sort((a,b)=>Number(b.year)-Number(a.year));
+ assetCycleHistory.innerHTML=cycles.length?cycles.map(c=>{const total=assetItems.filter(a=>a.active!==false).length,done=assetInventoryCounts.filter(x=>String(x.cycleId)===String(c.id)).length;return `<tr><td>${c.year}</td><td><span class="badge ${c.status==="completado"?"badge-success":"badge-warning"}">${c.status==="completado"?"Completado":"Abierto"}</span></td><td>${formatDate(c.dueDate)}</td><td>${c.completedAt?formatDate(String(c.completedAt).slice(0,10)):"—"}</td><td>${total?Math.min(100,Math.round(done/total*100)):0}%</td></tr>`}).join(""):'<tr><td colspan="5"><div class="empty-state"><strong>Sin inventarios anuales</strong></div></td></tr>';
+ completeAssetCycleButton.disabled=!cycle||cycle.status==="completado";
+}
+async function syncAssetItemRow(row){
+ const x=row.payload;if(!x||!kucheCloud||!cloudOrganization)throw new Error("Nube no disponible");
+ const {error}=await kucheCloud.from("asset_items").upsert({id:x.id,organization_id:cloudOrganization.id,name:x.name,category:x.category,area:x.area||null,unit_name:x.unit||"unidad",expected_quantity:Number(x.expectedQty||0),reference_unit_cost:Number(x.referenceCost||0),notes:x.notes||null,active:x.active!==false,updated_at:new Date().toISOString()},{onConflict:"id"});if(error)throw error;
+ const local=assetItems.find(a=>String(a.id)===String(x.id));if(local)local.pendingSync=false;saveAdminControlLocal();return true;
+}
+async function syncAssetCycleRow(row){
+ const x=row.payload;if(!x||!kucheCloud||!cloudOrganization)throw new Error("Nube no disponible");
+ const {error}=await kucheCloud.from("asset_inventory_cycles").upsert({id:x.id,organization_id:cloudOrganization.id,inventory_year:Number(x.year),due_date:x.dueDate,status:x.status||"abierto",started_at:x.startedAt||new Date().toISOString(),completed_at:x.completedAt||null,notes:x.notes||null,updated_at:new Date().toISOString()},{onConflict:"id"});if(error)throw error;
+ const local=assetInventoryCycles.find(a=>String(a.id)===String(x.id));if(local)local.pendingSync=false;saveAdminControlLocal();return true;
+}
+async function syncAssetCountRow(row){
+ const x=row.payload;if(!x||!kucheCloud||!cloudOrganization)throw new Error("Nube no disponible");
+ const {error}=await kucheCloud.from("asset_inventory_counts").upsert({id:x.id,organization_id:cloudOrganization.id,cycle_id:x.cycleId,asset_item_id:x.assetItemId,counted_quantity:Number(x.countedQty||0),good_quantity:Number(x.goodQty||0),repair_quantity:Number(x.repairQty||0),replace_quantity:Number(x.replaceQty||0),responsible_name:x.responsible||null,notes:x.notes||null,counted_at:x.countedAt||new Date().toISOString()},{onConflict:"id"});if(error)throw error;
+ const local=assetInventoryCounts.find(a=>String(a.id)===String(x.id));if(local)local.pendingSync=false;saveAdminControlLocal();return true;
+}
+
+/* La cola offline existente también sincroniza estos módulos */
+const _adminControlSyncAuditRow=syncKucheAuditRow;
+syncKucheAuditRow=async function(row){
+ if(row?.type==="operational_expense")return syncOperationalExpenseRow(row);
+ if(row?.type==="asset_item")return syncAssetItemRow(row);
+ if(row?.type==="asset_cycle")return syncAssetCycleRow(row);
+ if(row?.type==="asset_count")return syncAssetCountRow(row);
+ return _adminControlSyncAuditRow(row);
+};
+
+/* ---------- Cargar gastos, bienes y turnos cloud ---------- */
+async function loadAdminControlCloudData(){
+ if(!kucheCloud||!cloudOrganization)return;
+ try{
+   const [{data:ex,error:exE},{data:ai,error:aiE},{data:cy,error:cyE},{data:co,error:coE}]=await Promise.all([
+     kucheCloud.from("operational_expenses").select("*").eq("organization_id",cloudOrganization.id).order("expense_date",{ascending:false}),
+     kucheCloud.from("asset_items").select("*").eq("organization_id",cloudOrganization.id).order("name"),
+     kucheCloud.from("asset_inventory_cycles").select("*").eq("organization_id",cloudOrganization.id).order("inventory_year",{ascending:false}),
+     kucheCloud.from("asset_inventory_counts").select("*").eq("organization_id",cloudOrganization.id).order("counted_at",{ascending:false})
+   ]);
+   if(exE)throw exE;if(aiE)throw aiE;if(cyE)throw cyE;if(coE)throw coE;
+   const pendingExpenses=operationalExpenses.filter(x=>x.pendingSync);
+   operationalExpenses=(ex||[]).map(x=>({id:x.id,date:x.expense_date,category:x.category,description:x.description,payee:x.payee||"",total:Number(x.total_amount||0),paymentMethod:x.payment_method||"",documentNumber:x.document_number||"",notes:x.notes||"",status:x.status||"activo",createdAt:x.created_at,updatedAt:x.updated_at})).concat(pendingExpenses.filter(p=>!(ex||[]).some(x=>String(x.id)===String(p.id))));
+   const pendingItems=assetItems.filter(x=>x.pendingSync),pendingCycles=assetInventoryCycles.filter(x=>x.pendingSync),pendingCounts=assetInventoryCounts.filter(x=>x.pendingSync);
+   assetItems=(ai||[]).map(x=>({id:x.id,name:x.name,category:x.category,area:x.area||"",unit:x.unit_name||"unidad",expectedQty:Number(x.expected_quantity||0),referenceCost:Number(x.reference_unit_cost||0),notes:x.notes||"",active:x.active!==false,createdAt:x.created_at,updatedAt:x.updated_at})).concat(pendingItems.filter(p=>!(ai||[]).some(x=>String(x.id)===String(p.id))));
+   assetInventoryCycles=(cy||[]).map(x=>({id:x.id,year:Number(x.inventory_year),dueDate:x.due_date,status:x.status==="completado"?"completado":"abierto",startedAt:x.started_at,completedAt:x.completed_at,notes:x.notes||""})).concat(pendingCycles.filter(p=>!(cy||[]).some(x=>String(x.id)===String(p.id))));
+   assetInventoryCounts=(co||[]).map(x=>({id:x.id,cycleId:x.cycle_id,assetItemId:x.asset_item_id,countedQty:Number(x.counted_quantity||0),goodQty:Number(x.good_quantity||0),repairQty:Number(x.repair_quantity||0),replaceQty:Number(x.replace_quantity||0),responsible:x.responsible_name||"",notes:x.notes||"",countedAt:x.counted_at})).concat(pendingCounts.filter(p=>!(co||[]).some(x=>String(x.id)===String(p.id))));
+   saveAdminControlLocal();renderOperationalExpenses();renderAssets();
+ }catch(e){console.warn("Gastos y bienes cloud",e.message);}
+ await loadCloudShiftsForAttendance();
+}
+const _adminControlHandleCloudSession=handleCloudSession;
+handleCloudSession=async function(session){
+ await _adminControlHandleCloudSession(session);
+ if(currentSession?.cloud&&cloudOrganization){await loadAdminControlCloudData();await loadMyAttendanceWindow();}
+};
+
+/* ---------- Dashboard: recordatorio inventario anual ---------- */
+const _adminControlUpdateDashboard=updateDashboard;
+updateDashboard=function(){
+ _adminControlUpdateDashboard();
+ const alerts=document.getElementById("dashboardAlerts");if(!alerts)return;
+ const s=assetAnnualStatus();if(!["due","overdue"].includes(s.state))return;
+ const html=`<div class="alert-item"><div><div class="alert-name">Inventario anual de bienes</div><div class="alert-meta">${escapeHTML(s.text)}</div></div><span class="badge ${s.state==="overdue"?"badge-danger":"badge-warning"}">${s.state==="overdue"?"Vencido":"Programar"}</span></div>`;
+ alerts.insertAdjacentHTML("afterbegin",html);
+};
+
+/* ---------- Información del sistema ---------- */
+const _adminControlRenderSystemInfo=renderSystemInfo;
+renderSystemInfo=async function(){
+ await _adminControlRenderSystemInfo();
+ const detail=document.getElementById("systemInstallationDetail");
+ if(detail){
+   detail.insertAdjacentHTML("beforeend",systemInfoRow("Gastos extraordinarios registrados",operationalExpenses.filter(x=>x.status!=="anulado").length));
+   detail.insertAdjacentHTML("beforeend",systemInfoRow("Bienes y materiales activos",assetItems.filter(x=>x.active!==false).length));
+   const annual=assetAnnualStatus();detail.insertAdjacentHTML("beforeend",systemInfoRow("Inventario anual de bienes",annual.state==="done"?"Completado":annual.state==="overdue"?"Vencido":"Pendiente"));
+ }
+ const caps=document.getElementById("systemCapabilities");
+ if(caps){
+   caps.insertAdjacentHTML("beforeend",`<div class="system-capability-card"><strong>Gastos extraordinarios</strong><span>Remodelaciones, reparaciones, permisos, equipamiento y otros egresos administrativos.</span></div>`);
+   caps.insertAdjacentHTML("beforeend",`<div class="system-capability-card"><strong>Bienes y materiales</strong><span>Catálogo durable, conteo anual, diferencias, reparación y reemplazo.</span></div>`);
+ }
+};
+
+/* ---------- Ayuda contextual ---------- */
+Object.assign(KUCHE_CONTEXT_HELP,{
+ "permitir entrada desde (min antes del turno)":"Define cuántos minutos antes del inicio programado puede marcar el trabajador. Antes de ese momento KÜCHE no permite registrar la entrada.",
+ "tolerancia de atraso (min después del inicio)":"Define el margen posterior al inicio. Después de esta tolerancia, la entrada se guarda igualmente pero queda marcada como atraso con sus minutos reales.",
+ "exigir horario o turno configurado":"Si está activado, el trabajador necesita un turno planificado o un horario habitual válido para poder marcar asistencia.",
+ "monto total":"Monto completo del gasto extraordinario que quieres registrar.",
+ "cantidad esperada":"Cantidad que administrativamente debería existir de este bien antes de realizar el conteo físico anual.",
+ "cantidad encontrada":"Cantidad realmente encontrada durante el inventario anual.",
+ "requieren reparación":"Unidades que siguen existiendo pero necesitan reparación o mantención.",
+ "requieren reemplazo":"Unidades deterioradas que deberían ser sustituidas.",
+ "mes objetivo":"Mes en que quieres realizar el inventario anual de bienes y materiales.",
+ "avisar con anticipación (días)":"Cantidad de días antes de la fecha objetivo en que KÜCHE comenzará a mostrar el recordatorio."
+});
+Object.assign(KUCHE_BUTTON_HELP,{
+ "registrar gasto":"Abre el formulario para registrar un egreso extraordinario. No modifica el stock de alimentos.",
+ "guardar gasto":"Guarda el gasto con fecha, categoría, monto, medio de pago y observaciones.",
+ "iniciar inventario anual":"Crea el conteo del año actual para todo el catálogo activo de bienes y materiales.",
+ "registrar / corregir conteo":"Permite ingresar o corregir la cantidad encontrada y su estado físico.",
+ "finalizar inventario anual":"Cierra el inventario del año. KÜCHE exige que todos los bienes activos hayan sido contados."
+});
+OPS_FINAL_MANUAL_TOPICS.admin["Control de asistencia"]="En Configuración define cuántos minutos antes del turno puede marcar un trabajador y cuántos minutos de tolerancia existen después de la hora de inicio. KÜCHE usa primero el turno planificado del día y, si no existe, el horario habitual de Personal. Una entrada posterior a la tolerancia se guarda y queda marcada como atraso; no se elimina el registro real.";
+OPS_FINAL_MANUAL_TOPICS.admin["Gastos extraordinarios"]="Utiliza Gastos extraordinarios para remodelaciones, reparaciones, permisos, equipamiento y otros egresos que no sean una compra normal de inventario. Registra fecha, categoría, descripción, monto, proveedor o persona y medio de pago.";
+OPS_FINAL_MANUAL_TOPICS.admin["Bienes y materiales"]="Crea un catálogo de bienes durables como cuchillos, tenedores, vajilla, sillas y mesas. Define la cantidad que debería existir. Una vez al año inicia el inventario anual, cuenta físicamente cada línea y clasifica las unidades en buen estado, reparación o reemplazo. KÜCHE conserva el historial de cada año.";
+
+/* ---------- Acceso y navegación ---------- */
+const _adminControlWorkerCanAccess=workerCanAccess;
+workerCanAccess=function(pageId){
+ if(["expenses","assets"].includes(pageId))return ["admin","manager"].includes(currentSession?.accessRole||"");
+ return _adminControlWorkerCanAccess(pageId);
+};
+const _adminControlShowPage=showPage;
+showPage=function(pageId,button){
+ _adminControlShowPage(pageId,button);
+ if(pageId==="expenses"){renderOperationalExpenses();if(navigator.onLine)loadAdminControlCloudData();}
+ if(pageId==="assets"){renderAssets();if(navigator.onLine)loadAdminControlCloudData();}
+ if(pageId==="myattendance")loadMyAttendanceWindow();
+ setTimeout(enhanceKucheContextHelp,20);
+};
+
+/* Estado inicial */
+setTimeout(()=>{renderOperationalExpenses();renderAssets();loadSettingsForm();},180);
+
+
+
+/* =====================================================
+   KÜCHE V1.4 · MEDIOS DE PAGO Y CONVENIOS
+===================================================== */
+const KUCHE_DEFAULT_PAYMENT_METHODS=[
+ {code:"efectivo",name:"Efectivo",category:"cash",commissionPct:0,settlementDays:0,acceptsTip:true,active:true,sortOrder:10},
+ {code:"debito",name:"Débito",category:"card",commissionPct:0,settlementDays:1,acceptsTip:true,active:true,sortOrder:20},
+ {code:"credito",name:"Crédito",category:"card",commissionPct:0,settlementDays:2,acceptsTip:true,active:true,sortOrder:30},
+ {code:"transferencia",name:"Transferencia",category:"transfer",commissionPct:0,settlementDays:0,acceptsTip:true,active:true,sortOrder:40},
+ {code:"edenred",name:"Edenred",category:"benefit",commissionPct:0,settlementDays:0,acceptsTip:false,active:true,sortOrder:50},
+ {code:"pluxee",name:"Pluxee",category:"benefit",commissionPct:0,settlementDays:0,acceptsTip:false,active:true,sortOrder:60},
+ {code:"amipass",name:"Amipass",category:"benefit",commissionPct:0,settlementDays:0,acceptsTip:false,active:true,sortOrder:70},
+ {code:"otro_beneficio",name:"Otro beneficio / alimentación",category:"benefit",commissionPct:0,settlementDays:0,acceptsTip:false,active:false,sortOrder:80}
+];
+let paymentMethods=JSON.parse(localStorage.getItem("kuchePaymentMethods")||"null")||KUCHE_DEFAULT_PAYMENT_METHODS.map(x=>({...x,id:"local-"+x.code}));
+let discountAgreements=JSON.parse(localStorage.getItem("kucheDiscountAgreements")||"[]");
+let discountAgreementUses=JSON.parse(localStorage.getItem("kucheDiscountAgreementUses")||"[]");
+let editingAgreementId=null;
+let activePOSAgreement=null;
+
+function saveCommercialLocal(){localStorage.setItem("kuchePaymentMethods",JSON.stringify(paymentMethods));localStorage.setItem("kucheDiscountAgreements",JSON.stringify(discountAgreements));localStorage.setItem("kucheDiscountAgreementUses",JSON.stringify(discountAgreementUses));}
+function commercialUUID(){return crypto?.randomUUID?.()||("local-"+Date.now()+"-"+Math.random().toString(36).slice(2));}
+function commercialCode(v){return String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"").slice(0,40)||("medio_"+Date.now());}
+function activePaymentMethods(){return paymentMethods.filter(x=>x.active!==false).sort((a,b)=>Number(a.sortOrder||0)-Number(b.sortOrder||0));}
+function paymentMethodById(id){return paymentMethods.find(x=>String(x.id)===String(id));}
+function paymentMethodByCode(code){return paymentMethods.find(x=>x.code===code);}
+function categoryLabel(c){return c==="cash"?"Efectivo":c==="benefit"?"Beneficio / alimentación":c==="transfer"?"Transferencia":c==="card"?"Tarjeta / plataforma":"Otro";}
+KUCHE_DEFAULT_PAYMENT_METHODS.forEach(x=>{if(!paymentMethods.some(m=>m.code===x.code))paymentMethods.push({...x,id:"local-"+x.code});});saveCommercialLocal();
+
+async function queueCommercialEntity(type,payload,reason){
+ await kucheOfflinePut({key:`${type}:${payload.id}`,type,entity_id:String(payload.id),reason,payload:kucheOfflineClone(payload),device_id:kucheDeviceId(),user_id:currentSession?.userId||null,user_name:currentSession?.name||"Usuario",occurred_at:new Date().toISOString(),updated_at:new Date().toISOString()});
+ refreshKucheConnectivityUI();if(navigator.onLine)setTimeout(()=>flushKucheOfflineQueue(false),400);
+}
+
+function renderPaymentMethodSettings(){
+ const box=document.getElementById("paymentMethodSettingsList");if(!box)return;
+ box.innerHTML=paymentMethods.slice().sort((a,b)=>Number(a.sortOrder||0)-Number(b.sortOrder||0)).map(m=>`<div class="payment-method-setting-row" data-pmid="${ops2EscapeAttr(m.id)}">
+ <div class="field"><label>Nombre</label><input data-f="name" value="${ops2EscapeAttr(m.name)}"></div>
+ <div class="field"><label>Tipo</label><select data-f="category"><option value="cash" ${m.category==="cash"?"selected":""}>Efectivo</option><option value="card" ${m.category==="card"?"selected":""}>Tarjeta / plataforma</option><option value="transfer" ${m.category==="transfer"?"selected":""}>Transferencia</option><option value="benefit" ${m.category==="benefit"?"selected":""}>Beneficio / alimentación</option><option value="other" ${m.category==="other"?"selected":""}>Otro</option></select></div>
+ <div class="field"><label>Comisión %</label><input data-f="commission" type="number" min="0" max="100" step=".01" value="${Number(m.commissionPct||0)}"></div>
+ <div class="field"><label>Días abono</label><input data-f="settlement" type="number" min="0" value="${Number(m.settlementDays||0)}"></div>
+ <div class="field"><label>Propina</label><select data-f="tip"><option value="true" ${m.acceptsTip!==false?"selected":""}>Sí</option><option value="false" ${m.acceptsTip===false?"selected":""}>No</option></select></div>
+ <div class="field"><label>Estado</label><select data-f="active"><option value="true" ${m.active!==false?"selected":""}>Activo</option><option value="false" ${m.active===false?"selected":""}>Inactivo</option></select></div>
+ <button class="secondary-button" onclick="savePaymentMethodRow('${ops2EscapeAttr(m.id)}')">Guardar</button></div>`).join("");
+}
+async function createPaymentMethodFromSettings(){
+ const inp=document.getElementById("newPaymentMethodName"),name=inp?.value.trim(),category=document.getElementById("newPaymentMethodCategory")?.value||"other";if(!name){alert("Escribe un nombre.");return;}
+ let code=commercialCode(name),base=code,n=2;while(paymentMethods.some(x=>x.code===code))code=base+"_"+n++;
+ const m={id:commercialUUID(),code,name,category,commissionPct:0,settlementDays:0,acceptsTip:category!=="benefit",active:true,sortOrder:paymentMethods.length*10+10,pendingSync:true};paymentMethods.push(m);saveCommercialLocal();inp.value="";renderPaymentMethodSettings();await queueCommercialEntity("payment_method",m,"Medio de pago creado");
+}
+async function savePaymentMethodRow(id){
+ const row=[...document.querySelectorAll("[data-pmid]")].find(x=>String(x.dataset.pmid)===String(id)),m=paymentMethodById(id);if(!row||!m)return;const v=f=>row.querySelector(`[data-f="${f}"]`)?.value;
+ m.name=(v("name")||m.name).trim();m.category=v("category")||"other";m.commissionPct=Math.max(0,Math.min(100,Number(v("commission"))||0));m.settlementDays=Math.max(0,Number(v("settlement"))||0);m.acceptsTip=v("tip")!=="false";m.active=v("active")!=="false";m.pendingSync=true;m.updatedAt=new Date().toISOString();saveCommercialLocal();renderPaymentMethodSettings();renderPOSPaymentMethods();await queueCommercialEntity("payment_method",m,"Medio de pago actualizado");
+}
+function renderPOSPaymentMethods(){
+ const grid=document.getElementById("posPaymentMethodsGrid"),tip=document.getElementById("posTipMethod");if(!grid)return;const methods=activePaymentMethods();
+ grid.innerHTML=methods.map(m=>`<div class="payment-method-pos-item"><label><span>${escapeHTML(m.name)}</span><span class="payment-method-pos-meta">${escapeHTML(categoryLabel(m.category))}</span></label><input class="pos-payment-method-input" data-code="${ops2EscapeAttr(m.code)}" data-id="${ops2EscapeAttr(m.id)}" type="number" min="0" value="0" oninput="updatePOSPaymentCheck()">${Number(m.commissionPct||0)>0?`<div class="payment-commission-note">Comisión ${Number(m.commissionPct).toFixed(2)}%</div>`:""}</div>`).join("");
+ if(tip){const allowed=methods.filter(m=>m.acceptsTip!==false);tip.innerHTML=allowed.map(m=>`<option value="${ops2EscapeAttr(m.code)}">${escapeHTML(m.name)}</option>`).join("")||'<option value="">Sin medio habilitado</option>';}
+}
+function getPOSPaymentLines(){return [...document.querySelectorAll(".pos-payment-method-input")].map(i=>{const m=paymentMethodByCode(i.dataset.code)||paymentMethodById(i.dataset.id)||{};return{id:m.id||i.dataset.id,code:m.code||i.dataset.code,name:m.name||i.dataset.code,category:m.category||"other",amount:Math.max(0,Number(i.value)||0),commissionPct:Number(m.commissionPct||0)};}).filter(x=>x.amount>0);}
+getPOSPaymentData=function(){const o=getActivePOSOrder(),discount=Math.max(0,Number(posDiscount?.value)||0),total=Math.max(0,getOrderSubtotal(o)-discount),lines=getPOSPaymentLines(),payments={};lines.forEach(x=>payments[x.code]=(payments[x.code]||0)+x.amount);return{discount,total,payments,paymentLines:lines,paid:lines.reduce((s,x)=>s+x.amount,0),tip:Math.max(0,Number(posTipAmount?.value)||0),tipMethod:posTipMethod?.value||""};};
+function rebalancePOSPaymentToTotal(){const o=getActivePOSOrder();if(!o)return;const inputs=[...document.querySelectorAll(".pos-payment-method-input")];inputs.forEach(i=>i.value=0);const first=inputs.find(i=>i.dataset.code==="efectivo")||inputs[0];if(first)first.value=Math.round(Math.max(0,getOrderSubtotal(o)-Math.max(0,Number(posDiscount?.value)||0)));}
+
+/* Convenios */
+function agreementDays(){return [...document.querySelectorAll("#agreementWeekdays input:checked")].map(x=>Number(x.value));}
+function agreementMethods(){return [...document.querySelectorAll("#agreementPaymentMethods input:checked")].map(x=>x.value);}
+function renderAgreementMethodOptions(selected=[]){const b=document.getElementById("agreementPaymentMethods");if(b)b.innerHTML=activePaymentMethods().map(m=>`<label><input type="checkbox" value="${ops2EscapeAttr(m.id)}" ${selected.some(x=>String(x)===String(m.id))?"checked":""}> ${escapeHTML(m.name)}</label>`).join("");}
+function openAgreementForm(id=null){editingAgreementId=id;const a=id?discountAgreements.find(x=>String(x.id)===String(id)):null;agreementFormTitle.textContent=a?"Editar convenio":"Nuevo convenio";agreementName.value=a?.name||"";agreementCode.value=a?.code||"";agreementActive.value=a?.active===false?"false":"true";agreementDiscountType.value=a?.discountType||"percent";agreementDiscountValue.value=Number(a?.discountValue??10);agreementMaxDiscount.value=Number(a?.maxDiscount||0);agreementMinPurchase.value=Number(a?.minPurchase||0);agreementStartsOn.value=a?.startsOn||"";agreementEndsOn.value=a?.endsOn||"";agreementStartTime.value=a?.startTime||"";agreementEndTime.value=a?.endTime||"";agreementMaxUses.value=Number(a?.maxUses||0);agreementAllowPromotions.checked=a?.allowPromotions!==false;agreementNotes.value=a?.notes||"";const days=a?.weekdays?.length?a.weekdays:[1,2,3,4,5,6,7];document.querySelectorAll("#agreementWeekdays input").forEach(x=>x.checked=days.includes(Number(x.value)));renderAgreementMethodOptions(a?.paymentMethodIds||[]);agreementFormPanel.classList.add("open");}
+function closeAgreementForm(){agreementFormPanel.classList.remove("open");editingAgreementId=null;}
+async function saveAgreement(){const name=agreementName.value.trim(),code=agreementCode.value.trim().toUpperCase(),value=Math.max(0,Number(agreementDiscountValue.value)||0);if(!name||!code||value<=0){alert("Completa nombre, código y descuento.");return;}if(discountAgreements.some(x=>String(x.id)!==String(editingAgreementId)&&x.code===code)){alert("Ese código ya existe.");return;}let a=editingAgreementId?discountAgreements.find(x=>String(x.id)===String(editingAgreementId)):null;if(!a){a={id:commercialUUID(),createdAt:new Date().toISOString()};discountAgreements.unshift(a);}Object.assign(a,{name,code,discountType:agreementDiscountType.value,discountValue:value,maxDiscount:Math.max(0,Number(agreementMaxDiscount.value)||0),minPurchase:Math.max(0,Number(agreementMinPurchase.value)||0),startsOn:agreementStartsOn.value||null,endsOn:agreementEndsOn.value||null,startTime:agreementStartTime.value||null,endTime:agreementEndTime.value||null,maxUses:Math.max(0,Number(agreementMaxUses.value)||0),weekdays:agreementDays(),paymentMethodIds:agreementMethods(),allowPromotions:agreementAllowPromotions.checked,notes:agreementNotes.value.trim(),active:agreementActive.value!=="false",pendingSync:true,updatedAt:new Date().toISOString()});saveCommercialLocal();closeAgreementForm();renderAgreements();await queueCommercialEntity("discount_agreement",a,"Convenio actualizado");}
+async function toggleAgreementActive(id){const a=discountAgreements.find(x=>String(x.id)===String(id));if(!a)return;a.active=!a.active;a.pendingSync=true;saveCommercialLocal();renderAgreements();await queueCommercialEntity("discount_agreement",a,a.active?"Convenio activado":"Convenio desactivado");}
+function renderAgreements(){if(!document.getElementById("agreementList"))return;const q=(agreementSearch?.value||"").toLowerCase(),month=getCurrentMonthPrefix(),mu=discountAgreementUses.filter(u=>String(u.usedAt||"").slice(0,7)===month);agreementActiveCount.textContent=discountAgreements.filter(a=>a.active!==false).length;agreementMonthUses.textContent=mu.length;agreementMonthDiscount.textContent="$"+formatMoney(mu.reduce((s,u)=>s+Number(u.discountAmount||0),0));agreementMonthSales.textContent="$"+formatMoney(mu.reduce((s,u)=>s+Number(u.finalTotal||0),0));agreementList.innerHTML=discountAgreements.filter(a=>(a.name+" "+a.code).toLowerCase().includes(q)).map(a=>{const allowed=(a.paymentMethodIds||[]).map(id=>paymentMethodById(id)?.name).filter(Boolean);return`<div class="agreement-card ${a.active===false?"inactive":""}"><div class="card-topline"><div><h3>${escapeHTML(a.name)}</h3><span class="agreement-code">${escapeHTML(a.code)}</span></div><span class="badge ${a.active!==false?"badge-success":"badge-danger"}">${a.active!==false?"Activo":"Inactivo"}</span></div><div class="agreement-card-grid"><div class="agreement-card-metric"><span>Descuento</span><strong>${a.discountType==="percent"?a.discountValue+"%":"$"+formatMoney(a.discountValue)}</strong></div><div class="agreement-card-metric"><span>Compra mínima</span><strong>$${formatMoney(a.minPurchase||0)}</strong></div><div class="agreement-card-metric"><span>Usos</span><strong>${discountAgreementUses.filter(u=>String(u.agreementId)===String(a.id)).length}${a.maxUses>0?" / "+a.maxUses:""}</strong></div><div class="agreement-card-metric"><span>Medios</span><strong>${allowed.length?escapeHTML(allowed.join(", ")):"Cualquiera"}</strong></div></div><div class="rule-actions"><button class="secondary-button" onclick="openAgreementForm('${ops2EscapeAttr(a.id)}')">Editar</button><button class="secondary-button" onclick="toggleAgreementActive('${ops2EscapeAttr(a.id)}')">${a.active!==false?"Desactivar":"Activar"}</button></div></div>`;}).join("")||'<div class="empty-state"><strong>Sin convenios configurados</strong></div>';agreementUsageTable.innerHTML=discountAgreementUses.slice(0,100).map(u=>`<tr><td>${u.usedAt?new Date(u.usedAt).toLocaleString("es-CL"):"—"}</td><td>${escapeHTML(u.agreementName||"—")}</td><td>${escapeHTML(u.code||"")}</td><td>${escapeHTML(u.tableName||"—")}</td><td>$${formatMoney(u.subtotal||0)}</td><td>−$${formatMoney(u.discountAmount||0)}</td><td>$${formatMoney(u.finalTotal||0)}</td><td>${escapeHTML(u.appliedBy||"—")}</td></tr>`).join("")||'<tr><td colspan="8"><div class="empty-state">Sin usos registrados.</div></td></tr>';}
+function orderHasPromotion(o){return !!o?.items?.some(i=>i.itemType==="promotion"&&!i.promotionComponent);}
+function localAgreementCheck(code,subtotal,o){const a=discountAgreements.find(x=>x.active!==false&&x.code===code);if(!a)return{valid:false,reason:"Código no encontrado o inactivo."};const now=new Date(),today=getToday(),dow=((now.getDay()+6)%7)+1,hm=String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0");if(a.startsOn&&today<a.startsOn)return{valid:false,reason:"Todavía no está vigente."};if(a.endsOn&&today>a.endsOn)return{valid:false,reason:"El convenio está vencido."};if((a.weekdays||[]).length&&!a.weekdays.includes(dow))return{valid:false,reason:"No está disponible hoy."};if(a.startTime&&a.endTime){const ok=a.startTime<=a.endTime?(hm>=a.startTime&&hm<=a.endTime):(hm>=a.startTime||hm<=a.endTime);if(!ok)return{valid:false,reason:"No está disponible en este horario."};}if(subtotal<Number(a.minPurchase||0))return{valid:false,reason:"No alcanza la compra mínima."};if(a.allowPromotions===false&&orderHasPromotion(o))return{valid:false,reason:"No combina con promociones."};if(a.maxUses>0&&discountAgreementUses.filter(u=>String(u.agreementId)===String(a.id)).length>=a.maxUses)return{valid:false,reason:"Alcanzó su máximo de usos."};let d=a.discountType==="percent"?subtotal*a.discountValue/100:a.discountValue;if(a.maxDiscount>0)d=Math.min(d,a.maxDiscount);return{valid:true,agreement:a,discountAmount:Math.max(0,Math.min(subtotal,Math.round(d)))};}
+async function checkAgreement(code,subtotal,o){if(kucheCloud&&cloudOrganization&&navigator.onLine)try{const {data,error}=await kucheCloud.rpc("validate_discount_agreement",{p_organization_id:cloudOrganization.id,p_code:code,p_subtotal:subtotal,p_has_promotion:orderHasPromotion(o)});if(error)throw error;if(!data?.valid)return{valid:false,reason:data?.reason||"Convenio inválido."};return{valid:true,agreement:discountAgreements.find(a=>String(a.id)===String(data.agreement_id))||{id:data.agreement_id,name:data.name,code:data.code,discountType:data.discount_type,discountValue:Number(data.discount_value||0),paymentMethodIds:data.allowed_payment_method_ids||[]},discountAmount:Number(data.discount_amount||0)};}catch(e){console.warn(e.message);}return localAgreementCheck(code,subtotal,o);}
+async function applyPOSAgreementCode(){const o=getActivePOSOrder(),code=(posAgreementCode.value||"").trim().toUpperCase();if(!o||!code)return;posAgreementStatus.textContent="Validando…";const r=await checkAgreement(code,getOrderSubtotal(o),o);if(!r.valid){activePOSAgreement=null;posDiscount.readOnly=false;posDiscount.value=0;posAgreementStatus.className="agreement-pos-status bad";posAgreementStatus.textContent=r.reason;updatePOSPaymentCheck();return;}activePOSAgreement={...r.agreement,discountAmount:r.discountAmount};posDiscount.value=r.discountAmount;posDiscount.readOnly=true;posAgreementStatus.className="agreement-pos-status ok";posAgreementStatus.textContent=`${r.agreement.name} · descuento $${formatMoney(r.discountAmount)}`;rebalancePOSPaymentToTotal();updatePOSPaymentCheck();}
+function removePOSAgreement(){activePOSAgreement=null;posAgreementCode.value="";posDiscount.readOnly=false;posDiscount.value=0;posAgreementStatus.className="agreement-pos-status";posAgreementStatus.textContent="Sin convenio aplicado.";rebalancePOSPaymentToTotal();updatePOSPaymentCheck();}
+function onManualPOSDiscountChanged(){if(activePOSAgreement)posDiscount.value=activePOSAgreement.discountAmount;updatePOSPaymentCheck();}
+function paymentRestrictionError(lines){const ids=activePOSAgreement?.paymentMethodIds||[];if(!ids.length)return null;const bad=lines.filter(l=>!ids.some(id=>String(id)===String(l.id)));return bad.length?`Este convenio solo permite: ${ids.map(id=>paymentMethodById(id)?.name).filter(Boolean).join(", ")}.`:null;}
+
+updatePOSPaymentCheck=function(){const o=getActivePOSOrder();if(!o)return;const d=getPOSPaymentData(),err=paymentRestrictionError(d.paymentLines),diff=d.paid-d.total;posPaymentSummary.innerHTML=`Subtotal: <strong>$${formatMoney(getOrderSubtotal(o))}</strong> · Descuento: <strong>$${formatMoney(d.discount)}</strong> · Venta: <strong>$${formatMoney(d.total)}</strong> · Propina: <strong>$${formatMoney(d.tip)}</strong>${activePOSAgreement?` · Convenio: <strong>${escapeHTML(activePOSAgreement.name)}</strong>`:""}`;posPaymentCheck.className="payment-check "+(Math.abs(diff)<=1&&!err?"ok":"bad");posPaymentCheck.innerHTML=err?escapeHTML(err):`Pagos registrados: <strong>$${formatMoney(d.paid)}</strong> · ${Math.abs(diff)<=1?"Cuadra correctamente":diff<0?"Faltan $"+formatMoney(-diff):"Sobran $"+formatMoney(diff)}`;};
+openPOSPayment=function(){const o=getActivePOSOrder();if(!o||!o.items.length){alert("La comanda está vacía.");return;}if(!getActiveCashRegister()){alert("Debes abrir una caja antes de cobrar.");openCashFromPOS();return;}posPaymentPanel.classList.add("open");renderPOSPaymentMethods();activePOSAgreement=null;posAgreementCode.value="";posAgreementStatus.className="agreement-pos-status";posAgreementStatus.textContent="Sin convenio aplicado.";posDiscount.readOnly=false;posDiscount.value=Number(o.discount||0);posTipAmount.value=0;if(posTipMethod.options.length)posTipMethod.selectedIndex=0;posPaymentNote.value="";rebalancePOSPaymentToTotal();updatePOSPaymentCheck();};
+
+const _v14Finalize=finalizePOSPayment;
+finalizePOSPayment=async function(){const o=getActivePOSOrder();if(!o)return;const d=getPOSPaymentData(),err=paymentRestrictionError(d.paymentLines);if(err){alert(err);return;}o.paymentLines=kucheOfflineClone(d.paymentLines)||[];o.discountAgreement=activePOSAgreement?{id:activePOSAgreement.id,name:activePOSAgreement.name,code:activePOSAgreement.code,discountType:activePOSAgreement.discountType,discountValue:Number(activePOSAgreement.discountValue||0),discountAmount:Number(activePOSAgreement.discountAmount||0),paymentMethodIds:activePOSAgreement.paymentMethodIds||[]}:null;const auth=authorizeAdminOverride;if(activePOSAgreement)authorizeAdminOverride=(action,subject,reason)=>action==="Aplicar descuento"?true:auth(action,subject,reason);const before=o.status;try{_v14Finalize();}finally{authorizeAdminOverride=auth;}if(before==="open"&&o.status==="paid"){o.paymentLines=kucheOfflineClone(d.paymentLines)||[];if(o.discountAgreement&&!discountAgreementUses.some(u=>String(u.orderId)===String(o.id))){discountAgreementUses.unshift({id:commercialUUID(),agreementId:o.discountAgreement.id,agreementName:o.discountAgreement.name,code:o.discountAgreement.code,orderId:o.id,tableName:o.tableName,subtotal:getOrderSubtotal(o),discountAmount:Number(o.discount||0),finalTotal:Number(o.total||0),appliedBy:o.closedBy||currentSession?.name||"Usuario",usedAt:o.closedAt||new Date().toISOString()});saveCommercialLocal();}savePOSOrders();if(kucheCloud&&cloudOrganization){await rtSyncCloudOrder(o);await syncOrderPaymentsV14(o);}activePOSAgreement=null;renderAgreements();renderCommercialReports();}};
+
+/* Cloud */
+async function syncPaymentMethodV14(row){const x=row.payload,p={organization_id:cloudOrganization.id,code:x.code,name:x.name,category:x.category,commission_pct:Number(x.commissionPct||0),settlement_days:Number(x.settlementDays||0),accepts_tip:x.acceptsTip!==false,active:x.active!==false,sort_order:Number(x.sortOrder||0),updated_at:new Date().toISOString()};if(rtIsUUID(x.id))p.id=x.id;const {data,error}=await kucheCloud.from("payment_methods").upsert(p,{onConflict:"organization_id,code"}).select().single();if(error)throw error;const local=paymentMethods.find(m=>String(m.id)===String(x.id)||m.code===x.code);if(local){local.id=data.id;local.pendingSync=false;}saveCommercialLocal();return true;}
+async function syncAgreementV14(row){const x=row.payload,p={organization_id:cloudOrganization.id,name:x.name,code:x.code,discount_type:x.discountType,discount_value:Number(x.discountValue||0),max_discount:Number(x.maxDiscount||0),min_purchase:Number(x.minPurchase||0),starts_on:x.startsOn||null,ends_on:x.endsOn||null,allowed_weekdays:x.weekdays||[1,2,3,4,5,6,7],start_time:x.startTime||null,end_time:x.endTime||null,max_total_uses:Number(x.maxUses||0),allow_promotions:x.allowPromotions!==false,notes:x.notes||null,active:x.active!==false,updated_at:new Date().toISOString()};if(rtIsUUID(x.id))p.id=x.id;const {data,error}=await kucheCloud.from("discount_agreements").upsert(p,{onConflict:"organization_id,code"}).select().single();if(error)throw error;const id=data.id;await kucheCloud.from("discount_agreement_payment_methods").delete().eq("agreement_id",id);const ids=(x.paymentMethodIds||[]).map(i=>paymentMethodById(i)?.id||i).filter(rtIsUUID);if(ids.length){const {error:e}=await kucheCloud.from("discount_agreement_payment_methods").insert(ids.map(i=>({organization_id:cloudOrganization.id,agreement_id:id,payment_method_id:i})));if(e)throw e;}const local=discountAgreements.find(a=>String(a.id)===String(x.id)||a.code===x.code);if(local){local.id=id;local.paymentMethodIds=ids;local.pendingSync=false;}saveCommercialLocal();return true;}
+const _v14SyncAudit=syncKucheAuditRow;
+syncKucheAuditRow=async row=>row?.type==="payment_method"?syncPaymentMethodV14(row):row?.type==="discount_agreement"?syncAgreementV14(row):_v14SyncAudit(row);
+
+async function loadCommercialCloudData(){if(!kucheCloud||!cloudOrganization)return;try{const [p,a,r,u]=await Promise.all([kucheCloud.from("payment_methods").select("*").eq("organization_id",cloudOrganization.id).order("sort_order"),kucheCloud.from("discount_agreements").select("*").eq("organization_id",cloudOrganization.id).order("name"),kucheCloud.from("discount_agreement_payment_methods").select("*").eq("organization_id",cloudOrganization.id),kucheCloud.from("discount_agreement_uses").select("*").eq("organization_id",cloudOrganization.id).order("used_at",{ascending:false}).limit(500)]);if(p.error)throw p.error;if(a.error)throw a.error;if(r.error)throw r.error;if(u.error)throw u.error;paymentMethods=(p.data||[]).map(x=>({id:x.id,code:x.code,name:x.name,category:x.category,commissionPct:Number(x.commission_pct||0),settlementDays:Number(x.settlement_days||0),acceptsTip:x.accepts_tip!==false,active:x.active!==false,sortOrder:Number(x.sort_order||0)}));discountAgreements=(a.data||[]).map(x=>({id:x.id,name:x.name,code:x.code,discountType:x.discount_type,discountValue:Number(x.discount_value||0),maxDiscount:Number(x.max_discount||0),minPurchase:Number(x.min_purchase||0),startsOn:x.starts_on||null,endsOn:x.ends_on||null,weekdays:x.allowed_weekdays||[],startTime:x.start_time?String(x.start_time).slice(0,5):null,endTime:x.end_time?String(x.end_time).slice(0,5):null,maxUses:Number(x.max_total_uses||0),allowPromotions:x.allow_promotions!==false,notes:x.notes||"",active:x.active!==false,paymentMethodIds:(r.data||[]).filter(z=>String(z.agreement_id)===String(x.id)).map(z=>z.payment_method_id)}));discountAgreementUses=(u.data||[]).map(x=>({id:x.id,agreementId:x.agreement_id,agreementName:x.agreement_name_snapshot,code:x.code_snapshot,orderId:x.order_id,tableName:x.table_name_snapshot,subtotal:Number(x.subtotal_before||0),discountAmount:Number(x.discount_amount||0),finalTotal:Number(x.final_total||0),appliedBy:x.applied_by_name||"",usedAt:x.used_at}));saveCommercialLocal();renderPaymentMethodSettings();renderAgreements();}catch(e){console.warn("Datos comerciales",e.message);}}
+const _v14Handle=handleCloudSession;handleCloudSession=async session=>{await _v14Handle(session);if(currentSession?.cloud&&cloudOrganization)await loadCommercialCloudData();};
+
+const _v14Map=rtMapCloudOrder;rtMapCloudOrder=function(row,items){const o=_v14Map(row,items),p=row.payment_payload||{};o.paymentLines=Array.isArray(p.paymentLines)?p.paymentLines:[];o.discountAgreement=row.discount_agreement_id?{id:row.discount_agreement_id,name:row.discount_name_snapshot||"",code:row.discount_code_snapshot||"",discountType:row.discount_type_snapshot||"",discountValue:Number(row.discount_value_snapshot||0)}:null;return o;};
+const _v14SyncOrder=rtSyncCloudOrder;rtSyncCloudOrder=async function(o){const d=await _v14SyncOrder(o);if(d?.id&&kucheCloud)try{const a=o.discountAgreement;await kucheCloud.from("orders").update({payment_payload:{payments:o.payments||{},paymentLines:o.paymentLines||[],tipMethod:o.tipMethod||null,cashRegisterLocalId:o.cashRegisterId||null},discount_agreement_id:a&&rtIsUUID(a.id)?a.id:null,discount_code_snapshot:a?.code||null,discount_name_snapshot:a?.name||null,discount_type_snapshot:a?.discountType||null,discount_value_snapshot:a?Number(a.discountValue||0):null}).eq("id",d.id);}catch(e){console.warn(e.message);}return d;};
+async function syncOrderPaymentsV14(o){if(!o?.cloudId)return;try{await kucheCloud.from("order_payments").delete().eq("order_id",o.cloudId);const rows=(o.paymentLines||[]).filter(x=>x.amount>0).map(x=>({organization_id:cloudOrganization.id,order_id:o.cloudId,payment_kind:"sale",method:x.code,payment_method_id:rtIsUUID(x.id)?x.id:null,method_name_snapshot:x.name,category_snapshot:x.category,amount:x.amount,commission_pct:x.commissionPct||0,commission_amount:x.amount*(x.commissionPct||0)/100,expected_net_amount:x.amount*(1-(x.commissionPct||0)/100),created_by_staff_id:cloudStaffRecord?.id||null}));if(rows.length){const {error}=await kucheCloud.from("order_payments").insert(rows);if(error)throw error;}if(o.discountAgreement?.id&&rtIsUUID(o.discountAgreement.id)){const ids=(o.paymentLines||[]).map(x=>x.id).filter(rtIsUUID);const {error}=await kucheCloud.rpc("register_discount_agreement_use",{p_organization_id:cloudOrganization.id,p_agreement_id:o.discountAgreement.id,p_order_id:o.cloudId,p_subtotal:getOrderSubtotal(o),p_discount_amount:o.discount,p_final_total:o.total,p_payment_method_ids:ids,p_applied_by_name:o.closedBy||currentSession?.name||"Usuario"});if(error)throw error;}}catch(e){console.warn("Pagos cloud",e.message);}}
+
+getCashSummary=function(reg){const orders=getRegisterOrders(reg),by={efectivo:0,debito:0,credito:0,transferencia:0},tips={efectivo:0,debito:0,credito:0,transferencia:0};orders.forEach(o=>{if(o.paymentLines?.length)o.paymentLines.forEach(l=>by[l.code]=(by[l.code]||0)+Number(l.amount||0));else Object.entries(o.payments||{}).forEach(([k,v])=>by[k]=(by[k]||0)+Number(v||0));if(o.tipMethod)tips[o.tipMethod]=(tips[o.tipMethod]||0)+Number(o.tip||0);});const moves=cashMovements.filter(m=>String(m.registerId)===String(reg.id)),entries=moves.filter(m=>m.type==="entrada").reduce((s,m)=>s+Number(m.amount||0),0),outputs=moves.filter(m=>["gasto","retiro","devolucion"].includes(m.type)).reduce((s,m)=>s+Number(m.amount||0),0),saleTotal=orders.reduce((s,o)=>s+Number(o.total||0),0),tipTotal=orders.reduce((s,o)=>s+Number(o.tip||0),0);const cashCodes=Object.keys(by).filter(k=>paymentMethodByCode(k)?.category==="cash"||k==="efectivo"),expectedCash=Number(reg.openingCash||0)+cashCodes.reduce((s,k)=>s+Number(by[k]||0)+Number(tips[k]||0),0)+entries-outputs;return{orders,by,tips,moves,entries,outputs,saleTotal,tipTotal,expectedCash};};
+
+function renderCommercialReports(){if(!document.getElementById("reportPaymentMethodsBreakdown"))return;const orders=posOrders.filter(o=>o.status==="paid"&&dateInReportRange(String(o.closedAt||"").slice(0,10))),by={},ag={};orders.forEach(o=>{(o.paymentLines?.length?o.paymentLines:Object.entries(o.payments||{}).map(([code,amount])=>({code,name:paymentMethodByCode(code)?.name||code,amount}))).forEach(l=>{if(!by[l.code])by[l.code]={name:l.name||l.code,amount:0};by[l.code].amount+=Number(l.amount||0);});if(o.discountAgreement){const k=o.discountAgreement.id||o.discountAgreement.code;if(!ag[k])ag[k]={name:o.discountAgreement.name||o.discountAgreement.code,uses:0,discount:0,sales:0};ag[k].uses++;ag[k].discount+=Number(o.discount||0);ag[k].sales+=Number(o.total||0);}});reportPaymentMethodsBreakdown.innerHTML=Object.values(by).map(x=>`<div class="report-dynamic-row"><span>${escapeHTML(x.name)}</span><strong>$${formatMoney(x.amount)}</strong></div>`).join("")||'<div class="inline-note">Sin pagos.</div>';reportAgreementBreakdown.innerHTML=Object.values(ag).map(x=>`<div class="report-dynamic-row"><span>${escapeHTML(x.name)} · ${x.uses} uso(s)</span><strong>$${formatMoney(x.sales)}</strong></div>`).join("")||'<div class="inline-note">Sin convenios.</div>';}
+const _v14Reports=renderReports;renderReports=function(){_v14Reports();renderCommercialReports();};
+
+Object.assign(KUCHE_CONTEXT_HELP,{"comisión %":"Porcentaje cobrado por el proveedor del medio de pago.","días abono":"Días estimados para recibir el depósito.","código de convenio":"Código que aplica un beneficio y recalcula el total.","descuento máximo $":"Tope máximo del descuento. 0 = sin tope.","compra mínima $":"Subtotal mínimo para usar el convenio.","medios de pago permitidos":"Limita el convenio a medios específicos."});
+OPS_FINAL_MANUAL_TOPICS.admin["Medios de pago"]="Configura Efectivo, Débito, Crédito, Transferencia, Edenred, Pluxee, Amipass u otros medios. Puedes registrar comisión, días de abono y pagos divididos.";
+OPS_FINAL_MANUAL_TOPICS.admin["Convenios y códigos"]="Crea códigos con porcentaje o monto fijo, vigencia, días, horarios, compra mínima, tope, máximo de usos y medios permitidos.";
+OPS_FINAL_MANUAL_TOPICS.garzon["Pago dividido"]="Distribuye el total entre varios medios activos. KÜCHE exige que la suma coincida con el total.";
+OPS_FINAL_MANUAL_TOPICS.garzon["Convenios"]="Ingresa el código al cobrar. KÜCHE valida y aplica el descuento automáticamente.";
+
+const _v14Access=workerCanAccess;workerCanAccess=function(pageId){if(pageId==="agreements")return["admin","manager"].includes(currentSession?.accessRole||"");return _v14Access(pageId);};
+const _v14Page=showPage;showPage=function(pageId,button){_v14Page(pageId,button);if(pageId==="agreements")renderAgreements();if(pageId==="settings")renderPaymentMethodSettings();if(pageId==="reports")renderCommercialReports();setTimeout(enhanceKucheContextHelp,20);};
+setTimeout(()=>{renderPaymentMethodSettings();renderAgreements();},250);
 
 
 /* =====================================================
