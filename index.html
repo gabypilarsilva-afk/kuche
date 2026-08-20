@@ -1046,6 +1046,30 @@ COMPRAS / MERMAS / VENTAS / IA
 }
 
 </style>
+<style id="kuche-v15-style">
+/* KÜCHE V1.5 */
+.v15-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.v15-tab-panel{margin-bottom:18px}
+.v15-form-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:14px 0}
+.v15-check-days{display:flex;gap:8px;flex-wrap:wrap;margin-top:7px}
+.v15-check-days label{border:1px solid var(--border);border-radius:8px;background:#fff;padding:8px 10px;font-size:12px}
+.v15-alert-grid,.v15-card-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.v15-alert-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+.v15-alert-card.urgent{border-color:rgba(201,75,75,.35);background:#fffafa}
+.v15-alert-card h3{margin:9px 0 4px;color:var(--green-dark);font-size:16px}
+.v15-alert-card p{font-size:12px;color:var(--muted);margin-bottom:10px}
+.v15-metric-line,.v15-price-row,.v15-history-row,.v15-free-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--border)}
+.v15-metric-line:last-child,.v15-price-row:last-child,.v15-history-row:last-child,.v15-free-row:last-child{border-bottom:0}
+.v15-info-line{background:var(--cream);border:1px solid var(--border);border-radius:9px;padding:12px;margin:12px 0;font-size:12px;line-height:1.55}
+.v15-count-row{display:grid;grid-template-columns:1fr 220px;align-items:end;gap:16px;padding:12px 0;border-bottom:1px solid var(--border)}
+.v15-pos-internal{display:grid;grid-template-columns:1fr 180px 220px auto;gap:10px;align-items:center;background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;box-shadow:var(--shadow)}
+.v15-pos-internal select{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px;background:#fff}
+.v15-dashboard-alerts{display:flex;gap:8px;flex-wrap:wrap}
+.v15-free-row select{min-width:170px;border:1px solid var(--border);border-radius:8px;padding:9px;background:#fff}
+@media(max-width:1100px){.v15-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.v15-alert-grid,.v15-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.v15-pos-internal{grid-template-columns:1fr 1fr}}
+@media(max-width:750px){.v15-form-grid,.v15-alert-grid,.v15-card-grid,.v15-count-row,.v15-pos-internal{grid-template-columns:1fr}.v15-tabs{display:grid;grid-template-columns:1fr}.v15-check-days{display:grid;grid-template-columns:repeat(4,1fr)}.v15-free-row,.v15-history-row,.v15-price-row{align-items:flex-start;flex-direction:column}.v15-free-row select{width:100%}}
+
+</style>
 </head>
 
 <body>
@@ -12243,6 +12267,430 @@ function printCurrentPOSOrder(station){const order=getActivePOSOrder();if(!order
   <div id="contextInfoText" class="context-info-text"></div>
 </div>
 
+<script id="kuche-v15-script">
+/* =====================================================
+   KÜCHE V1.5 · ABASTECIMIENTO, LOTES, ALMUERZO Y CONSUMOS INTERNOS
+===================================================== */
+const KUCHE_V15_VERSION="1.5";
+const KUCHE_V15_WEEKDAYS=["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
+let v15SupplierRules=JSON.parse(localStorage.getItem("kucheV15SupplierRules")||"[]");
+let v15SupplierTerms=JSON.parse(localStorage.getItem("kucheV15SupplierTerms")||"[]");
+let v15PeriodicSchedules=JSON.parse(localStorage.getItem("kucheV15PeriodicSchedules")||"[]");
+let v15ScheduleItems=JSON.parse(localStorage.getItem("kucheV15ScheduleItems")||"[]");
+let v15PeriodicCounts=JSON.parse(localStorage.getItem("kucheV15PeriodicCounts")||"[]");
+let v15ScaledBatches=JSON.parse(localStorage.getItem("kucheV15ScaledBatches")||"[]");
+let v15KitchenMeals=JSON.parse(localStorage.getItem("kucheV15KitchenMeals")||"[]");
+let v15InternalAccounts=JSON.parse(localStorage.getItem("kucheV15InternalAccounts")||"[]");
+let v15InternalRecords=JSON.parse(localStorage.getItem("kucheV15InternalRecords")||"[]");
+let v15BatchDraft=null;
+let v15EditingScheduleId=null;
+
+function v15SaveLocal(){
+ localStorage.setItem("kucheV15SupplierRules",JSON.stringify(v15SupplierRules));
+ localStorage.setItem("kucheV15SupplierTerms",JSON.stringify(v15SupplierTerms));
+ localStorage.setItem("kucheV15PeriodicSchedules",JSON.stringify(v15PeriodicSchedules));
+ localStorage.setItem("kucheV15ScheduleItems",JSON.stringify(v15ScheduleItems));
+ localStorage.setItem("kucheV15PeriodicCounts",JSON.stringify(v15PeriodicCounts));
+ localStorage.setItem("kucheV15ScaledBatches",JSON.stringify(v15ScaledBatches));
+ localStorage.setItem("kucheV15KitchenMeals",JSON.stringify(v15KitchenMeals));
+ localStorage.setItem("kucheV15InternalAccounts",JSON.stringify(v15InternalAccounts));
+ localStorage.setItem("kucheV15InternalRecords",JSON.stringify(v15InternalRecords));
+}
+function v15UUID(){return crypto?.randomUUID?.()||("local-"+Date.now()+"-"+Math.random().toString(36).slice(2));}
+function v15IsUUID(v){return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(v||""));}
+function v15IsoWeekday(date=new Date()){return ((date.getDay()+6)%7)+1;}
+function v15DateOnly(date){const d=new Date(date);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;}
+function v15AddDays(date,n){const d=new Date(date);d.setHours(12,0,0,0);d.setDate(d.getDate()+Number(n||0));return d;}
+function v15TimeMinutes(t){if(!t)return null;const [h,m]=String(t).slice(0,5).split(":").map(Number);return h*60+m;}
+function v15CurrentMinutes(){const d=new Date();return d.getHours()*60+d.getMinutes();}
+function v15SafeNumber(v,d=0){const n=Number(v);return Number.isFinite(n)?n:d;}
+function v15Role(){return currentSession?.accessRole||(currentSession?.role==="admin"?"admin":"trabajador");}
+function v15CanSupply(){return ["admin","manager","bodega"].includes(v15Role());}
+function v15CanKitchen(){return ["admin","manager","cocina"].includes(v15Role());}
+function v15CanManageInternal(){return ["admin","manager"].includes(v15Role());}
+function v15SupplierByAnyId(id){return suppliers.find(s=>String(s.cloudId)===String(id)||String(s.id)===String(id));}
+function v15ItemByAnyId(id){return inventory.find(p=>String(p.cloudId)===String(id)||String(p.id)===String(id));}
+function v15RecipeByAnyId(id){return recipes.find(r=>String(r.cloudGuideId)===String(id)||String(r.id)===String(id));}
+function v15CloudSupplierId(localId){return v15SupplierByAnyId(localId)?.cloudId||null;}
+function v15CloudItemId(localId){return v15ItemByAnyId(localId)?.cloudId||null;}
+function v15SupplierName(id){return v15SupplierByAnyId(id)?.name||"Proveedor";}
+function v15ItemName(id){return v15ItemByAnyId(id)?.name||"Insumo";}
+
+function v15InstallUI(){
+ const content=document.querySelector(".content");
+ if(!content||document.getElementById("supplyplanner"))return;
+ const smartBtn=[...document.querySelectorAll(".nav-item")].find(b=>(b.getAttribute("onclick")||"").includes("'smartpurchases'"));
+ if(smartBtn){
+   const b=document.createElement("button");b.className="nav-item admin-sensitive";b.setAttribute("onclick","showPage('supplyplanner',this)");b.innerHTML="<span>Abastecimiento y controles</span>";smartBtn.insertAdjacentElement("afterend",b);
+ }
+ const recipeBtn=[...document.querySelectorAll(".nav-item")].find(b=>(b.getAttribute("onclick")||"").includes("'recipes'"));
+ if(recipeBtn){
+   const b=document.createElement("button");b.className="nav-item";b.setAttribute("onclick","showPage('recipebatches',this)");b.innerHTML="<span>Lotes de recetas</span>";recipeBtn.insertAdjacentElement("afterend",b);
+ }
+ const adminAnchor=[...document.querySelectorAll(".nav-item")].find(b=>(b.getAttribute("onclick")||"").includes("'assets'"));
+ if(adminAnchor){
+   const b=document.createElement("button");b.className="nav-item";b.setAttribute("onclick","showPage('internalaccounts',this)");b.innerHTML="<span>Consumos internos</span>";adminAnchor.insertAdjacentElement("afterend",b);
+ }
+ content.insertAdjacentHTML("beforeend",v15SupplyPageHTML()+v15BatchPageHTML()+v15InternalPageHTML());
+ v15EnhanceStaffMealsPage();
+ v15EnhancePOSPage();
+ v15EnhanceRecipeCostPage();
+ v15PopulateSelectors();
+ v15RenderAll();
+ applyAccessMode();
+}
+
+function v15SupplyPageHTML(){return `
+<section id="supplyplanner" class="page">
+ <div class="page-header"><div><h1>Abastecimiento y controles</h1><p>Precios por proveedor, días y horarios de pedido, proyección de stock e inventarios periódicos.</p></div><button class="secondary-button" onclick="v15RenderSupplyPlanner()">Actualizar análisis</button></div>
+ <div id="v15SupplyAlerts" class="v15-alert-grid"></div>
+ <div class="v15-tabs"><button class="secondary-button" onclick="v15SupplyTab('orders')">Proveedores y pedidos</button><button class="secondary-button" onclick="v15SupplyTab('prices')">Precios por proveedor</button><button class="secondary-button" onclick="v15SupplyTab('counts')">Inventarios periódicos</button></div>
+ <div id="v15SupplyOrders" class="v15-tab-panel">
+  <div class="integral-panel"><div class="page-header" style="margin-bottom:12px"><div><h2>Condiciones de pedido</h2><p>Define cuándo acepta pedidos cada proveedor y cuándo entrega.</p></div></div>
+   <div class="v15-form-grid">
+    <div class="field"><label>Proveedor</label><select id="v15RuleSupplier"></select></div>
+    <div class="field"><label>Hora desde</label><input id="v15RuleStart" type="time"></div>
+    <div class="field"><label>Hora límite</label><input id="v15RuleCutoff" type="time"></div>
+    <div class="field"><label>Plazo de entrega (días)</label><input id="v15RuleLead" type="number" min="0" value="1"></div>
+    <div class="field"><label>Pedido mínimo $</label><input id="v15RuleMinimum" type="number" min="0" value="0"></div>
+   </div>
+   <div class="field"><label>Días en que acepta pedidos</label><div id="v15RuleOrderDays" class="v15-check-days"></div></div>
+   <div class="field"><label>Días habituales de entrega</label><div id="v15RuleDeliveryDays" class="v15-check-days"></div></div>
+   <div class="field"><label>Notas</label><input id="v15RuleNotes" type="text" placeholder="Ej. Pedido por WhatsApp antes de las 14:00"></div>
+   <div class="form-actions"><button class="primary-button" onclick="v15SaveSupplierRule()">Guardar condiciones</button></div>
+  </div>
+  <div class="table-card"><table><thead><tr><th>Proveedor</th><th>Pedido</th><th>Horario</th><th>Entrega</th><th>Plazo</th><th></th></tr></thead><tbody id="v15RuleTable"></tbody></table></div>
+ </div>
+ <div id="v15SupplyPrices" class="v15-tab-panel" style="display:none">
+  <div class="integral-panel"><h2>Precio de un producto por proveedor</h2><div class="sub">El precio del proveedor es una referencia de compra. El costo real del inventario sigue actualizándose desde las compras.</div>
+   <div class="v15-form-grid">
+    <div class="field"><label>Producto</label><select id="v15TermItem"></select></div>
+    <div class="field"><label>Proveedor</label><select id="v15TermSupplier"></select></div>
+    <div class="field"><label>Formato</label><input id="v15TermFormat" type="text" placeholder="Ej. bolsa 4 kg / bacha 5 L"></div>
+    <div class="field"><label>Contenido en unidad de inventario</label><input id="v15TermPackQty" type="number" min="0.0001" step="0.0001" value="1"></div>
+    <div class="field"><label>Precio actual $</label><input id="v15TermPrice" type="number" min="0" step="1"></div>
+    <div class="field"><label>Mínimo de formatos</label><input id="v15TermMinPacks" type="number" min="0" step="1" value="0"></div>
+    <div class="field"><label>Proveedor preferido</label><select id="v15TermPreferred"><option value="false">No</option><option value="true">Sí</option></select></div>
+   </div>
+   <div class="form-actions"><button class="primary-button" onclick="v15SaveSupplierTerm()">Guardar precio</button></div>
+  </div>
+  <div id="v15PriceComparison" class="v15-card-grid"></div>
+ </div>
+ <div id="v15SupplyCounts" class="v15-tab-panel" style="display:none">
+  <div class="integral-panel"><h2>Programar inventario periódico</h2><div class="sub">Úsalo para limpieza, condimentos de mesa, suministros o alimentos que no necesitan conteo diario.</div>
+   <div class="v15-form-grid">
+    <div class="field"><label>Nombre</label><input id="v15ScheduleName" placeholder="Ej. Inventario de limpieza"></div>
+    <div class="field"><label>Tipo</label><select id="v15ScheduleKind"><option value="supplies">Suministros / limpieza</option><option value="condiments">Condimentos de mesa</option><option value="food">Alimentos</option><option value="other">Otro</option></select></div>
+    <div class="field"><label>Frecuencia</label><select id="v15ScheduleFrequency" onchange="v15ScheduleFrequencyUI()"><option value="weekly">Semanal</option><option value="biweekly">Cada 2 semanas</option><option value="monthly">Mensual</option><option value="interval">Cada X días</option></select></div>
+    <div class="field" id="v15ScheduleWeekdayField"><label>Día de la semana</label><select id="v15ScheduleWeekday"></select></div>
+    <div class="field" id="v15ScheduleMonthDayField" style="display:none"><label>Día del mes</label><input id="v15ScheduleMonthDay" type="number" min="1" max="31" value="1"></div>
+    <div class="field" id="v15ScheduleIntervalField" style="display:none"><label>Cada cuántos días</label><input id="v15ScheduleInterval" type="number" min="1" value="7"></div>
+    <div class="field"><label>Avisar con anticipación (días)</label><input id="v15ScheduleWarning" type="number" min="0" value="0"></div>
+    <div class="field"><label>Proveedor predeterminado</label><select id="v15ScheduleSupplier"></select></div>
+   </div>
+   <div class="form-actions"><button class="primary-button" onclick="v15SavePeriodicSchedule()">Guardar programa</button><button class="secondary-button" onclick="v15ClearScheduleForm()">Limpiar</button></div>
+  </div>
+  <div id="v15ScheduleCards" class="v15-card-grid"></div>
+  <div id="v15CountPanel" class="integral-panel" style="display:none"><div class="page-header" style="margin-bottom:12px"><div><h2 id="v15CountTitle">Inventario</h2><p>Ingresa la cantidad física real. KÜCHE calculará la reposición sugerida.</p></div><button class="secondary-button" onclick="v15CloseCountPanel()">Cerrar</button></div><div id="v15CountLines"></div><div class="form-actions"><button class="primary-button" onclick="v15CompletePeriodicCount()">Completar inventario y actualizar stock</button></div></div>
+ </div>
+</section>`;}
+
+function v15BatchPageHTML(){return `
+<section id="recipebatches" class="page">
+ <div class="page-header"><div><h1>Lotes de recetas</h1><p>La receta maestra permanece intacta. Ajusta temporalmente la producción por porciones o por peso real de un ingrediente.</p></div></div>
+ <div class="integral-panel">
+  <div class="v15-form-grid">
+   <div class="field"><label>Receta maestra</label><select id="v15BatchRecipe" onchange="v15BatchRecipeChanged()"></select></div>
+   <div class="field"><label>Cómo ajustar</label><select id="v15BatchMode" onchange="v15BatchModeChanged()"><option value="portions">Por número de porciones</option><option value="anchor_weight">Por peso/cantidad real de un ingrediente</option></select></div>
+   <div class="field" id="v15BatchPortionField"><label>Porciones necesarias</label><input id="v15BatchYield" type="number" min="0.01" step="0.01" oninput="v15RenderBatchPreview()"></div>
+   <div class="field" id="v15BatchAnchorField" style="display:none"><label>Ingrediente de referencia</label><select id="v15BatchAnchor" onchange="v15RenderBatchPreview()"></select></div>
+   <div class="field" id="v15BatchAnchorQtyField" style="display:none"><label>Cantidad real disponible</label><input id="v15BatchAnchorQty" type="number" min="0.0001" step="0.0001" oninput="v15RenderBatchPreview()"></div>
+   <div class="field"><label>Responsable</label><input id="v15BatchResponsible" type="text"></div>
+   <div class="field"><label>Rendimiento real al terminar</label><input id="v15BatchActualOutput" type="number" min="0" step="0.01" placeholder="Opcional"></div>
+  </div>
+  <div id="v15BatchFactor" class="v15-info-line"></div>
+  <div id="v15BatchIngredients"></div>
+  <div class="field"><label>Notas</label><input id="v15BatchNotes" placeholder="Ej. carne recibida sobre el peso estándar"></div>
+  <div class="form-actions"><button class="primary-button" onclick="v15RegisterBatch()">Registrar lote ajustado</button></div>
+ </div>
+ <div class="integral-panel"><h2>Últimos lotes</h2><div id="v15BatchHistory"></div></div>
+</section>`;}
+
+function v15InternalPageHTML(){return `
+<section id="internalaccounts" class="page">
+ <div class="page-header"><div><h1>Consumos internos</h1><p>Jefatura, propietarios, invitados, degustaciones u otros consumos que se producen normalmente pero no se cobran.</p></div></div>
+ <div class="integral-panel v15-admin-only"><h2>Cuentas internas</h2><div class="v15-form-grid"><div class="field"><label>Nombre</label><input id="v15InternalName" placeholder="Ej. Jefatura"></div><div class="field"><label>Categoría</label><select id="v15InternalCategory"><option value="management">Jefatura</option><option value="owner">Propietario</option><option value="staff">Personal</option><option value="guest">Invitado</option><option value="tasting">Degustación</option><option value="other">Otro</option></select></div></div><div class="form-actions"><button class="primary-button" onclick="v15CreateInternalAccount()">Crear cuenta</button></div><div id="v15InternalAccountList"></div></div>
+ <div class="operation-summary"><div class="operation-stat"><div class="label">Consumos registrados</div><div class="number" id="v15InternalCount">0</div></div><div class="operation-stat"><div class="label">Valor comercial</div><div class="number" id="v15InternalCommercial">$0</div></div><div class="operation-stat"><div class="label">Costo interno</div><div class="number" id="v15InternalCost">$0</div></div><div class="operation-stat"><div class="label">Cobrado</div><div class="number">$0</div></div></div>
+ <div class="table-card"><table><thead><tr><th>Fecha</th><th>Cuenta</th><th>Comanda</th><th>Valor comercial</th><th>Costo</th><th>Cerró</th></tr></thead><tbody id="v15InternalRecordTable"></tbody></table></div>
+</section>`;}
+
+function v15EnhanceStaffMealsPage(){
+ const page=document.getElementById("staffmeals");if(!page||document.getElementById("v15KitchenMealPanel"))return;
+ const header=page.querySelector(".page-header");
+ header?.insertAdjacentHTML("afterend",`<div id="v15KitchenMealPanel" class="integral-panel"><div class="page-header" style="margin-bottom:14px"><div><h2>Almuerzo de hoy · Cocina decide</h2><p>Cocina define el plato. Si es un plato completo, no se solicitan acompañamientos adicionales.</p></div></div><div class="v15-form-grid"><div class="field"><label>Fecha</label><input id="v15MealDate" type="date"></div><div class="field"><label>Forma de servicio</label><select id="v15MealService" onchange="v15MealServiceUI()"><option value="complete">Plato completo</option><option value="components">Principal + componente</option></select></div><div class="field"><label>Plato / receta principal</label><select id="v15MealPrimary"></select></div><div class="field" id="v15MealSecondaryField" style="display:none"><label>Segundo componente</label><select id="v15MealSecondary"></select></div><div class="field"><label>Porciones a preparar</label><input id="v15MealPortions" type="number" min="1" step="1"></div><div class="field"><label>Notas</label><input id="v15MealNotes" placeholder="Opcional"></div></div><div class="form-actions"><button class="primary-button" onclick="v15SaveKitchenMeal()">Definir almuerzo</button><button class="secondary-button" onclick="v15UseMealInBatch()">Preparar producción</button></div><div id="v15MealTodaySummary" class="v15-info-line"></div></div>`);
+}
+
+function v15EnhancePOSPage(){
+ const page=document.getElementById("commandas");if(!page||document.getElementById("v15POSInternalBar"))return;
+ const header=page.querySelector(".page-header");
+ header?.insertAdjacentHTML("afterend",`<div id="v15POSInternalBar" class="v15-pos-internal"><div><strong>Tipo de cuenta</strong><div class="category">Una cuenta interna se envía normalmente a Cocina/Bar, descuenta inventario y se cierra con cobro $0.</div></div><select id="v15POSOrderKind" onchange="v15SetCurrentOrderKind(this.value)"><option value="sale">Venta normal</option><option value="internal">Consumo interno</option></select><select id="v15POSInternalAccount" onchange="v15SetInternalAccount(this.value)" style="display:none"></select><button id="v15CloseInternalButton" class="primary-button" style="display:none" onclick="v15FinalizeInternalOrder()">Cerrar consumo interno</button></div>`);
+}
+
+function v15EnhanceRecipeCostPage(){
+ const page=document.getElementById("recipes");if(!page||document.getElementById("v15FreeRecipeConfig"))return;
+ const list=page.querySelector("#recipeList");
+ if(list)list.insertAdjacentHTML("beforebegin",`<div id="v15FreeRecipeConfig" class="integral-panel"><div class="page-header" style="margin-bottom:12px"><div><h2>Productos sin cobro en comanda</h2><p>Configura porciones o productos que deben aparecer en la comanda y en KDS con precio $0, pero que igualmente consumen inventario.</p></div></div><div id="v15FreeRecipeList"></div></div>`);
+}
+
+function v15PopulateSelectors(){
+ const supplierOptions='<option value="">Seleccionar proveedor</option>'+suppliers.filter(s=>s.status!=="inactivo").map(s=>`<option value="${ops2EscapeAttr(s.id)}">${escapeHTML(s.name)}</option>`).join("");
+ ["v15RuleSupplier","v15TermSupplier","v15ScheduleSupplier"].forEach(id=>{const e=document.getElementById(id);if(e){const old=e.value;e.innerHTML=id==="v15ScheduleSupplier"?'<option value="">Sin proveedor predeterminado</option>'+supplierOptions.replace('<option value="">Seleccionar proveedor</option>',''):supplierOptions;if(old)e.value=old;}});
+ const itemOptions='<option value="">Seleccionar producto</option>'+inventory.filter(p=>p.active!==false).map(p=>`<option value="${ops2EscapeAttr(p.id)}">${escapeHTML(p.name)} · ${escapeHTML(p.unit||"")}</option>`).join("");
+ const it=document.getElementById("v15TermItem");if(it){const old=it.value;it.innerHTML=itemOptions;if(old)it.value=old;}
+ const recipeOptions='<option value="">Seleccionar receta</option>'+recipes.map(r=>`<option value="${ops2EscapeAttr(r.id)}">${escapeHTML(r.name)} · ${formatNumber(r.yield||1)} porciones</option>`).join("");
+ ["v15BatchRecipe","v15MealPrimary","v15MealSecondary"].forEach(id=>{const e=document.getElementById(id);if(e){const old=e.value;e.innerHTML=recipeOptions;if(old)e.value=old;}});
+ const weekdayOptions=KUCHE_V15_WEEKDAYS.map((d,i)=>`<option value="${i+1}">${d}</option>`).join("");const wd=document.getElementById("v15ScheduleWeekday");if(wd&&!wd.options.length)wd.innerHTML=weekdayOptions;
+ ["v15RuleOrderDays","v15RuleDeliveryDays"].forEach(id=>{const e=document.getElementById(id);if(e&&!e.children.length)e.innerHTML=KUCHE_V15_WEEKDAYS.map((d,i)=>`<label><input type="checkbox" value="${i+1}"> ${d}</label>`).join("");});
+ const resp=document.getElementById("v15BatchResponsible");if(resp&&!resp.value)resp.value=currentSession?.name||appSettings.adminName||"";
+ const mealDate=document.getElementById("v15MealDate");if(mealDate&&!mealDate.value)mealDate.value=getToday();
+ const mealPortions=document.getElementById("v15MealPortions");if(mealPortions&&!mealPortions.value)mealPortions.value=v15ExpectedMealPortions();
+ v15RenderInternalPOSOptions();
+}
+
+function v15SupplyTab(which){
+ const map={orders:"v15SupplyOrders",prices:"v15SupplyPrices",counts:"v15SupplyCounts"};Object.entries(map).forEach(([k,id])=>{const e=document.getElementById(id);if(e)e.style.display=k===which?"":"none";});
+}
+function v15CheckedDays(boxId){return [...document.querySelectorAll(`#${boxId} input:checked`)].map(x=>Number(x.value));}
+function v15SetCheckedDays(boxId,days=[]){document.querySelectorAll(`#${boxId} input`).forEach(x=>x.checked=(days||[]).includes(Number(x.value)));}
+function v15DayNames(days=[]){return (days||[]).map(x=>KUCHE_V15_WEEKDAYS[Number(x)-1]).filter(Boolean).join(", ")||"Sin días definidos";}
+
+async function v15SaveSupplierRule(){
+ if(!v15CanSupply()){alert("No tienes permiso para modificar proveedores.");return;}
+ const supplier=v15SupplierByAnyId(document.getElementById("v15RuleSupplier")?.value);if(!supplier){alert("Selecciona un proveedor.");return;}
+ const orderDays=v15CheckedDays("v15RuleOrderDays");if(!orderDays.length){alert("Selecciona al menos un día de pedido.");return;}
+ const deliveryDays=v15CheckedDays("v15RuleDeliveryDays");
+ const payloadLocal={id:v15SupplierRules.find(x=>String(x.supplierLocalId)===String(supplier.id))?.id||v15UUID(),supplierLocalId:supplier.id,supplierId:supplier.cloudId||null,orderWeekdays:orderDays,orderStartTime:v15RuleStart.value||null,cutoffTime:v15RuleCutoff.value||null,leadTimeDays:Math.max(0,v15SafeNumber(v15RuleLead.value,1)),deliveryWeekdays:deliveryDays,minimumOrderAmount:Math.max(0,v15SafeNumber(v15RuleMinimum.value)),notes:v15RuleNotes.value.trim(),active:true};
+ if(kucheCloud&&cloudOrganization){
+  const sid=await ops3EnsureCloudSupplier(supplier);if(!sid){alert("No se pudo sincronizar el proveedor.");return;}
+  const {data,error}=await kucheCloud.from("supplier_order_rules").upsert({organization_id:cloudOrganization.id,supplier_id:sid,order_weekdays:orderDays,order_start_time:payloadLocal.orderStartTime,cutoff_time:payloadLocal.cutoffTime,lead_time_days:payloadLocal.leadTimeDays,delivery_weekdays:deliveryDays,minimum_order_amount:payloadLocal.minimumOrderAmount,notes:payloadLocal.notes||null,active:true},{onConflict:"organization_id,supplier_id"}).select().single();
+  if(error){alert("No se pudo guardar: "+error.message);return;}payloadLocal.id=data.id;payloadLocal.supplierId=sid;
+ }
+ v15SupplierRules=v15SupplierRules.filter(x=>String(x.supplierLocalId)!==String(supplier.id)&&String(x.supplierId)!==String(payloadLocal.supplierId));v15SupplierRules.push(payloadLocal);v15SaveLocal();v15RenderSupplyPlanner();alert("Condiciones de pedido guardadas.");
+}
+function v15EditSupplierRule(id){
+ const r=v15SupplierRules.find(x=>String(x.id)===String(id));if(!r)return;const s=v15SupplierByAnyId(r.supplierLocalId||r.supplierId);v15RuleSupplier.value=s?.id||"";v15RuleStart.value=r.orderStartTime||"";v15RuleCutoff.value=r.cutoffTime||"";v15RuleLead.value=r.leadTimeDays??1;v15RuleMinimum.value=r.minimumOrderAmount||0;v15RuleNotes.value=r.notes||"";v15SetCheckedDays("v15RuleOrderDays",r.orderWeekdays);v15SetCheckedDays("v15RuleDeliveryDays",r.deliveryWeekdays);document.getElementById("supplyplanner")?.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+async function v15SaveSupplierTerm(){
+ if(!v15CanSupply()){alert("No tienes permiso para modificar precios de proveedor.");return;}
+ const item=v15ItemByAnyId(v15TermItem.value),supplier=v15SupplierByAnyId(v15TermSupplier.value);const price=Math.max(0,v15SafeNumber(v15TermPrice.value));const pack=Math.max(.0001,v15SafeNumber(v15TermPackQty.value,1));if(!item||!supplier||price<=0){alert("Selecciona producto y proveedor e ingresa un precio mayor a 0.");return;}
+ let term=v15SupplierTerms.find(x=>(String(x.inventoryLocalId)===String(item.id)||String(x.inventoryItemId)===String(item.cloudId))&&(String(x.supplierLocalId)===String(supplier.id)||String(x.supplierId)===String(supplier.cloudId)));
+ const previous=Number(term?.currentPrice||0);const local={id:term?.id||v15UUID(),supplierLocalId:supplier.id,inventoryLocalId:item.id,supplierId:supplier.cloudId||null,inventoryItemId:item.cloudId||null,purchaseFormat:v15TermFormat.value.trim(),packStockQty:pack,currentPrice:price,minimumPacks:Math.max(0,v15SafeNumber(v15TermMinPacks.value)),preferred:v15TermPreferred.value==="true",active:true,priceUpdatedAt:new Date().toISOString()};
+ if(kucheCloud&&cloudOrganization){
+  const sid=await ops3EnsureCloudSupplier(supplier),iid=await ops3EnsureCloudInventoryItem(item,{allowInitialMigration:false});if(!sid||!iid){alert("No se pudo sincronizar proveedor o producto.");return;}
+  const {data,error}=await kucheCloud.from("supplier_item_terms").upsert({organization_id:cloudOrganization.id,supplier_id:sid,inventory_item_id:iid,purchase_format:local.purchaseFormat||null,pack_stock_qty:pack,current_price:price,minimum_packs:local.minimumPacks,preferred:local.preferred,active:true,price_updated_at:new Date().toISOString()},{onConflict:"organization_id,supplier_id,inventory_item_id"}).select().single();
+  if(error){alert("No se pudo guardar: "+error.message);return;}local.id=data.id;local.supplierId=sid;local.inventoryItemId=iid;
+  if(!term||Math.abs(previous-price)>.0001){await kucheCloud.from("supplier_item_price_history").insert({organization_id:cloudOrganization.id,supplier_item_term_id:data.id,supplier_id:sid,inventory_item_id:iid,price,purchase_format:local.purchaseFormat||null,pack_stock_qty:pack});}
+ }
+ v15SupplierTerms=v15SupplierTerms.filter(x=>!((String(x.inventoryLocalId)===String(item.id)||String(x.inventoryItemId)===String(local.inventoryItemId))&&(String(x.supplierLocalId)===String(supplier.id)||String(x.supplierId)===String(local.supplierId))));v15SupplierTerms.push(local);v15SaveLocal();v15RenderSupplyPlanner();v15TermPrice.value="";alert("Precio de proveedor guardado.");
+}
+
+function v15AverageDailyUsage(item,days=28){
+ const from=Date.now()-days*86400000;let total=0;(movements||[]).forEach(m=>{if(String(m.productId)!==String(item.id))return;const t=new Date(m.date||m.createdAt||0).getTime();if(!t||t<from)return;const prev=Number(m.previousStock),res=Number(m.resultingStock);if(Number.isFinite(prev)&&Number.isFinite(res)&&res<prev){total+=prev-res;return;}const type=String(m.type||"").toLowerCase();if(["salida","venta","consumo"].some(x=>type.includes(x)))total+=Math.abs(Number(m.quantity||0));});return total/days;
+}
+function v15NextOrderDate(rule,from=new Date()){
+ const days=(rule?.orderWeekdays||[]).map(Number);if(!days.length)return null;const base=new Date(from);base.setSeconds(0,0);for(let i=0;i<15;i++){const d=v15AddDays(base,i);if(!days.includes(v15IsoWeekday(d)))continue;if(i===0&&rule.cutoffTime&&v15CurrentMinutes()>v15TimeMinutes(rule.cutoffTime))continue;return d;}return null;
+}
+function v15NextDeliveryDate(rule,orderDate){
+ if(!orderDate)return null;let target=v15AddDays(orderDate,Math.max(0,Number(rule?.leadTimeDays||0)));const delivery=(rule?.deliveryWeekdays||[]).map(Number);if(!delivery.length)return target;for(let i=0;i<15;i++){const d=v15AddDays(target,i);if(delivery.includes(v15IsoWeekday(d)))return d;}return target;
+}
+function v15SupplierTermFor(item,supplierId){return v15SupplierTerms.find(t=>(String(t.inventoryLocalId)===String(item.id)||String(t.inventoryItemId)===String(item.cloudId))&&(String(t.supplierLocalId)===String(supplierId)||String(t.supplierId)===String(v15CloudSupplierId(supplierId))));}
+function v15SupplyRecommendations(){
+ const out=[];v15SupplierTerms.filter(t=>t.active!==false).forEach(term=>{const item=v15ItemByAnyId(term.inventoryLocalId||term.inventoryItemId),supplier=v15SupplierByAnyId(term.supplierLocalId||term.supplierId);if(!item||!supplier)return;const rule=v15SupplierRules.find(r=>String(r.supplierLocalId)===String(supplier.id)||String(r.supplierId)===String(supplier.cloudId));if(!rule||rule.active===false)return;const orderDate=v15NextOrderDate(rule),delivery=v15NextDeliveryDate(rule,orderDate);if(!orderDate||!delivery)return;const horizon=Math.max(1,Math.ceil((delivery.getTime()-Date.now())/86400000)+1);const avg=v15AverageDailyUsage(item);const safety=Math.max(0,Number(item.minimum||0));const need=avg*horizon+safety;const stock=Math.max(0,Number(item.quantity||0));const deficit=Math.max(0,need-stock);if(deficit<=0)return;const pack=Math.max(.0001,Number(term.packStockQty||1));let packs=Math.ceil(deficit/pack);packs=Math.max(packs,Math.ceil(Number(term.minimumPacks||0)));const today=v15DateOnly(new Date()),orderDay=v15DateOnly(orderDate);out.push({item,supplier,rule,term,avg,horizon,need,stock,deficit,packs,quantity:packs*pack,orderDate,delivery,urgent:today===orderDay});});return out.sort((a,b)=>Number(b.urgent)-Number(a.urgent)||a.orderDate-b.orderDate);
+}
+function v15RenderSupplyAlerts(){
+ const box=document.getElementById("v15SupplyAlerts");if(!box)return;const recs=v15SupplyRecommendations();const due=v15PeriodicSchedules.filter(s=>s.active!==false&&s.nextDueDate&&s.nextDueDate<=getToday());const upcoming=v15PeriodicSchedules.filter(s=>s.active!==false&&s.nextDueDate&&s.nextDueDate>getToday()&&((new Date(s.nextDueDate+"T12:00:00")-new Date(getToday()+"T12:00:00"))/86400000)<=Number(s.warningDays||0));const cards=[];
+ recs.slice(0,8).forEach(r=>cards.push(`<div class="v15-alert-card ${r.urgent?'urgent':''}"><span class="badge ${r.urgent?'badge-danger':'badge-warning'}">${r.urgent?'PEDIR HOY':'Próximo pedido'}</span><h3>${escapeHTML(r.item.name)}</h3><p>${escapeHTML(r.supplier.name)} · pedido ${formatDate(v15DateOnly(r.orderDate))}${r.rule.cutoffTime?' antes de '+String(r.rule.cutoffTime).slice(0,5):''}</p><div class="v15-metric-line"><span>Stock</span><strong>${formatNumber(r.stock)} ${escapeHTML(r.item.unit)}</strong></div><div class="v15-metric-line"><span>Necesidad proyectada</span><strong>${formatNumber(r.need)} ${escapeHTML(r.item.unit)}</strong></div><div class="v15-metric-line"><span>Sugerencia</span><strong>${formatNumber(r.packs)} formato(s) · ${formatNumber(r.quantity)} ${escapeHTML(r.item.unit)}</strong></div><div class="category">Proyección hasta entrega ${formatDate(v15DateOnly(r.delivery))}. Consumo promedio ${formatNumber(r.avg)}/${escapeHTML(r.item.unit)} por día.</div></div>`));
+ [...due,...upcoming].slice(0,6).forEach(s=>cards.push(`<div class="v15-alert-card ${due.includes(s)?'urgent':''}"><span class="badge ${due.includes(s)?'badge-danger':'badge-warning'}">${due.includes(s)?'INVENTARIO PENDIENTE':'Inventario próximo'}</span><h3>${escapeHTML(s.name)}</h3><p>Fecha programada: ${formatDate(s.nextDueDate)}</p><button class="primary-button" onclick="v15OpenCount('${ops2EscapeAttr(s.id)}')">Realizar inventario</button></div>`));
+ box.innerHTML=cards.join("")||'<div class="integral-panel" style="grid-column:1/-1"><strong>Sin alertas de abastecimiento por ahora.</strong><div class="category">KÜCHE mostrará aquí pedidos e inventarios cuando exista suficiente configuración.</div></div>';
+ v15RenderDashboardAlerts(recs,due,upcoming);
+}
+function v15RenderDashboardAlerts(recs=v15SupplyRecommendations(),due=null,upcoming=null){
+ const dash=document.getElementById("dashboard");if(!dash)return;let panel=document.getElementById("v15DashboardSupply");if(!panel){const h=dash.querySelector(".page-header");panel=document.createElement("div");panel.id="v15DashboardSupply";panel.className="integral-panel";h?.insertAdjacentElement("afterend",panel);}due=due||v15PeriodicSchedules.filter(s=>s.active!==false&&s.nextDueDate&&s.nextDueDate<=getToday());upcoming=upcoming||[];const urgent=recs.filter(r=>r.urgent);panel.innerHTML=`<div class="page-header" style="margin-bottom:10px"><div><h2>Abastecimiento</h2><p>Alertas calculadas con stock, consumo y ventanas de pedido configuradas.</p></div><button class="secondary-button" onclick="showPage('supplyplanner',[...document.querySelectorAll('.nav-item')].find(b=>(b.getAttribute('onclick')||'').includes(\"'supplyplanner'\")))">Ver detalle</button></div><div class="v15-dashboard-alerts"><span class="badge ${urgent.length?'badge-danger':'badge-success'}">${urgent.length} pedido(s) para hoy</span><span class="badge ${due.length?'badge-danger':'badge-success'}">${due.length} inventario(s) vencido(s)</span><span class="badge badge-blue">${recs.length} recomendación(es)</span></div>`;
+}
+function v15RenderSupplierRules(){
+ const body=document.getElementById("v15RuleTable");if(!body)return;body.innerHTML=v15SupplierRules.length?v15SupplierRules.map(r=>`<tr><td><strong>${escapeHTML(v15SupplierName(r.supplierLocalId||r.supplierId))}</strong></td><td>${escapeHTML(v15DayNames(r.orderWeekdays))}</td><td>${r.orderStartTime?String(r.orderStartTime).slice(0,5)+'–':''}${r.cutoffTime?String(r.cutoffTime).slice(0,5):'Sin límite'}</td><td>${escapeHTML(v15DayNames(r.deliveryWeekdays))}</td><td>${Number(r.leadTimeDays||0)} día(s)</td><td><button class="secondary-button" onclick="v15EditSupplierRule('${ops2EscapeAttr(r.id)}')">Editar</button></td></tr>`).join(""):'<tr><td colspan="6"><div class="empty-state"><strong>Sin condiciones configuradas</strong></div></td></tr>';
+}
+function v15RenderPriceComparison(){
+ const box=document.getElementById("v15PriceComparison");if(!box)return;const groups={};v15SupplierTerms.filter(t=>t.active!==false).forEach(t=>{const item=v15ItemByAnyId(t.inventoryLocalId||t.inventoryItemId);if(!item)return;(groups[String(item.id)]||(groups[String(item.id)]={item,terms:[]})).terms.push(t);});box.innerHTML=Object.values(groups).map(g=>{const sorted=g.terms.slice().sort((a,b)=>Number(a.currentPrice||0)/Math.max(.0001,Number(a.packStockQty||1))-Number(b.currentPrice||0)/Math.max(.0001,Number(b.packStockQty||1)));return `<div class="integral-panel"><h2>${escapeHTML(g.item.name)}</h2>${sorted.map((t,i)=>`<div class="v15-price-row"><div><strong>${escapeHTML(v15SupplierName(t.supplierLocalId||t.supplierId))}</strong><div class="category">${escapeHTML(t.purchaseFormat||'Formato no indicado')} · ${formatNumber(t.packStockQty)} ${escapeHTML(g.item.unit)}${t.preferred?' · Preferido':''}</div></div><div style="text-align:right"><strong>$${formatMoney(t.currentPrice)}</strong><div class="category">$${formatMoney(Number(t.currentPrice||0)/Math.max(.0001,Number(t.packStockQty||1)))} / ${escapeHTML(g.item.unit)} ${i===0?'<span class="badge badge-success">Mejor precio</span>':''}</div></div></div>`).join("")}</div>`;}).join("")||'<div class="integral-panel"><strong>Aún no hay precios por proveedor.</strong></div>';
+}
+
+function v15ScheduleFrequencyUI(){const f=v15ScheduleFrequency.value;v15ScheduleWeekdayField.style.display=["weekly","biweekly"].includes(f)?"":"none";v15ScheduleMonthDayField.style.display=f==="monthly"?"":"none";v15ScheduleIntervalField.style.display=f==="interval"?"":"none";}
+function v15ComputeNextDue(schedule,fromDate=null){
+ const base=fromDate?new Date(fromDate+"T12:00:00"):new Date();base.setHours(12,0,0,0);const mode=schedule.frequencyMode;
+ if(mode==="interval")return v15DateOnly(v15AddDays(base,Math.max(1,Number(schedule.intervalDays||7))));
+ if(mode==="biweekly"&&fromDate)return v15DateOnly(v15AddDays(base,14));
+ if(mode==="weekly"||mode==="biweekly"){const wd=Number(schedule.weekday||1);for(let i=fromDate?1:0;i<15;i++){const d=v15AddDays(base,i);if(v15IsoWeekday(d)===wd)return v15DateOnly(d);} }
+ if(mode==="monthly"){const day=Math.max(1,Math.min(31,Number(schedule.monthDay||1)));let y=base.getFullYear(),m=base.getMonth();let d=new Date(y,m,Math.min(day,new Date(y,m+1,0).getDate()),12);if(d<base||fromDate){m+=1;d=new Date(y,m,Math.min(day,new Date(y,m+1,0).getDate()),12);}return v15DateOnly(d);}
+ return v15DateOnly(v15AddDays(base,7));
+}
+async function v15SavePeriodicSchedule(){
+ if(!v15CanSupply()){alert("No tienes permiso para programar inventarios.");return;}const name=v15ScheduleName.value.trim();if(!name){alert("Escribe el nombre del inventario.");return;}const s={id:v15EditingScheduleId||v15UUID(),name,inventoryKind:v15ScheduleKind.value,frequencyMode:v15ScheduleFrequency.value,weekday:["weekly","biweekly"].includes(v15ScheduleFrequency.value)?Number(v15ScheduleWeekday.value):null,monthDay:v15ScheduleFrequency.value==="monthly"?Number(v15ScheduleMonthDay.value):null,intervalDays:v15ScheduleFrequency.value==="interval"?Number(v15ScheduleInterval.value):null,warningDays:Math.max(0,Number(v15ScheduleWarning.value)||0),defaultSupplierLocalId:v15ScheduleSupplier.value||null,nextDueDate:null,active:true};const previous=v15PeriodicSchedules.find(x=>String(x.id)===String(s.id));s.nextDueDate=previous?.nextDueDate||v15ComputeNextDue(s);
+ if(kucheCloud&&cloudOrganization){let sid=null;if(s.defaultSupplierLocalId){const sup=v15SupplierByAnyId(s.defaultSupplierLocalId);sid=sup?await ops3EnsureCloudSupplier(sup):null;}const payload={id:v15IsUUID(s.id)?s.id:undefined,organization_id:cloudOrganization.id,name:s.name,inventory_kind:s.inventoryKind,frequency_mode:s.frequencyMode,weekday:s.weekday,month_day:s.monthDay,interval_days:s.intervalDays,warning_days:s.warningDays,default_supplier_id:sid,next_due_date:s.nextDueDate,active:true};Object.keys(payload).forEach(k=>payload[k]===undefined&&delete payload[k]);const q=v15IsUUID(s.id)?kucheCloud.from("periodic_inventory_schedules").upsert(payload).select().single():kucheCloud.from("periodic_inventory_schedules").insert(payload).select().single();const {data,error}=await q;if(error){alert("No se pudo guardar: "+error.message);return;}s.id=data.id;s.defaultSupplierId=sid;}
+ v15PeriodicSchedules=v15PeriodicSchedules.filter(x=>String(x.id)!==String(v15EditingScheduleId||s.id));v15PeriodicSchedules.push(s);v15SaveLocal();v15EditingScheduleId=null;v15ClearScheduleForm();v15RenderPeriodicSchedules();v15RenderSupplyAlerts();alert("Programa de inventario guardado. Ahora agrega los productos que se deben contar.");
+}
+function v15ClearScheduleForm(){v15EditingScheduleId=null;["v15ScheduleName","v15ScheduleWarning"].forEach(id=>{const e=document.getElementById(id);if(e)e.value=id==="v15ScheduleWarning"?0:"";});if(document.getElementById("v15ScheduleFrequency"))v15ScheduleFrequency.value="weekly";if(document.getElementById("v15ScheduleKind"))v15ScheduleKind.value="supplies";v15ScheduleFrequencyUI();}
+function v15EditSchedule(id){const s=v15PeriodicSchedules.find(x=>String(x.id)===String(id));if(!s)return;v15EditingScheduleId=s.id;v15ScheduleName.value=s.name;v15ScheduleKind.value=s.inventoryKind;v15ScheduleFrequency.value=s.frequencyMode;v15ScheduleWeekday.value=s.weekday||1;v15ScheduleMonthDay.value=s.monthDay||1;v15ScheduleInterval.value=s.intervalDays||7;v15ScheduleWarning.value=s.warningDays||0;const sup=v15SupplierByAnyId(s.defaultSupplierLocalId||s.defaultSupplierId);v15ScheduleSupplier.value=sup?.id||"";v15ScheduleFrequencyUI();}
+function v15RenderPeriodicSchedules(){
+ const box=document.getElementById("v15ScheduleCards");if(!box)return;box.innerHTML=v15PeriodicSchedules.filter(s=>s.active!==false).map(s=>{const items=v15ScheduleItems.filter(i=>String(i.scheduleId)===String(s.id));const due=s.nextDueDate&&s.nextDueDate<=getToday();return `<div class="integral-panel"><div class="card-topline"><div><h2>${escapeHTML(s.name)}</h2><div class="category">${s.inventoryKind==='supplies'?'Suministros / limpieza':s.inventoryKind==='condiments'?'Condimentos':s.inventoryKind==='food'?'Alimentos':'Otro'} · ${escapeHTML(v15FrequencyLabel(s))}</div></div><span class="badge ${due?'badge-danger':'badge-success'}">${due?'Pendiente':s.nextDueDate?formatDate(s.nextDueDate):'Sin fecha'}</span></div><div class="v15-metric-line"><span>Productos</span><strong>${items.length}</strong></div><div class="form-actions"><button class="primary-button" onclick="v15OpenCount('${ops2EscapeAttr(s.id)}')">Realizar inventario</button><button class="secondary-button" onclick="v15AddScheduleItemPrompt('${ops2EscapeAttr(s.id)}')">Agregar producto</button><button class="secondary-button" onclick="v15EditSchedule('${ops2EscapeAttr(s.id)}')">Editar</button></div><div style="margin-top:10px">${items.map(i=>{const p=v15ItemByAnyId(i.inventoryLocalId||i.inventoryItemId);return `<div class="mini-row"><span>${escapeHTML(p?.name||'Insumo')}</span><span>mín. ${formatNumber(i.minimumStock)} · objetivo ${formatNumber(i.targetStock)} ${escapeHTML(p?.unit||'')}</span></div>`;}).join('')||'<div class="category">Agrega los productos que se contarán.</div>'}</div></div>`;}).join("")||'<div class="integral-panel"><strong>No hay inventarios periódicos programados.</strong></div>';
+}
+function v15FrequencyLabel(s){if(s.frequencyMode==="weekly")return `Semanal · ${KUCHE_V15_WEEKDAYS[Number(s.weekday||1)-1]}`;if(s.frequencyMode==="biweekly")return `Cada 2 semanas · ${KUCHE_V15_WEEKDAYS[Number(s.weekday||1)-1]}`;if(s.frequencyMode==="monthly")return `Mensual · día ${s.monthDay}`;return `Cada ${s.intervalDays||7} días`;}
+async function v15AddScheduleItemPrompt(scheduleId){
+ const s=v15PeriodicSchedules.find(x=>String(x.id)===String(scheduleId));if(!s)return;const names=inventory.map((p,i)=>`${i+1}. ${p.name}`).join("\n");const n=prompt(`Escribe el número del producto para agregar a “${s.name}”:\n\n${names}`);if(n===null)return;const p=inventory[Number(n)-1];if(!p){alert("Producto no válido.");return;}const target=Number(prompt(`Stock objetivo de ${p.name} (${p.unit}):`,String(Math.max(Number(p.minimum||0)*2,Number(p.quantity||0)))))||0;const minimum=Number(prompt(`Stock mínimo de ${p.name} (${p.unit}):`,String(Number(p.minimum||0))))||0;let supplier=s.defaultSupplierLocalId?v15SupplierByAnyId(s.defaultSupplierLocalId):null;
+ const local={id:v15UUID(),scheduleId:s.id,inventoryLocalId:p.id,inventoryItemId:p.cloudId||null,supplierLocalId:supplier?.id||null,supplierId:supplier?.cloudId||null,targetStock:Math.max(0,target),minimumStock:Math.max(0,minimum),active:true};
+ if(kucheCloud&&cloudOrganization){const iid=await ops3EnsureCloudInventoryItem(p,{allowInitialMigration:false}),sid=supplier?await ops3EnsureCloudSupplier(supplier):null;if(!iid){alert("No se pudo sincronizar el producto.");return;}const {data,error}=await kucheCloud.from("periodic_inventory_schedule_items").upsert({organization_id:cloudOrganization.id,schedule_id:s.id,inventory_item_id:iid,supplier_id:sid,target_stock:local.targetStock,minimum_stock:local.minimumStock,active:true},{onConflict:"schedule_id,inventory_item_id"}).select().single();if(error){alert("No se pudo agregar: "+error.message);return;}local.id=data.id;local.inventoryItemId=iid;local.supplierId=sid;}
+ v15ScheduleItems=v15ScheduleItems.filter(i=>!(String(i.scheduleId)===String(s.id)&&(String(i.inventoryLocalId)===String(p.id)||String(i.inventoryItemId)===String(local.inventoryItemId))));v15ScheduleItems.push(local);v15SaveLocal();v15RenderPeriodicSchedules();
+}
+function v15OpenCount(scheduleId){const s=v15PeriodicSchedules.find(x=>String(x.id)===String(scheduleId));if(!s)return;const lines=v15ScheduleItems.filter(i=>String(i.scheduleId)===String(s.id)&&i.active!==false);if(!lines.length){alert("Primero agrega los productos que deben contarse.");return;}v15CountPanel.dataset.scheduleId=s.id;v15CountTitle.textContent=s.name;v15CountLines.innerHTML=lines.map(i=>{const p=v15ItemByAnyId(i.inventoryLocalId||i.inventoryItemId);return `<div class="v15-count-row" data-itemrow="${ops2EscapeAttr(i.id)}"><div><strong>${escapeHTML(p?.name||'Insumo')}</strong><div class="category">Sistema: ${formatNumber(p?.quantity||0)} ${escapeHTML(p?.unit||'')} · objetivo ${formatNumber(i.targetStock)}</div></div><div class="field"><label>Cantidad física</label><input type="number" min="0" step="0.0001" value="${Number(p?.quantity||0)}" data-countqty></div></div>`;}).join("");v15CountPanel.style.display="block";v15CountPanel.scrollIntoView({behavior:"smooth",block:"start"});}
+function v15CloseCountPanel(){if(document.getElementById("v15CountPanel"))v15CountPanel.style.display="none";}
+async function v15CompletePeriodicCount(){
+ if(!v15CanSupply()){alert("No tienes permiso para completar este inventario.");return;}const s=v15PeriodicSchedules.find(x=>String(x.id)===String(v15CountPanel.dataset.scheduleId));if(!s)return;const rows=[...document.querySelectorAll("#v15CountLines .v15-count-row")];const date=getToday();let countId=v15UUID();const lineData=[];for(const row of rows){const cfg=v15ScheduleItems.find(i=>String(i.id)===String(row.dataset.itemrow));const p=v15ItemByAnyId(cfg?.inventoryLocalId||cfg?.inventoryItemId);if(!cfg||!p)continue;const counted=Math.max(0,Number(row.querySelector("[data-countqty]").value)||0);lineData.push({cfg,p,counted,suggested:Math.max(0,Number(cfg.targetStock||0)-counted)});}
+ if(kucheCloud&&cloudOrganization){const {data,error}=await kucheCloud.from("periodic_inventory_counts").insert({organization_id:cloudOrganization.id,schedule_id:s.id,count_date:date,counted_by_staff_id:cloudStaffRecord?.id||null,counted_by_name:currentSession?.name||appSettings.adminName||"Usuario",status:"completed"}).select().single();if(error){alert("No se pudo registrar el conteo: "+error.message);return;}countId=data.id;const cloudLines=[];for(const x of lineData){const iid=x.p.cloudId||await ops3EnsureCloudInventoryItem(x.p,{allowInitialMigration:false});if(!iid)continue;cloudLines.push({organization_id:cloudOrganization.id,count_id:countId,inventory_item_id:iid,expected_quantity:Number(x.p.quantity||0),counted_quantity:x.counted,target_stock:Number(x.cfg.targetStock||0),suggested_order_quantity:x.suggested,supplier_id:x.cfg.supplierId||null,unit_cost_snapshot:Number(x.p.cost||0)});const {error:e}=await kucheCloud.rpc("set_inventory_quantity",{p_inventory_item_id:iid,p_new_quantity:x.counted,p_reason:"Inventario periódico · "+s.name});if(e){alert("El conteo se guardó, pero no se pudo actualizar "+x.p.name+": "+e.message);return;}}
+  if(cloudLines.length){const {error:e}=await kucheCloud.from("periodic_inventory_count_lines").insert(cloudLines);if(e){alert("No se pudieron guardar las líneas: "+e.message);return;}}
+ }
+ lineData.forEach(x=>{const old=Number(x.p.quantity||0);x.p.quantity=x.counted;normalizeAreaStocks();const area=x.p.primaryArea||inferInventoryArea(x.p);x.p.areaStocks[area]=x.counted;movements.unshift({id:Date.now()+Math.random(),productId:x.p.id,productName:x.p.name,type:"ajuste",quantity:Math.abs(x.counted-old),reason:"Inventario periódico · "+s.name,previousStock:old,resultingStock:x.counted,unit:x.p.unit,date:new Date().toISOString(),source:"periodic_count",sourceId:countId});});
+ s.lastCountedAt=new Date().toISOString();s.nextDueDate=v15ComputeNextDue(s,date);v15PeriodicCounts.unshift({id:countId,scheduleId:s.id,countDate:date,lines:lineData.map(x=>({itemId:x.p.id,counted:x.counted,suggested:x.suggested}))});if(kucheCloud&&cloudOrganization)await kucheCloud.from("periodic_inventory_schedules").update({last_counted_at:s.lastCountedAt,next_due_date:s.nextDueDate}).eq("id",s.id);saveInventory();saveMovements();v15SaveLocal();v15CloseCountPanel();v15RenderAll();renderInventory();alert("Inventario completado. KÜCHE actualizó el stock y calculó las cantidades sugeridas para reposición.");
+}
+
+function v15BatchRecipeChanged(){const r=v15RecipeByAnyId(v15BatchRecipe.value);if(!r){v15BatchAnchor.innerHTML='<option value="">Seleccionar</option>';v15BatchIngredients.innerHTML="";return;}v15BatchYield.value=Number(r.yield||1);v15BatchAnchor.innerHTML=(r.ingredients||[]).map((i,idx)=>`<option value="${idx}">${escapeHTML(i.productName||v15ItemName(i.productId))} · estándar ${formatNumber(i.quantity)} ${escapeHTML(i.recipeUnit||i.unit||'')}</option>`).join("");v15RenderBatchPreview();}
+function v15BatchModeChanged(){const anchor=v15BatchMode.value==="anchor_weight";v15BatchPortionField.style.display=anchor?"none":"";v15BatchAnchorField.style.display=anchor?"":"none";v15BatchAnchorQtyField.style.display=anchor?"":"none";v15RenderBatchPreview();}
+function v15BatchLineModeChanged(){v15RenderBatchPreview(true);}
+function v15RenderBatchPreview(preserve=false){
+ const r=v15RecipeByAnyId(v15BatchRecipe.value);if(!r){v15BatchFactor.textContent="Selecciona una receta maestra.";return;}const base=Math.max(.0001,Number(r.yield||1));let factor=1;if(v15BatchMode.value==="anchor_weight"){const idx=Number(v15BatchAnchor.value||0),ing=r.ingredients?.[idx],std=Math.max(.0001,Number(ing?.quantity||0)),actual=Math.max(.0001,Number(v15BatchAnchorQty.value||std));if(!v15BatchAnchorQty.value)v15BatchAnchorQty.value=std;factor=actual/std;}else{factor=Math.max(.0001,Number(v15BatchYield.value||base))/base;}
+ const existing={};if(preserve)document.querySelectorAll("#v15BatchIngredients [data-batch-product]").forEach(row=>existing[row.dataset.batchProduct]={mode:row.querySelector("[data-batch-mode]")?.value,qty:row.querySelector("[data-batch-qty]")?.value});
+ const scaled=(r.ingredients||[]).map(i=>{const key=String(i.productId),saved=existing[key];const mode=saved?.mode||"scale";let qty=mode==="fixed"?Number(i.quantity||0):Number(i.quantity||0)*factor;if(mode==="manual"&&saved?.qty!==undefined)qty=Math.max(0,Number(saved.qty)||0);return {...i,scaleMode:mode,scaledQuantity:qty};});
+ v15BatchDraft={recipe:r,factor,scaled};v15BatchFactor.innerHTML=`Receta estándar: <strong>${formatNumber(base)} porciones</strong> · factor temporal: <strong>×${factor.toFixed(3)}</strong> · la receta maestra no se modifica.`;
+ v15BatchIngredients.innerHTML=`<div class="table-card"><table><thead><tr><th>Ingrediente</th><th>Estándar</th><th>Comportamiento</th><th>Cantidad para este lote</th></tr></thead><tbody>${scaled.map(i=>`<tr data-batch-product="${ops2EscapeAttr(i.productId)}"><td><strong>${escapeHTML(i.productName||v15ItemName(i.productId))}</strong></td><td>${formatNumber(i.quantity)} ${escapeHTML(i.recipeUnit||i.unit||'')}</td><td><select data-batch-mode onchange="v15BatchLineModeChanged()"><option value="scale" ${i.scaleMode==='scale'?'selected':''}>Escalar</option><option value="fixed" ${i.scaleMode==='fixed'?'selected':''}>Mantener fija</option><option value="manual" ${i.scaleMode==='manual'?'selected':''}>Ajustar manual</option></select></td><td><input data-batch-qty type="number" min="0" step="0.0001" value="${Number(i.scaledQuantity).toFixed(4)}" ${i.scaleMode==='manual'?'':'readonly'} oninput="v15UpdateBatchManualQty(this)"> ${escapeHTML(i.recipeUnit||i.unit||'')}</td></tr>`).join("")}</tbody></table></div>`;
+}
+function v15UpdateBatchManualQty(input){const row=input.closest("[data-batch-product]");if(!row)return;if(row.querySelector("[data-batch-mode]").value!=="manual")return;const x=v15BatchDraft?.scaled.find(i=>String(i.productId)===String(row.dataset.batchProduct));if(x)x.scaledQuantity=Math.max(0,Number(input.value)||0);}
+function v15CollectBatchScaled(){if(!v15BatchDraft)return[];return [...document.querySelectorAll("#v15BatchIngredients [data-batch-product]")].map(row=>{const base=v15BatchDraft.scaled.find(i=>String(i.productId)===String(row.dataset.batchProduct));return {...base,scaleMode:row.querySelector("[data-batch-mode]").value,scaledQuantity:Math.max(0,Number(row.querySelector("[data-batch-qty]").value)||0)};});}
+async function v15RegisterBatch(){
+ if(!v15CanKitchen()){alert("Esta función es para administración, manager o cocina.");return;}const r=v15RecipeByAnyId(v15BatchRecipe.value);if(!r){alert("Selecciona una receta.");return;}const scaled=v15CollectBatchScaled();if(!scaled.length){alert("La receta no tiene ingredientes.");return;}const factor=v15BatchDraft?.factor||1,mode=v15BatchMode.value,requested=mode==="portions"?Number(v15BatchYield.value||r.yield):Number(r.yield||1)*factor,anchorIng=mode==="anchor_weight"?r.ingredients?.[Number(v15BatchAnchor.value||0)]:null;const estimated=scaled.reduce((s,i)=>{const p=v15ItemByAnyId(i.productId);return s+Number(i.scaledQuantity||0)*Number(p?.cost||0);},0);let guideId=r.cloudGuideId||null;if(kucheCloud&&cloudOrganization){await syncRecipeGuideToCloud(r);guideId=r.cloudGuideId||guideId;}
+ const batch={id:v15UUID(),recipeId:r.id,recipeName:r.name,batchDate:getToday(),scaleMode:mode,baseYield:Number(r.yield||1),requestedYield:requested,scaleFactor:factor,anchorInventoryLocalId:anchorIng?.productId||null,anchorStandardQty:anchorIng?Number(anchorIng.quantity||0):null,anchorActualQty:mode==="anchor_weight"?Number(v15BatchAnchorQty.value||0):null,ingredientSnapshot:(r.ingredients||[]).map(i=>({...i})),scaledIngredientSnapshot:scaled.map(i=>({...i,quantity:i.scaledQuantity})),expectedOutputQty:requested,actualOutputQty:Number(v15BatchActualOutput.value)||null,outputUnit:r.outputUnit||"porción",estimatedCost:estimated,inventoryApplied:false,responsibleName:v15BatchResponsible.value.trim()||currentSession?.name||"Cocina",notes:v15BatchNotes.value.trim(),createdAt:new Date().toISOString()};
+ if(kucheCloud&&cloudOrganization){let anchorCloud=null;if(anchorIng){const p=v15ItemByAnyId(anchorIng.productId);anchorCloud=p?.cloudId||await ops3EnsureCloudInventoryItem(p,{allowInitialMigration:false});}const {data,error}=await kucheCloud.from("recipe_scaled_batches").insert({organization_id:cloudOrganization.id,source_recipe_local_id:String(r.id),recipe_guide_id:v15IsUUID(guideId)?guideId:null,recipe_name:r.name,batch_date:batch.batchDate,scale_mode:mode,base_yield:batch.baseYield,requested_yield:batch.requestedYield,scale_factor:batch.scaleFactor,anchor_inventory_item_id:anchorCloud,anchor_standard_qty:batch.anchorStandardQty,anchor_actual_qty:batch.anchorActualQty,ingredient_snapshot:batch.ingredientSnapshot,scaled_ingredient_snapshot:batch.scaledIngredientSnapshot,expected_output_qty:batch.expectedOutputQty,actual_output_qty:batch.actualOutputQty,output_unit:batch.outputUnit,estimated_cost:batch.estimatedCost,inventory_applied:false,responsible_staff_id:cloudStaffRecord?.id||null,responsible_name:batch.responsibleName,notes:batch.notes||null}).select().single();if(error){alert("No se pudo registrar el lote: "+error.message);return;}batch.id=data.id;}
+ v15ScaledBatches.unshift(batch);v15SaveLocal();v15RenderBatchHistory();alert("Lote ajustado registrado. La receta maestra sigue exactamente igual.");
+}
+async function v15ApplyBatchInventory(id){
+ const b=v15ScaledBatches.find(x=>String(x.id)===String(id));if(!b||b.inventoryApplied)return;if(!kucheCloud||!cloudOrganization){alert("Para aplicar este lote al inventario compartido necesitas conexión a KÜCHE Cloud.");return;}const lines=[];for(const i of b.scaledIngredientSnapshot||[]){const p=v15ItemByAnyId(i.productId);if(!p)continue;const cloudId=p.cloudId||await ops3EnsureCloudInventoryItem(p,{allowInitialMigration:false});if(!cloudId)continue;const qty=opsFinalIngredientPurchaseQty?opsFinalIngredientPurchaseQty(p,Number(i.quantity||0),i.recipeUnit||i.unit||p.baseUnit):Number(i.quantity||0);lines.push({inventory_item_id:cloudId,quantity:qty});}
+ const {data,error}=await kucheCloud.rpc("consume_inventory_for_operation",{p_organization_id:cloudOrganization.id,p_source_type:"scaled_batch",p_source_id:b.id,p_source_local_id:"scaled_batch:"+b.id,p_lines:lines,p_allow_negative:false});if(error){alert("No se pudo descontar inventario: "+error.message);return;}b.inventoryApplied=true;v15SaveLocal();await ops3RefreshInventoryFromCloud();v15RenderBatchHistory();renderInventory();alert(data?.status==="already_applied"?"Este lote ya había sido aplicado al inventario.":"Inventario descontado para este lote.");
+}
+function v15RenderBatchHistory(){const box=document.getElementById("v15BatchHistory");if(!box)return;box.innerHTML=v15ScaledBatches.slice(0,40).map(b=>`<div class="v15-history-row"><div><strong>${escapeHTML(b.recipeName)}</strong><div class="category">${formatDate(b.batchDate)} · ×${Number(b.scaleFactor||1).toFixed(3)} · ${formatNumber(b.requestedYield)} ${escapeHTML(b.outputUnit||'porciones')} · ${escapeHTML(b.responsibleName||'')}</div></div><div style="text-align:right"><strong>$${formatMoney(b.estimatedCost||0)}</strong><div>${b.inventoryApplied?'<span class="badge badge-success">Inventario aplicado</span>':`<button class="secondary-button" onclick="v15ApplyBatchInventory('${ops2EscapeAttr(b.id)}')">Aplicar inventario</button>`}</div></div></div>`).join("")||'<div class="category">Aún no hay lotes ajustados.</div>';}
+
+function v15ExpectedMealPortions(){const today=getToday();const scheduled=new Set(shifts.filter(s=>s.date===today).map(s=>String(s.staffId)));if(scheduled.size)return scheduled.size;const present=new Set(attendance.filter(a=>a.date===today&&a.status==="presente").map(a=>String(a.staffId)));if(present.size)return present.size;return staff.filter(w=>w.status==="activo").length||1;}
+function v15MealServiceUI(){if(document.getElementById("v15MealSecondaryField"))v15MealSecondaryField.style.display=v15MealService.value==="components"?"":"none";}
+async function v15SaveKitchenMeal(){
+ if(!v15CanKitchen()){alert("Solo Cocina, Manager o Administración puede definir el almuerzo.");return;}const date=v15MealDate.value||getToday(),primary=v15RecipeByAnyId(v15MealPrimary.value),service=v15MealService.value,secondary=service==="components"?v15RecipeByAnyId(v15MealSecondary.value):null,portions=Math.max(1,Number(v15MealPortions.value)||1);if(!primary){alert("Selecciona el plato del almuerzo.");return;}if(service==="components"&&!secondary){alert("Selecciona el segundo componente o cambia a Plato completo.");return;}const meal={id:v15KitchenMeals.find(x=>x.mealDate===date)?.id||v15UUID(),mealDate:date,serviceType:service,primaryRecipeLocalId:primary.id,primaryRecipeName:primary.name,secondaryRecipeLocalId:secondary?.id||null,secondaryRecipeName:secondary?.name||null,plannedPortions:portions,producedPortions:0,inventoryApplied:false,notes:v15MealNotes.value.trim(),definedByName:currentSession?.name||"Cocina"};
+ if(kucheCloud&&cloudOrganization){const {data,error}=await kucheCloud.from("staff_meal_kitchen_menus").upsert({organization_id:cloudOrganization.id,meal_date:date,service_type:service,primary_recipe_local_id:String(primary.id),primary_recipe_name:primary.name,secondary_recipe_local_id:secondary?String(secondary.id):null,secondary_recipe_name:secondary?.name||null,planned_portions:portions,produced_portions:0,inventory_applied:false,notes:meal.notes||null,defined_by_staff_id:cloudStaffRecord?.id||null,defined_by_name:meal.definedByName},{onConflict:"organization_id,meal_date"}).select().single();if(error){alert("No se pudo guardar el almuerzo: "+error.message);return;}meal.id=data.id;}
+ v15KitchenMeals=v15KitchenMeals.filter(x=>x.mealDate!==date);v15KitchenMeals.unshift(meal);v15SaveLocal();v15RenderMealToday();alert(service==="complete"?"Almuerzo definido como plato completo. No se pedirán acompañamientos adicionales.":"Almuerzo definido.");
+}
+function v15RenderMealToday(){const box=document.getElementById("v15MealTodaySummary");if(!box)return;const date=document.getElementById("v15MealDate")?.value||getToday(),m=v15KitchenMeals.find(x=>x.mealDate===date);if(!m){box.innerHTML=`No hay almuerzo definido para ${formatDate(date)}. Porciones sugeridas por dotación/turnos: <strong>${v15ExpectedMealPortions()}</strong>.`;return;}box.innerHTML=`<strong>${escapeHTML(m.primaryRecipeName)}</strong>${m.serviceType==='components'&&m.secondaryRecipeName?' + '+escapeHTML(m.secondaryRecipeName):''} · <strong>${formatNumber(m.plannedPortions)} porciones</strong> · ${m.serviceType==='complete'?'Plato completo: no requiere elegir nada más.':'Servicio por componentes.'}${m.inventoryApplied?' <span class="badge badge-success">Producción registrada</span>':''}`;}
+function v15UseMealInBatch(){const date=v15MealDate.value||getToday(),m=v15KitchenMeals.find(x=>x.mealDate===date);if(!m){alert("Primero define el almuerzo.");return;}const btn=[...document.querySelectorAll(".nav-item")].find(b=>(b.getAttribute("onclick")||"").includes("'recipebatches'"));showPage("recipebatches",btn);v15PopulateSelectors();v15BatchRecipe.value=String(m.primaryRecipeLocalId);v15BatchMode.value="portions";v15BatchYield.value=m.plannedPortions;v15BatchResponsible.value=currentSession?.name||"Cocina";v15BatchModeChanged();v15BatchRecipeChanged();}
+
+async function v15CreateInternalAccount(){
+ if(!v15CanManageInternal()){alert("Solo Administración o Manager puede crear cuentas internas.");return;}const name=v15InternalName.value.trim();if(!name){alert("Escribe el nombre de la cuenta.");return;}let a={id:v15UUID(),name,category:v15InternalCategory.value,active:true};if(kucheCloud&&cloudOrganization){const {data,error}=await kucheCloud.from("internal_consumption_accounts").upsert({organization_id:cloudOrganization.id,name:a.name,category:a.category,active:true},{onConflict:"organization_id,name"}).select().single();if(error){alert("No se pudo crear: "+error.message);return;}a.id=data.id;}v15InternalAccounts=v15InternalAccounts.filter(x=>x.name.toLowerCase()!==name.toLowerCase());v15InternalAccounts.push(a);v15InternalName.value="";v15SaveLocal();v15RenderInternalAccounts();v15RenderInternalPOSOptions();}
+function v15RenderInternalAccounts(){const box=document.getElementById("v15InternalAccountList");if(box)box.innerHTML=v15InternalAccounts.filter(a=>a.active!==false).map(a=>`<div class="mini-row"><span><strong>${escapeHTML(a.name)}</strong> · ${escapeHTML(a.category)}</span><span class="badge badge-blue">Activa</span></div>`).join("")||'<div class="category">No hay cuentas internas configuradas.</div>';const body=document.getElementById("v15InternalRecordTable");if(body)body.innerHTML=v15InternalRecords.slice(0,100).map(r=>`<tr><td>${new Date(r.closedAt||r.closed_at||Date.now()).toLocaleString('es-CL')}</td><td><strong>${escapeHTML(r.accountName||r.account_name_snapshot||'Interna')}</strong></td><td>${escapeHTML(r.tableName||'—')}</td><td>$${formatMoney(r.commercialValue??r.commercial_value??0)}</td><td>$${formatMoney(r.costValue??r.cost_value??0)}</td><td>${escapeHTML(r.closedByName||r.closed_by_name||'')}</td></tr>`).join("")||'<tr><td colspan="6"><div class="empty-state">Sin consumos internos.</div></td></tr>';const count=v15InternalRecords.length,commercial=v15InternalRecords.reduce((s,r)=>s+Number(r.commercialValue??r.commercial_value??0),0),cost=v15InternalRecords.reduce((s,r)=>s+Number(r.costValue??r.cost_value??0),0);if(document.getElementById("v15InternalCount"))v15InternalCount.textContent=count;if(document.getElementById("v15InternalCommercial"))v15InternalCommercial.textContent="$"+formatMoney(commercial);if(document.getElementById("v15InternalCost"))v15InternalCost.textContent="$"+formatMoney(cost);document.querySelectorAll(".v15-admin-only").forEach(e=>e.style.display=v15CanManageInternal()?"":"none");}
+function v15RenderInternalPOSOptions(){const sel=document.getElementById("v15POSInternalAccount");if(!sel)return;const old=sel.value;sel.innerHTML='<option value="">Seleccionar cuenta</option>'+v15InternalAccounts.filter(a=>a.active!==false).map(a=>`<option value="${ops2EscapeAttr(a.id)}">${escapeHTML(a.name)}</option>`).join("");if(old)sel.value=old;v15RefreshPOSInternalUI();}
+function v15SetCurrentOrderKind(kind){const o=getActivePOSOrder();if(!o){alert("Primero selecciona una mesa.");v15POSOrderKind.value="sale";return;}o.orderKind=kind;if(kind!=="internal"){o.internalAccountId=null;o.internalAccountName=null;}savePOSOrders();v15RefreshPOSInternalUI();renderPOS();}
+function v15SetInternalAccount(id){const o=getActivePOSOrder();if(!o)return;const a=v15InternalAccounts.find(x=>String(x.id)===String(id));o.internalAccountId=a?.id||null;o.internalAccountName=a?.name||null;savePOSOrders();v15RefreshPOSInternalUI();}
+function v15RefreshPOSInternalUI(){const o=getActivePOSOrder(),kind=document.getElementById("v15POSOrderKind"),sel=document.getElementById("v15POSInternalAccount"),btn=document.getElementById("v15CloseInternalButton");if(!kind)return;kind.value=o?.orderKind||"sale";const internal=kind.value==="internal";if(sel){sel.style.display=internal?"":"none";sel.value=o?.internalAccountId||"";}if(btn)btn.style.display=internal?"":"none";}
+function v15InternalCostForOrder(o){return (o?.items||[]).reduce((sum,i)=>{const r=v15RecipeByAnyId(i.recipeId);if(!r)return sum;const c=calculateSavedRecipe(r);return sum+Number(c.costPerPortion||0)*Number(i.quantity||0);},0);}
+async function v15FinalizeInternalOrder(){
+ const o=getActivePOSOrder();if(!o||o.orderKind!=="internal"){alert("Selecciona Consumo interno para esta cuenta.");return;}const a=v15InternalAccounts.find(x=>String(x.id)===String(o.internalAccountId));if(!a){alert("Selecciona la cuenta interna, por ejemplo Jefatura.");return;}const pending=(o.items||[]).filter(i=>i.kdsStatus&&!['draft','delivered'].includes(i.kdsStatus));if(pending.length&&!confirm(`Hay ${pending.length} producto(s) enviados que todavía no figuran como entregados. ¿Cerrar igualmente?`))return;let consumptions=typeof opsFinalDesiredPOSConsumptions==="function"?opsFinalDesiredPOSConsumptions(o):[];const shortage=consumptions.filter(c=>!c.product||Number(c.product.quantity)<Number(c.quantity)-1e-9);let allow=false;if(shortage.length){if(!authorizeAdminOverride("Cerrar consumo interno con stock insuficiente",o.tableName,"Faltan insumos: "+shortage.map(x=>x.productName).join(", ")))return;allow=true;}try{applyPOSConsumptions(consumptions,o,allow);}catch(e){alert("No se pudo descontar inventario.");return;}o.commercialValue=getOrderSubtotal(o);o.internalCost=v15InternalCostForOrder(o);o.chargedTotal=0;o.total=0;o.discount=0;o.tip=0;o.payments={};o.paymentLines=[];o.status="paid";o.closedBy=getPOSWorkerIdentity().workerName;o.closedAt=new Date().toISOString();const rec={id:v15UUID(),orderId:o.id,accountId:a.id,accountName:a.name,tableName:o.tableName,commercialValue:o.commercialValue,costValue:o.internalCost,closedByName:o.closedBy,closedAt:o.closedAt};
+ if(kucheCloud&&cloudOrganization){await rtSyncCloudOrder(o);await rtSyncCloudOrderItems(o);if(o.cloudId){const {error:e1}=await kucheCloud.from("orders").update({order_kind:"internal",internal_account_id:v15IsUUID(a.id)?a.id:null,commercial_value:o.commercialValue,internal_cost:o.internalCost,charged_total:0,total:0}).eq("id",o.cloudId);if(e1){alert("La cuenta se cerró localmente, pero no se pudo marcar como interna en la nube: "+e1.message);}else{const {data,error:e2}=await kucheCloud.from("internal_consumption_records").upsert({organization_id:cloudOrganization.id,order_id:o.cloudId,account_id:v15IsUUID(a.id)?a.id:null,account_name_snapshot:a.name,commercial_value:o.commercialValue,cost_value:o.internalCost,closed_by_staff_id:cloudStaffRecord?.id||null,closed_by_name:o.closedBy,closed_at:o.closedAt},{onConflict:"order_id"}).select().single();if(!e2&&data)rec.id=data.id;}await opsFinalConsumeCloudForOrder(o);}}
+ v15InternalRecords.unshift(rec);v15SaveLocal();savePOSOrders();saveInventory();saveMovements();activePOSOrderId=null;if(kucheCloud&&cloudOrganization)await ops3RefreshInventoryFromCloud();renderPOS();renderCash();renderInventory();updateDashboard();v15RenderInternalAccounts();alert("Consumo interno cerrado con cobro $0. Quedó registrado como costo interno, separado de las ventas y de las mermas.");
+}
+
+function v15RecipeFreeMode(recipe){return recipe?.posChargeMode==="free"||recipe?.pos_charge_mode==="free";}
+async function v15SetRecipeChargeMode(id,mode){
+ if(!["admin","manager"].includes(v15Role())){alert("Solo Administración o Manager puede cambiar esta configuración.");return;}const r=v15RecipeByAnyId(id);if(!r)return;r.posChargeMode=mode;r.posAllowFree=mode==="free";saveRecipes();if(kucheCloud&&cloudOrganization){await syncRecipeGuideToCloud(r);if(r.cloudGuideId){const {error}=await kucheCloud.from("recipe_guides").update({pos_charge_mode:mode,pos_allow_free:mode==="free"}).eq("id",r.cloudGuideId);if(error)console.warn("Cobro receta",error.message);}}v15RenderFreeRecipeConfig();renderPOS();}
+function v15RenderFreeRecipeConfig(){const box=document.getElementById("v15FreeRecipeList");if(!box)return;box.innerHTML=recipes.map(r=>{const calc=calculateSavedRecipe(r),free=v15RecipeFreeMode(r);return `<div class="v15-free-row"><div><strong>${escapeHTML(r.name)}</strong><div class="category">Precio de referencia $${formatMoney(calc.finalPerPortion)} · ${escapeHTML(getRecipeStation(r))}</div></div><select onchange="v15SetRecipeChargeMode('${ops2EscapeAttr(r.id)}',this.value)"><option value="normal" ${!free?'selected':''}>Precio normal</option><option value="free" ${free?'selected':''}>$0 · sin cobro</option></select></div>`;}).join("")||'<div class="category">Crea recetas para configurar productos sin cobro.</div>';}
+
+/* $0 en POS: conserva valor de referencia y sigue a KDS / inventario. */
+const _v15AddPOSItem=addPOSItem;
+addPOSItem=function(recipeId){const r=v15RecipeByAnyId(recipeId);if(!r||!v15RecipeFreeMode(r))return _v15AddPOSItem(recipeId);const order=getActivePOSOrder();if(!order){alert("Primero selecciona una mesa.");return;}const a=getRecipeAvailability(r);let override=false;if(a.status==="out"){if(!authorizeAdminOverride("Comanda sin stock",r.name,"Producto marcado sin stock por inventario teórico"))return;override=true;}const calc=calculateSavedRecipe(r),draft=order.items.find(i=>String(i.recipeId)===String(r.id)&&!i.sentAt&&!i.modifiers&&i.chargeMode==="free");if(draft){draft.quantity=Number(draft.quantity||0)+1;draft.override=draft.override||override;}else order.items.push({id:Date.now()+Math.random(),recipeId:r.id,recipeName:r.name,station:getRecipeStation(r),quantity:1,unitPrice:0,referenceUnitPrice:Math.round(Number(calc.finalPerPortion||0)),chargeMode:"free",inventoryCharge:true,notes:"",modifiers:null,targetMinutes:Number(r.serviceTargetMinutes||10),override,addedBy:getPOSWorkerIdentity().workerName,addedAt:new Date().toISOString(),kdsStatus:"draft",sentAt:null});savePOSOrders();renderPOS();};
+const _v15RenderPOSCatalog=renderPOSCatalog;
+renderPOSCatalog=function(){_v15RenderPOSCatalog();document.querySelectorAll("#posProductGrid .pos-product").forEach(card=>{const name=card.querySelector(".pos-product-name")?.textContent;const r=recipes.find(x=>x.name===name);if(r&&v15RecipeFreeMode(r)){const p=card.querySelector(".pos-product-price");if(p)p.textContent="$0 · sin cobro";}});};
+const _v15RenderPOSOrder=renderPOSOrder;
+renderPOSOrder=function(){_v15RenderPOSOrder();const o=getActivePOSOrder();if(o){v15RefreshPOSInternalUI();const cart=document.getElementById("posCart");if(cart)cart.querySelectorAll(".pos-cart-row").forEach((row,idx)=>{const visible=(o.items||[]).filter(i=>!i.promotionComponent);const item=visible[idx];if(item?.chargeMode==="free"){const price=[...row.querySelectorAll("div")].find(d=>/^\$/.test((d.textContent||"").trim())&&d.children.length===0);if(price)price.innerHTML=`$0<div class="category">Referencia $${formatMoney(Number(item.referenceUnitPrice||0)*Number(item.quantity||0))}</div>`;}});}v15RefreshPOSInternalUI();};
+const _v15RtSyncItems=rtSyncCloudOrderItems;
+rtSyncCloudOrderItems=async function(order){const ok=await _v15RtSyncItems(order);if(ok&&kucheCloud&&order?.cloudId){for(const item of order.items||[]){if(!item.cloudId)continue;const {error}=await kucheCloud.from("order_items").update({charge_mode:item.chargeMode||"normal",reference_unit_price:Number(item.referenceUnitPrice??item.unitPrice??0),inventory_charge:item.inventoryCharge!==false}).eq("id",item.cloudId);if(error)console.warn("Línea $0",error.message);}}return ok;};
+const _v15RtMapCloudItem=rtMapCloudItem;
+rtMapCloudItem=function(row){const i=_v15RtMapCloudItem(row);i.chargeMode=row.charge_mode||i.chargeMode||"normal";i.referenceUnitPrice=Number(row.reference_unit_price??i.referenceUnitPrice??row.unit_price??0);i.inventoryCharge=row.inventory_charge!==false;return i;};
+
+function v15RenderSupplyPlanner(){v15PopulateSelectors();v15RenderSupplierRules();v15RenderPriceComparison();v15RenderPeriodicSchedules();v15RenderSupplyAlerts();}
+function v15RenderAll(){v15RenderSupplyPlanner();v15RenderBatchHistory();v15RenderMealToday();v15RenderInternalAccounts();v15RenderFreeRecipeConfig();v15RefreshPOSInternalUI();}
+
+async function v15LoadCloud(){
+ if(!kucheCloud||!cloudOrganization)return;try{
+  const org=cloudOrganization.id;const [rr,tt,ss,si,bb,mm,aa,ir]=await Promise.all([
+   kucheCloud.from("supplier_order_rules").select("*").eq("organization_id",org),
+   kucheCloud.from("supplier_item_terms").select("*").eq("organization_id",org),
+   kucheCloud.from("periodic_inventory_schedules").select("*").eq("organization_id",org).eq("active",true),
+   kucheCloud.from("periodic_inventory_schedule_items").select("*").eq("organization_id",org).eq("active",true),
+   kucheCloud.from("recipe_scaled_batches").select("*").eq("organization_id",org).order("created_at",{ascending:false}).limit(100),
+   kucheCloud.from("staff_meal_kitchen_menus").select("*").eq("organization_id",org).order("meal_date",{ascending:false}).limit(60),
+   kucheCloud.from("internal_consumption_accounts").select("*").eq("organization_id",org).eq("active",true),
+   kucheCloud.from("internal_consumption_records").select("*").eq("organization_id",org).order("closed_at",{ascending:false}).limit(300)
+  ]);[rr,tt,ss,si,bb,mm,aa,ir].forEach(x=>{if(x.error)throw x.error;});
+  v15SupplierRules=(rr.data||[]).map(x=>({id:x.id,supplierId:x.supplier_id,supplierLocalId:v15SupplierByAnyId(x.supplier_id)?.id||null,orderWeekdays:x.order_weekdays||[],orderStartTime:x.order_start_time?String(x.order_start_time).slice(0,5):null,cutoffTime:x.cutoff_time?String(x.cutoff_time).slice(0,5):null,leadTimeDays:Number(x.lead_time_days||0),deliveryWeekdays:x.delivery_weekdays||[],minimumOrderAmount:Number(x.minimum_order_amount||0),notes:x.notes||"",active:x.active!==false}));
+  v15SupplierTerms=(tt.data||[]).map(x=>({id:x.id,supplierId:x.supplier_id,supplierLocalId:v15SupplierByAnyId(x.supplier_id)?.id||null,inventoryItemId:x.inventory_item_id,inventoryLocalId:v15ItemByAnyId(x.inventory_item_id)?.id||null,purchaseFormat:x.purchase_format||"",packStockQty:Number(x.pack_stock_qty||1),currentPrice:Number(x.current_price||0),minimumPacks:Number(x.minimum_packs||0),preferred:!!x.preferred,active:x.active!==false,priceUpdatedAt:x.price_updated_at}));
+  v15PeriodicSchedules=(ss.data||[]).map(x=>({id:x.id,name:x.name,inventoryKind:x.inventory_kind,frequencyMode:x.frequency_mode,weekday:x.weekday,monthDay:x.month_day,intervalDays:x.interval_days,warningDays:Number(x.warning_days||0),defaultSupplierId:x.default_supplier_id,defaultSupplierLocalId:v15SupplierByAnyId(x.default_supplier_id)?.id||null,nextDueDate:x.next_due_date,lastCountedAt:x.last_counted_at,active:x.active!==false}));
+  v15ScheduleItems=(si.data||[]).map(x=>({id:x.id,scheduleId:x.schedule_id,inventoryItemId:x.inventory_item_id,inventoryLocalId:v15ItemByAnyId(x.inventory_item_id)?.id||null,supplierId:x.supplier_id,supplierLocalId:v15SupplierByAnyId(x.supplier_id)?.id||null,targetStock:Number(x.target_stock||0),minimumStock:Number(x.minimum_stock||0),active:x.active!==false}));
+  v15ScaledBatches=(bb.data||[]).map(x=>({id:x.id,recipeId:x.source_recipe_local_id,recipeName:x.recipe_name,batchDate:x.batch_date,scaleMode:x.scale_mode,baseYield:Number(x.base_yield||1),requestedYield:Number(x.requested_yield||1),scaleFactor:Number(x.scale_factor||1),anchorInventoryId:x.anchor_inventory_item_id,anchorStandardQty:x.anchor_standard_qty,anchorActualQty:x.anchor_actual_qty,ingredientSnapshot:x.ingredient_snapshot||[],scaledIngredientSnapshot:x.scaled_ingredient_snapshot||[],expectedOutputQty:x.expected_output_qty,actualOutputQty:x.actual_output_qty,outputUnit:x.output_unit||"porción",estimatedCost:Number(x.estimated_cost||0),inventoryApplied:!!x.inventory_applied,responsibleName:x.responsible_name||"",notes:x.notes||"",createdAt:x.created_at}));
+  v15KitchenMeals=(mm.data||[]).map(x=>({id:x.id,mealDate:x.meal_date,serviceType:x.service_type,primaryRecipeLocalId:x.primary_recipe_local_id,primaryRecipeName:x.primary_recipe_name,secondaryRecipeLocalId:x.secondary_recipe_local_id,secondaryRecipeName:x.secondary_recipe_name,plannedPortions:Number(x.planned_portions||0),producedPortions:Number(x.produced_portions||0),inventoryApplied:!!x.inventory_applied,notes:x.notes||"",definedByName:x.defined_by_name||""}));
+  v15InternalAccounts=(aa.data||[]).map(x=>({id:x.id,name:x.name,category:x.category,active:x.active!==false}));
+  v15InternalRecords=(ir.data||[]).map(x=>({id:x.id,orderId:x.order_id,accountId:x.account_id,accountName:x.account_name_snapshot,commercialValue:Number(x.commercial_value||0),costValue:Number(x.cost_value||0),closedByName:x.closed_by_name||"",closedAt:x.closed_at}));
+  /* Cargar configuración $0 de recetas desde recipe_guides ya sincronizadas. */
+  const {data:guides}=await kucheCloud.from("recipe_guides").select("id,source_local_id,pos_charge_mode,pos_allow_free").eq("organization_id",org).eq("active",true);(guides||[]).forEach(g=>{const r=v15RecipeByAnyId(g.source_local_id)||recipes.find(x=>String(x.cloudGuideId)===String(g.id));if(r){r.cloudGuideId=g.id;r.posChargeMode=g.pos_charge_mode||"normal";r.posAllowFree=!!g.pos_allow_free;}});saveRecipes();v15SaveLocal();v15RenderAll();
+ }catch(e){console.warn("KÜCHE V1.5 cloud",e.message);}
+}
+
+/* Cloud mapping necesita leer las nuevas columnas cuando están disponibles. */
+const _v15LoadOrders=rtLoadOrdersFromCloud;
+rtLoadOrdersFromCloud=async function(){await _v15LoadOrders();try{if(!kucheCloud||!cloudOrganization)return;const ids=posOrders.map(o=>o.cloudId).filter(v15IsUUID);if(!ids.length)return;const {data,error}=await kucheCloud.from("orders").select("id,order_kind,internal_account_id,commercial_value,internal_cost,charged_total").in("id",ids);if(error)return;(data||[]).forEach(row=>{const o=posOrders.find(x=>String(x.cloudId)===String(row.id));if(o){o.orderKind=row.order_kind||"sale";o.internalAccountId=row.internal_account_id||null;o.commercialValue=Number(row.commercial_value||0);o.internalCost=Number(row.internal_cost||0);o.chargedTotal=Number(row.charged_total||0);}});savePOSOrders();v15RefreshPOSInternalUI();}catch(e){console.warn("Orden interna",e.message);}};
+const _v15RtSyncOrder=rtSyncCloudOrder;
+rtSyncCloudOrder=async function(o){const d=await _v15RtSyncOrder(o);if(d?.id&&kucheCloud)try{await kucheCloud.from("orders").update({order_kind:o.orderKind||"sale",internal_account_id:o.orderKind==="internal"&&v15IsUUID(o.internalAccountId)?o.internalAccountId:null,commercial_value:o.orderKind==="internal"?Number(o.commercialValue||getOrderSubtotal(o)):Number(o.commercialValue||0),internal_cost:Number(o.internalCost||0),charged_total:o.orderKind==="internal"?0:Number(o.total||0)}).eq("id",d.id);}catch(e){console.warn("Tipo de orden",e.message);}return d;};
+
+/* Permisos y render por página. */
+const _v15WorkerCanAccess=workerCanAccess;
+workerCanAccess=function(pageId){const role=v15Role();if(pageId==="supplyplanner")return ["admin","manager","bodega"].includes(role);if(pageId==="recipebatches")return ["admin","manager","cocina"].includes(role);if(pageId==="internalaccounts")return ["admin","manager","garzon"].includes(role);if(pageId==="staffmeals"&&role==="cocina")return true;return _v15WorkerCanAccess(pageId);};
+const _v15ShowPage=showPage;
+showPage=function(pageId,button){_v15ShowPage(pageId,button);if(pageId==="supplyplanner")v15RenderSupplyPlanner();if(pageId==="recipebatches"){v15PopulateSelectors();v15RenderBatchHistory();}if(pageId==="staffmeals"){v15PopulateSelectors();v15RenderMealToday();}if(pageId==="internalaccounts")v15RenderInternalAccounts();if(pageId==="commandas")v15RefreshPOSInternalUI();if(pageId==="recipes")v15RenderFreeRecipeConfig();if(pageId==="dashboard")v15RenderDashboardAlerts();};
+const _v15RenderRecipes=renderRecipes;
+renderRecipes=function(){_v15RenderRecipes();v15RenderFreeRecipeConfig();v15PopulateSelectors();};
+const _v15RenderInventory=renderInventory;
+renderInventory=function(){_v15RenderInventory();v15PopulateSelectors();};
+const _v15RenderSuppliers=typeof renderSuppliers==="function"?renderSuppliers:null;
+if(_v15RenderSuppliers)renderSuppliers=function(){_v15RenderSuppliers();v15PopulateSelectors();};
+const _v15RenderPOS=renderPOS;
+renderPOS=function(){_v15RenderPOS();v15RefreshPOSInternalUI();};
+const _v15HandleCloud=handleCloudSession;
+handleCloudSession=async function(session){await _v15HandleCloud(session);if(currentSession?.cloud&&cloudOrganization)await v15LoadCloud();};
+
+/* Manual contextual V1.5. */
+if(typeof KUCHE_CONTEXT_HELP!=="undefined")Object.assign(KUCHE_CONTEXT_HELP,{"hora límite":"Última hora en que el proveedor acepta el pedido ese día.","plazo de entrega (días)":"Días estimados entre pedir y recibir.","contenido en unidad de inventario":"Cuánto stock real aporta un formato de compra. Ej.: bolsa de 4 kg = 4 kg.","stock objetivo":"Cantidad que quieres tener después de reponer.","método de ajuste":"Permite escalar por porciones o por el peso real de un ingrediente sin cambiar la receta maestra.","consumo interno":"Producción real que descuenta inventario, pero se cierra con cobro $0 y se reporta separado de ventas y mermas."});
+if(typeof OPS_FINAL_MANUAL_TOPICS!=="undefined"){
+ OPS_FINAL_MANUAL_TOPICS.admin["Abastecimiento por proveedor"]="Configura días, horarios, plazos, formatos y precios por proveedor. KÜCHE proyecta si el stock alcanzará hasta la próxima entrega y avisa cuándo pedir.";
+ OPS_FINAL_MANUAL_TOPICS.admin["Inventarios periódicos"]="Programa conteos semanales, quincenales, mensuales o cada X días para limpieza, suministros, condimentos y alimentos de control físico.";
+ OPS_FINAL_MANUAL_TOPICS.admin["Lotes ajustados"]="Conserva la receta maestra y crea un lote temporal escalado por porciones o por cantidad real de un ingrediente. Cada ingrediente puede escalar, quedar fijo o ajustarse manualmente.";
+ OPS_FINAL_MANUAL_TOPICS.cocina=OPS_FINAL_MANUAL_TOPICS.cocina||{};OPS_FINAL_MANUAL_TOPICS.cocina["Almuerzo del personal"]="Cocina define el plato y las porciones. Si elige Plato completo, como guiso de lentejas, no aparecen acompañamientos obligatorios.";
+ OPS_FINAL_MANUAL_TOPICS.garzon=OPS_FINAL_MANUAL_TOPICS.garzon||{};OPS_FINAL_MANUAL_TOPICS.garzon["Consumo interno"]="Abre una comanda normal, selecciona Consumo interno y la cuenta correspondiente. Cocina recibe la comanda, pero al cerrar se cobra $0 y se registra el costo interno.";
+}
+
+/* Inicio V1.5 */
+setTimeout(()=>{v15InstallUI();v15ScheduleFrequencyUI();v15MealServiceUI();v15RenderAll();if(currentSession?.cloud&&cloudOrganization)v15LoadCloud();},350);
+
+</script>
 </body></html>`);win.document.close();order.lastPrintedAt=new Date().toISOString();savePOSOrders();setTimeout(()=>{win.focus();win.print();},250);}
 function openPOSPayment(){const order=getActivePOSOrder();if(!order||!order.items.length){alert("La comanda está vacía.");return;}const reg=getActiveCashRegister();if(!reg){alert("Debes abrir una caja antes de cobrar una mesa.");openCashFromPOS();return;}posPaymentPanel.classList.add("open");posDiscount.value=Number(order.discount||0);posTipAmount.value=0;posTipMethod.value="efectivo";payCash.value=getOrderTotal(order);payDebit.value=0;payCredit.value=0;payTransfer.value=0;posPaymentNote.value="";updatePOSPaymentCheck();}
 function closePOSPayment(){document.getElementById("posPaymentPanel")?.classList.remove("open");}
