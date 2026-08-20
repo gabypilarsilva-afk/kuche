@@ -1141,105 +1141,64 @@ COMPRAS / MERMAS / VENTAS / IA
 <nav class="nav">
 
 <div class="nav-title">Principal</div>
+<button class="nav-item active" onclick="showPage('dashboard',this)"><span>Dashboard principal</span></button>
 
-<button class="nav-item active" onclick="showPage('dashboard',this)">
-<span>Dashboard</span>
-</button>
+<div class="nav-title">1 · Configuración inicial</div>
+<button class="nav-item" onclick="showPage('settings',this)"><span>Configuración</span></button>
+<button class="nav-item" onclick="showPage('rules',this)"><span>Reglas del local</span></button>
+<button class="nav-item" onclick="showPage('staff',this)"><span>Personal</span></button>
+<button class="nav-item" onclick="showPage('shifts',this)"><span>Turnos y planificación</span></button>
+<button class="nav-item" onclick="showPage('onboarding',this)"><span>Onboarding</span></button>
 
-<button class="nav-item" onclick="showPage('inventory',this)">
-<span>Inventario general</span>
-</button>
-<button class="nav-item" onclick="showPage('inventoryareas',this)"><span>Inventario por áreas</span></button>
-
-<div class="nav-title">Operación</div>
-
+<div class="nav-title">2 · Proveedores e inventario</div>
 <button class="nav-item" onclick="showPage('suppliers',this)"><span>Proveedores</span></button>
+<button class="nav-item" onclick="showPage('inventory',this)"><span>Inventario general</span></button>
+<button class="nav-item" onclick="showPage('inventoryareas',this)"><span>Inventario por áreas</span></button>
 <button class="nav-item" onclick="showPage('purchases',this)"><span>Compras</span></button>
 <button class="nav-item admin-sensitive" onclick="showPage('smartpurchases',this)"><span>Compras inteligentes</span></button>
-<button class="nav-item" onclick="showPage('waste',this)"><span>Mermas y desperdicios</span></button>
-<button class="nav-item" onclick="showPage('staffmeals',this)"><span>Alimentación personal</span></button>
-<button class="nav-item" onclick="showPage('sales',this)"><span>Ventas diarias</span></button>
 <button class="nav-item" onclick="showPage('reconciliation',this)"><span>Conciliación stock</span></button>
+<button class="nav-item" onclick="showPage('traceability',this)"><span>Vencimientos y trazabilidad</span></button>
+
+<div class="nav-title">3 · Recetas y producción</div>
+<button class="nav-item" onclick="showPage('recipebook',this)"><span>Recetario operativo</span></button>
+<button class="nav-item admin-only" onclick="showPage('recipes',this)"><span>Recetas y costos</span></button>
+<button class="nav-item" onclick="showPage('preparations',this)"><span>Preparaciones disponibles</span></button>
+<button class="nav-item" onclick="showPage('production',this)"><span>Producción</span></button>
+<button class="nav-item" onclick="showPage('staffmeals',this)"><span>Alimentación personal</span></button>
+<button class="nav-item" onclick="showPage('waste',this)"><span>Mermas y desperdicios</span></button>
+<button class="nav-item" onclick="showPage('temperatures',this)"><span>Temperaturas</span></button>
+
+<div class="nav-title">4 · Venta y servicio</div>
 <button class="nav-item" onclick="showPage('reservations',this)"><span>Reservas</span></button>
 <button class="nav-item" onclick="showPage('promotions',this)"><span>Promociones / combos</span></button>
 <button class="nav-item admin-sensitive" onclick="showPage('agreements',this)"><span>Convenios y descuentos</span></button>
 <button class="nav-item" onclick="showPage('commandas',this)"><span>Mesas y comandas</span></button>
 <button class="nav-item" onclick="showPage('kds',this)"><span>Cocina / Bar KDS</span></button>
 <button class="nav-item" onclick="showPage('cash',this)"><span>Caja y cierre de turno</span></button>
-<button class="nav-item" onclick="showPage('traceability',this)"><span>Vencimientos y trazabilidad</span></button>
+<button class="nav-item" onclick="showPage('sales',this)"><span>Ventas diarias</span></button>
+<button class="nav-item" onclick="showPage('club',this)"><span>Club de clientes</span></button>
 
-<div class="nav-title">Producción y control</div>
-
-<button class="nav-item" onclick="showPage('production',this)">
-<span>Producción</span>
-</button>
-<button class="nav-item" onclick="showPage('preparations',this)"><span>Preparaciones disponibles</span></button>
-<button class="nav-item" onclick="showPage('recipebook',this)"><span>Recetario operativo</span></button>
-
-<button class="nav-item admin-only" onclick="showPage('recipes',this)">
-<span>Recetas y costos</span>
-</button>
-
-<button class="nav-item" onclick="showPage('temperatures',this)">
-<span>Temperaturas</span>
-</button>
-<button class="nav-item" onclick="showPage('activities',this)">
-<span>Actividades y mantenimiento</span>
-</button>
-
-<div class="nav-title">Administración</div>
-
-<button class="nav-item" onclick="showPage('staff',this)">
-<span>Personal</span>
-</button>
-
-<button class="nav-item" onclick="showPage('myattendance',this)">
-<span>Mi asistencia</span>
-</button>
-
-<button class="nav-item" onclick="showPage('checklists',this)">
-<span>Checklists</span>
-</button>
-
-<button class="nav-item" onclick="showPage('shifts',this)"><span>Turnos y planificación</span></button>
+<div class="nav-title">5 · Equipo y operación</div>
+<button class="nav-item" onclick="showPage('checklists',this)"><span>Checklists</span></button>
+<button class="nav-item" onclick="showPage('activities',this)"><span>Actividades y mantenimiento</span></button>
+<button class="nav-item" onclick="showPage('myattendance',this)"><span>Mi asistencia</span></button>
 <button class="nav-item admin-sensitive" onclick="showPage('assets',this)"><span>Bienes y materiales</span></button>
 <button class="nav-item" onclick="showPage('academy',this)"><span>Academia</span></button>
 <button class="nav-item" onclick="showPage('protocols',this)"><span>Protocolos internos</span></button>
-<button class="nav-item" onclick="showPage('rules',this)"><span>Reglas del local</span></button>
-<button class="nav-item" onclick="showPage('onboarding',this)"><span>Onboarding</span></button>
 
-<div class="nav-title">Clientes</div>
-<button class="nav-item" onclick="showPage('club',this)"><span>Club de clientes</span></button>
-
-<div class="nav-title">Costos</div>
+<div class="nav-title">6 · Costos y análisis</div>
 <button class="nav-item admin-sensitive" onclick="showPage('expenses',this)"><span>Gastos extraordinarios</span></button>
 <button class="nav-item admin-sensitive" onclick="showPage('cid',this)"><span>Cálculo de CID</span></button>
 <button class="nav-item admin-only" onclick="showPage('tips',this)"><span>Propinas por turno</span></button>
-
-<div class="nav-title">Análisis</div>
 <button class="nav-item admin-only" onclick="showPage('menuengineering',this)"><span>Ingeniería de menú</span></button>
 <button class="nav-item admin-only" onclick="showPage('simulator',this)"><span>Simulador de escenarios</span></button>
 <button class="nav-item" onclick="showPage('assistant',this)"><span>Asistente IA</span></button>
+<button class="nav-item" onclick="showPage('reports',this)"><span>Reportes</span></button>
 
-<button class="nav-item" onclick="showPage('reports',this)">
-<span>Reportes</span>
-</button>
-
-<button class="nav-item" onclick="showPage('appearance',this)">
-<span>Mi apariencia</span>
-</button>
-
-<button class="nav-item" onclick="showPage('manual',this)">
-<span>Ayuda y manual</span>
-</button>
-
-<button class="nav-item" onclick="showPage('systeminfo',this)">
-<span>Información del sistema</span>
-</button>
-
-<button class="nav-item" onclick="showPage('settings',this)">
-<span>Configuración</span>
-</button>
+<div class="nav-title">7 · Sistema y ayuda</div>
+<button class="nav-item" onclick="showPage('appearance',this)"><span>Mi apariencia</span></button>
+<button class="nav-item" onclick="showPage('manual',this)"><span>Ayuda y manual</span></button>
+<button class="nav-item" onclick="showPage('systeminfo',this)"><span>Información del sistema</span></button>
 
 </nav>
 
@@ -4878,12 +4837,8 @@ updateDashboard();
 
 
 function openInventory(){
-
-showPage(
-"inventory",
-document.querySelectorAll(".nav-item")[1]
-);
-
+const button=[...document.querySelectorAll(".nav-item")].find(item=>(item.getAttribute("onclick")||"").includes("'inventory'"));
+showPage("inventory",button||null);
 }
 
 
@@ -17054,9 +17009,9 @@ function v15InstallUI(){
  if(recipeBtn){
    const b=document.createElement("button");b.className="nav-item";b.setAttribute("onclick","showPage('recipebatches',this)");b.innerHTML="<span>Lotes de recetas</span>";recipeBtn.insertAdjacentElement("afterend",b);
  }
- const adminAnchor=[...document.querySelectorAll(".nav-item")].find(b=>(b.getAttribute("onclick")||"").includes("'assets'"));
- if(adminAnchor){
-   const b=document.createElement("button");b.className="nav-item";b.setAttribute("onclick","showPage('internalaccounts',this)");b.innerHTML="<span>Consumos internos</span>";adminAnchor.insertAdjacentElement("afterend",b);
+ const internalAnchor=[...document.querySelectorAll(".nav-item")].find(b=>(b.getAttribute("onclick")||"").includes("'cash'"));
+ if(internalAnchor){
+   const b=document.createElement("button");b.className="nav-item";b.setAttribute("onclick","showPage('internalaccounts',this)");b.innerHTML="<span>Consumos internos</span>";internalAnchor.insertAdjacentElement("afterend",b);
  }
  content.insertAdjacentHTML("beforeend",v15SupplyPageHTML()+v15BatchPageHTML()+v15InternalPageHTML());
  v15EnhanceStaffMealsPage();
