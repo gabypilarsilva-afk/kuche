@@ -1084,26 +1084,10 @@ COMPRAS / MERMAS / VENTAS / IA
     <div class="field" style="margin-top:10px"><label>Contraseña</label><input id="adminLoginPassword" type="password" autocomplete="current-password"></div>
 
     <button id="loginSubmitButton" class="primary-button" style="width:100%;margin-top:18px" onclick="loginKuche()">Ingresar</button>
-    <button class="secondary-button" style="width:100%;margin-top:10px" onclick="showSignupScreen()">Crear una cuenta KÜCHE</button>
     <button class="login-link" onclick="requestPasswordRecovery()">Olvidé mi contraseña</button>
 
     <div class="login-note">KÜCHE reconoce automáticamente tus permisos según la empresa y el cargo asociado a tu cuenta.</div>
     <div id="loginError" class="login-error"></div>
-  </div>
-</div>
-
-<div id="signupOverlay" class="login-overlay hidden">
-  <div class="login-box">
-    <div class="login-brand">KÜCHE</div>
-    <div class="login-sub">Crear cuenta de administrador</div>
-    <div class="field"><label>Tu nombre</label><input id="signupName" type="text" autocomplete="name" placeholder="Nombre y apellido"></div>
-    <div class="field" style="margin-top:10px"><label>Nombre del establecimiento / empresa</label><input id="signupOrganization" type="text" placeholder="Ej. Mi restaurante"></div>
-    <div class="field" style="margin-top:10px"><label>Correo</label><input id="signupEmail" type="email" autocomplete="email" placeholder="correo@ejemplo.cl"></div>
-    <div class="field" style="margin-top:10px"><label>Contraseña</label><input id="signupPassword" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres"></div>
-    <div class="field" style="margin-top:10px"><label>Repetir contraseña</label><input id="signupPasswordConfirm" type="password" autocomplete="new-password"></div>
-    <button class="primary-button" style="width:100%;margin-top:18px" onclick="createKucheAccount()">Crear cuenta</button>
-    <button class="secondary-button" style="width:100%;margin-top:10px" onclick="hideSignupScreen()">Volver al ingreso</button>
-    <div id="signupMessage" class="login-error"></div>
   </div>
 </div>
 
@@ -11706,60 +11690,7 @@ function showLoginError(msg){
  el.textContent=msg;el.style.display="block";el.style.background="";el.style.color="";
 }
 function clearLoginError(){const el=document.getElementById("loginError");if(el){el.textContent="";el.style.display="none";}}
-function showSignupMessage(msg,success=false){
- const el=document.getElementById("signupMessage");if(!el)return;
- el.textContent=msg;el.style.display="block";
- el.style.background=success?"var(--success-soft)":"";
- el.style.color=success?"var(--success)":"";
-}
-function clearSignupMessage(){const el=document.getElementById("signupMessage");if(el){el.textContent="";el.style.display="none";el.style.background="";el.style.color="";}}
 function getCloudRedirectURL(){return window.location.origin+window.location.pathname;}
-
-function showSignupScreen(){
- clearLoginError();clearSignupMessage();
- const currentEmail=(document.getElementById("adminLoginEmail")?.value||"").trim();
- if(document.getElementById("signupEmail")&&!document.getElementById("signupEmail").value)document.getElementById("signupEmail").value=currentEmail;
- document.getElementById("loginOverlay")?.classList.add("hidden");
- document.getElementById("signupOverlay")?.classList.remove("hidden");
-}
-function hideSignupScreen(){
- document.getElementById("signupOverlay")?.classList.add("hidden");
- document.getElementById("loginOverlay")?.classList.remove("hidden");
-}
-async function createKucheAccount(){
- if(!kucheCloud){showSignupMessage("No fue posible conectar con Supabase.");return;}
- const name=(document.getElementById("signupName")?.value||"").trim();
- const organization=(document.getElementById("signupOrganization")?.value||"").trim();
- const email=(document.getElementById("signupEmail")?.value||"").trim().toLowerCase();
- const password=document.getElementById("signupPassword")?.value||"";
- const confirmPassword=document.getElementById("signupPasswordConfirm")?.value||"";
- clearSignupMessage();
- if(!name||!organization||!email||!password){showSignupMessage("Completa nombre, establecimiento, correo y contraseña.");return;}
- if(password.length<8){showSignupMessage("La contraseña debe tener al menos 8 caracteres.");return;}
- if(password!==confirmPassword){showSignupMessage("Las contraseñas no coinciden.");return;}
- setCloudStatus("Creando cuenta…");
- const {data,error}=await kucheCloud.auth.signUp({
-   email,
-   password,
-   options:{
-     emailRedirectTo:getCloudRedirectURL(),
-     data:{
-       full_name:name,
-       account_type:"owner",
-       organization_name:organization
-     }
-   }
- });
- if(error){setCloudStatus("Nube disponible","online");showSignupMessage("No se pudo crear la cuenta: "+error.message);return;}
- localStorage.setItem("kuchePendingOrganization",JSON.stringify({email,name:organization}));
- if(data?.session){
-   cloudAuthSession=data.session;
-   await handleCloudSession(data.session);
- }else{
-   setCloudStatus("Cuenta creada","online");
-   showSignupMessage("Cuenta creada. Revisa tu correo y confirma tu dirección. Después vuelve a KÜCHE e inicia sesión.",true);
- }
-}
 
 async function requestPasswordRecovery(emailOverride=""){
  if(!kucheCloud){showLoginError("No fue posible conectar con Supabase. Revisa tu conexión a internet.");return;}
@@ -18254,6 +18185,270 @@ setTimeout(()=>{
   kucheV163InstallPricingUI();kucheV163ApplyFinancialLabels();kucheV163MigratePrices();
   if(document.querySelector("#recipes.page.active")){kucheV163LockRecipeFinancialInputs();renderRecipes();}
 },1250);
+</script>
+
+
+<style id="kuche-v164-style">
+.kuche-v164-overtime-detail{margin-top:3px;font-size:10px;color:var(--muted,#6f756f)}
+.kuche-v164-overtime-detail strong{color:var(--green-dark,#173F35)}
+</style>
+<script id="kuche-v164-shifts-overtime-script">
+/* =====================================================
+   KÜCHE V1.6.4 · ELIMINAR TURNOS + TARIFA HORA EXTRA
+   - Corrige eliminación de turnos con IDs locales o UUID de nube.
+   - El turno se elimina de Supabase antes de quitarlo localmente.
+   - Agrega tarifa de hora extra individual por trabajador.
+   - Separa horas normales y extra en el cálculo de asistencia/pago.
+   - Sincroniza tarifas del trabajador y snapshots de pago con nube
+     cuando el parche SQL V1.6.4 está instalado.
+===================================================== */
+const KUCHE_V164_VERSION="1.6.4";
+let kucheV164RateCloudWarningShown=false;
+
+function kucheV164InstallOvertimeField(){
+  const grid=document.querySelector("#staffPanel .staff-pay-grid");
+  if(!grid||document.getElementById("staffOvertimeRate"))return;
+  const field=document.createElement("div");
+  field.className="field";
+  field.innerHTML='<label>Valor hora extra ($)</label><input id="staffOvertimeRate" type="number" min="0" step="1"><div class="inline-note">Tarifa individual para las horas que exceden el turno planificado. Si queda en 0, KÜCHE usa la tarifa base de esa jornada.</div>';
+  grid.appendChild(field);
+}
+function kucheV164NormalizeWorker(worker){
+  if(!worker)return worker;
+  worker.hourlyRate=Math.max(0,Number(worker.hourlyRate)||0);
+  worker.holidayRate=Math.max(0,Number(worker.holidayRate)||0);
+  worker.overtimeRate=Math.max(0,Number(worker.overtimeRate)||0);
+  return worker;
+}
+(staff||[]).forEach(kucheV164NormalizeWorker);saveStaff();
+
+const _kucheV164ClearStaffForm=clearStaffForm;
+clearStaffForm=function(){
+  _kucheV164ClearStaffForm();
+  kucheV164InstallOvertimeField();
+  const input=document.getElementById("staffOvertimeRate");if(input)input.value="";
+};
+const _kucheV164NewStaffMember=newStaffMember;
+newStaffMember=function(){
+  kucheV164InstallOvertimeField();
+  _kucheV164NewStaffMember();
+  const input=document.getElementById("staffOvertimeRate");
+  if(input)input.value=Number(document.getElementById("staffHourlyRate")?.value||appSettings.defaultHourlyRate||0);
+};
+const _kucheV164EditStaffMember=editStaffMember;
+editStaffMember=function(id){
+  kucheV164InstallOvertimeField();
+  _kucheV164EditStaffMember(id);
+  const worker=staff.find(w=>String(w.id)===String(id));
+  const input=document.getElementById("staffOvertimeRate");
+  if(worker&&input){kucheV164NormalizeWorker(worker);input.value=Number(worker.overtimeRate||0);}
+};
+
+async function kucheV164SyncWorkerRates(worker){
+  if(!worker||!kucheCloud||!cloudOrganization||!worker.cloudStaffId)return;
+  try{
+    const {error}=await kucheCloud.from("staff").update({
+      hourly_rate:Number(worker.hourlyRate||0),
+      holiday_rate:Number(worker.holidayRate||0),
+      overtime_rate:Number(worker.overtimeRate||0)
+    }).eq("id",worker.cloudStaffId).eq("organization_id",cloudOrganization.id);
+    if(error)throw error;
+  }catch(e){
+    console.warn("Tarifas personal cloud",e.message);
+    if(!kucheV164RateCloudWarningShown){
+      kucheV164RateCloudWarningShown=true;
+      alert("Las tarifas quedaron guardadas en este dispositivo, pero no pudieron sincronizarse con KÜCHE Cloud. Verifica que hayas ejecutado el SQL V1.6.4 de horas extra. Detalle: "+e.message);
+    }
+  }
+}
+const _kucheV164SaveStaffMember=saveStaffMember;
+saveStaffMember=async function(inviteAfter=false){
+  kucheV164InstallOvertimeField();
+  const idBefore=editingStaffId,nameBefore=staffName.value.trim();
+  const overtimeInput=document.getElementById("staffOvertimeRate");
+  const overtimeRate=Math.max(0,Number(overtimeInput?.value)||0);
+  if(overtimeInput&&Number(overtimeInput.value)<0){alert("Ingresa una tarifa de hora extra válida.");return;}
+  await _kucheV164SaveStaffMember(inviteAfter);
+  if(document.getElementById("staffPanel")?.classList.contains("open"))return;
+  const worker=idBefore!==null?staff.find(w=>String(w.id)===String(idBefore)):staff.slice().reverse().find(w=>String(w.name)===String(nameBefore));
+  if(!worker)return;
+  worker.overtimeRate=overtimeRate;
+  kucheV164NormalizeWorker(worker);saveStaff();await kucheV164SyncWorkerRates(worker);renderStaff();
+};
+
+const _kucheV164RenderStaff=renderStaff;
+renderStaff=function(){
+  (staff||[]).forEach(kucheV164NormalizeWorker);
+  _kucheV164RenderStaff();
+  const cards=[...document.querySelectorAll("#staffCardList .staff-card")];
+  cards.forEach((card,index)=>{
+    const worker=staff[index],details=card.querySelector(".staff-details");
+    if(!worker||!details||details.querySelector(".kuche-v164-overtime-card"))return;
+    const el=document.createElement("div");el.className="staff-detail kuche-v164-overtime-card";
+    el.innerHTML=`<span>Hora extra</span><strong>$${formatMoney(Number(worker.overtimeRate||0))}</strong>`;
+    details.appendChild(el);
+  });
+};
+
+/* Carga/sincronización de tarifas desde Supabase. */
+if(typeof opsFinalLoadAllCloudStaff==="function"){
+  const _kucheV164LoadAllStaff=opsFinalLoadAllCloudStaff;
+  opsFinalLoadAllCloudStaff=async function(){
+    await _kucheV164LoadAllStaff();
+    if(!kucheCloud||!cloudOrganization)return;
+    try{
+      const {data,error}=await kucheCloud.from("staff").select("id,hourly_rate,holiday_rate,overtime_rate").eq("organization_id",cloudOrganization.id);
+      if(error)throw error;
+      (data||[]).forEach(row=>{
+        const worker=staff.find(w=>String(w.cloudStaffId||w.id)===String(row.id));if(!worker)return;
+        worker.hourlyRate=Math.max(0,Number(row.hourly_rate)||0);
+        worker.holidayRate=Math.max(0,Number(row.holiday_rate)||0);
+        worker.overtimeRate=Math.max(0,Number(row.overtime_rate)||0);
+      });
+      saveStaff();renderStaff();
+    }catch(e){console.warn("Lectura tarifas personal",e.message);}
+  };
+}
+if(typeof loadCloudStaffForUser==="function"){
+  const _kucheV164LoadCloudStaffForUser=loadCloudStaffForUser;
+  loadCloudStaffForUser=async function(userId,organizationId){
+    const base=await _kucheV164LoadCloudStaffForUser(userId,organizationId);
+    if(!base||!kucheCloud)return base;
+    try{
+      const {data,error}=await kucheCloud.from("staff").select("hourly_rate,holiday_rate,overtime_rate").eq("organization_id",organizationId).eq("auth_user_id",userId).maybeSingle();
+      if(error)throw error;
+      if(data){base.hourlyRate=Math.max(0,Number(data.hourly_rate)||0);base.holidayRate=Math.max(0,Number(data.holiday_rate)||0);base.overtimeRate=Math.max(0,Number(data.overtime_rate)||0);}
+    }catch(e){console.warn("Tarifas usuario",e.message);}
+    return base;
+  };
+}
+
+/* ---------- ELIMINACIÓN ROBUSTA DE TURNOS ---------- */
+deleteShift=async function(id){
+  if(currentSession?.role==="worker")return;
+  const shift=shifts.find(s=>String(s.id)===String(id)||String(s.cloudId)===String(id));
+  if(!shift){alert("No se encontró el turno que intentas eliminar.");return;}
+  if(!confirm(`¿Eliminar el turno de ${shift.staffName||"este trabajador"} del ${formatDate(shift.date)}?`))return;
+  const cloudId=shift.cloudId||((typeof rtIsUUID==="function"&&rtIsUUID(shift.id))?shift.id:null);
+  if(kucheCloud&&cloudOrganization&&cloudId){
+    try{
+      const {error}=await kucheCloud.from("shifts").delete().eq("id",cloudId).eq("organization_id",cloudOrganization.id);
+      if(error)throw error;
+    }catch(e){
+      alert("No se pudo eliminar el turno de KÜCHE Cloud, por lo que se mantuvo para evitar que reaparezca al recargar. Detalle: "+e.message);
+      return;
+    }
+  }
+  shifts=shifts.filter(s=>{const sameLocal=String(s.id)===String(shift.id);const sameCloud=!!cloudId&&(String(s.cloudId||"")===String(cloudId)||String(s.id)===String(cloudId));return !(sameLocal||sameCloud);});
+  saveShiftData();renderShifts();updateShiftStats();
+};
+
+/* ---------- HORAS EXTRA Y PAGO ---------- */
+function kucheV164ShiftForWorkerDate(worker,date){
+  if(!worker||!date)return null;
+  return (shifts||[]).find(s=>s.date===date&&(
+    String(s.staffId)===String(worker.id)||
+    (worker.cloudStaffId&&String(s.cloudStaffId)===String(worker.cloudStaffId))||
+    (worker.cloudStaffId&&String(s.staffId)===String(worker.cloudStaffId))
+  ))||null;
+}
+function kucheV164PayCalculation(worker,date,hours,isHoliday,overtimeMinutesHint=0){
+  kucheV164NormalizeWorker(worker);
+  const totalHours=Math.max(0,Number(hours)||0),shift=kucheV164ShiftForWorkerDate(worker,date);
+  let overtimeHours=Math.max(0,Number(overtimeMinutesHint)||0)/60;
+  if(overtimeHours<=0&&shift&&Number(shift.plannedHours)>=0)overtimeHours=Math.max(0,totalHours-Number(shift.plannedHours||0));
+  overtimeHours=Math.min(totalHours,overtimeHours);
+  const regularHours=Math.max(0,totalHours-overtimeHours);
+  const regularRate=isHoliday?Number(worker?.holidayRate||0):Number(worker?.hourlyRate||0);
+  const overtimeRate=Number(worker?.overtimeRate||0)>0?Number(worker.overtimeRate):regularRate;
+  const regularPayment=regularHours*regularRate,overtimePayment=overtimeHours*overtimeRate;
+  return {hours:totalHours,regularHours,overtimeHours,overtimeMinutes:Math.round(overtimeHours*60),regularRate,overtimeRate,regularPayment,overtimePayment,payment:regularPayment+overtimePayment,isHoliday,shift};
+}
+function kucheV164ApplyPayToRecord(record){
+  if(!record)return record;
+  const worker=staff.find(w=>String(w.id)===String(record.staffId)||String(w.cloudStaffId)===String(record.cloudStaffId||record.staffId));
+  if(!worker||record.status!=="presente"){record.regularHours=0;record.overtimeHours=0;record.overtimeRateApplied=0;record.payment=0;return record;}
+  const c=kucheV164PayCalculation(worker,record.date,Number(record.hours||0),!!record.isHoliday,Number(record.overtimeMinutes||0));
+  record.regularHours=c.regularHours;record.overtimeHours=c.overtimeHours;record.overtimeMinutes=c.overtimeMinutes;
+  record.hourlyRateApplied=c.regularRate;record.overtimeRateApplied=c.overtimeRate;record.payment=c.payment;
+  return record;
+}
+
+const _kucheV164GetAttendanceCalculation=getAttendanceCalculation;
+getAttendanceCalculation=function(){
+  const base=_kucheV164GetAttendanceCalculation();
+  if(!base?.worker||attendanceStatus.value!=="presente")return base;
+  const c=kucheV164PayCalculation(base.worker,attendanceDate.value,base.hours,base.isHoliday,0);
+  return {...base,rate:c.regularRate,payment:c.payment,regularHours:c.regularHours,overtimeHours:c.overtimeHours,overtimeRate:c.overtimeRate,overtimeMinutes:c.overtimeMinutes};
+};
+const _kucheV164UpdateAttendancePaymentPreview=updateAttendancePaymentPreview;
+updateAttendancePaymentPreview=function(){
+  _kucheV164UpdateAttendancePaymentPreview();
+  const c=getAttendanceCalculation();
+  if(!c?.worker||attendanceStatus.value!=="presente"||!attendancePaymentPreview)return;
+  if(Number(c.overtimeHours||0)>0){
+    attendancePaymentPreview.innerHTML+=`<br>Horas normales: <strong>${Number(c.regularHours||0).toFixed(2)} h</strong> · $${formatMoney(c.rate)}/h<br>Horas extra: <strong>${Number(c.overtimeHours||0).toFixed(2)} h</strong> · $${formatMoney(c.overtimeRate)}/h`;
+  }
+};
+
+const _kucheV164SaveAttendance=saveAttendance;
+saveAttendance=async function(){
+  const staffIdBefore=document.getElementById("attendanceStaff")?.value,dateBefore=document.getElementById("attendanceDate")?.value;
+  await _kucheV164SaveAttendance();
+  const worker=staff.find(w=>String(w.id)===String(staffIdBefore));
+  let rec=attendance.find(r=>worker&&String(r.staffId)===String(worker.id)&&r.date===dateBefore);
+  if(!rec)return;
+  kucheV164ApplyPayToRecord(rec);saveAttendanceData();
+  if(kucheCloud&&rec.cloudId){
+    try{
+      const {error}=await kucheCloud.from("attendance").update({overtime_minutes:Number(rec.overtimeMinutes||0)}).eq("id",rec.cloudId);
+      if(error)throw error;
+      if(typeof ops3LoadCloudAttendance==="function")await ops3LoadCloudAttendance();
+      rec=attendance.find(r=>String(r.cloudId||r.id)===String(rec.cloudId))||rec;
+    }catch(e){console.warn("Hora extra asistencia cloud",e.message);}
+  }
+  renderAttendanceHistory();updateLaborStats();updateStaffStats();updateDashboard();
+};
+
+const _kucheV164RenderAttendanceHistory=renderAttendanceHistory;
+renderAttendanceHistory=function(){
+  (attendance||[]).forEach(kucheV164ApplyPayToRecord);
+  const table=document.getElementById("attendanceTable");if(!table)return _kucheV164RenderAttendanceHistory();
+  const search=(attendanceSearch?.value||"").toLowerCase();let list=attendance.filter(r=>(String(r.staffName||"")+" "+String(r.role||"")).toLowerCase().includes(search));
+  if(attendanceTodayFilter)list=list.filter(r=>r.date===getToday());
+  if(!list.length){table.innerHTML='<tr><td colspan="10"><div class="empty-state"><strong>No hay registros de asistencia</strong></div></td></tr>';return;}
+  table.innerHTML=list.map(r=>`<tr><td>${formatDate(r.date)}</td><td><div class="product-name">${escapeHTML(r.staffName||"")}</div><div class="category">${escapeHTML(r.role||"")}</div></td><td>${Number(r.lateMinutes||0)>0?`<span class="badge badge-danger">Atraso · ${Number(r.lateMinutes)} min</span>`:`<span class="badge ${r.status==="presente"?"badge-success":r.status==="ausente"?"badge-danger":"badge-warning"}">${escapeHTML(r.status||"")}</span>`}</td><td><span class="badge ${r.isHoliday?"badge-warning":"badge-blue"}">${r.isHoliday?"Feriado":"Normal"}</span></td><td>${r.start||"—"}</td><td>${r.end||"—"}</td><td>${Number(r.hours||0).toFixed(2)} h${Number(r.overtimeHours||0)>0?`<div class="kuche-v164-overtime-detail"><strong>${Number(r.overtimeHours).toFixed(2)} h extra</strong></div>`:""}</td><td>$${formatMoney(r.hourlyRateApplied||0)}${Number(r.overtimeHours||0)>0?`<div class="kuche-v164-overtime-detail">Extra: <strong>$${formatMoney(r.overtimeRateApplied||0)}</strong>/h</div>`:""}</td><td><strong>$${formatMoney(r.payment||0)}</strong>${Number(r.overtimeHours||0)>0?`<div class="kuche-v164-overtime-detail">Normal ${Number(r.regularHours||0).toFixed(2)} h + extra ${Number(r.overtimeHours||0).toFixed(2)} h</div>`:""}</td><td>${currentSession?.role!=="worker"?`<button class="danger-button" onclick="deleteAttendance('${ops2EscapeAttr(r.id)}')">Eliminar</button>`:""}</td></tr>`).join("");
+};
+
+/* Mezcla snapshots de pago guardados en Supabase cuando existen. */
+if(typeof ops3LoadCloudAttendance==="function"){
+  const _kucheV164LoadCloudAttendance=ops3LoadCloudAttendance;
+  ops3LoadCloudAttendance=async function(){
+    await _kucheV164LoadCloudAttendance();
+    let snapshots=new Map();
+    if(kucheCloud&&cloudOrganization){
+      try{
+        const {data,error}=await kucheCloud.from("attendance").select("id,regular_hours,overtime_hours,regular_rate_applied,overtime_rate_applied,payment_amount").eq("organization_id",cloudOrganization.id).order("attendance_date",{ascending:false}).limit(currentSession?.role==="worker"?60:400);
+        if(error)throw error;(data||[]).forEach(x=>snapshots.set(String(x.id),x));
+      }catch(e){console.warn("Snapshots pago asistencia",e.message);}
+    }
+    (attendance||[]).forEach(rec=>{
+      const snap=snapshots.get(String(rec.cloudId||rec.id));
+      if(snap&&snap.payment_amount!==null&&snap.payment_amount!==undefined){
+        rec.regularHours=Number(snap.regular_hours||0);rec.overtimeHours=Number(snap.overtime_hours||0);rec.overtimeMinutes=Math.round(Number(rec.overtimeHours||0)*60);
+        rec.hourlyRateApplied=Number(snap.regular_rate_applied||0);rec.overtimeRateApplied=Number(snap.overtime_rate_applied||0);rec.payment=Number(snap.payment_amount||0);
+      }else kucheV164ApplyPayToRecord(rec);
+    });
+    saveAttendanceData();renderAttendanceHistory();updateLaborStats();updateStaffStats();
+  };
+}
+
+const _kucheV164ShowPage=showPage;
+showPage=function(pageId,button){
+  _kucheV164ShowPage(pageId,button);
+  if(pageId==="staff"){kucheV164InstallOvertimeField();renderStaff();}
+};
+setTimeout(()=>{kucheV164InstallOvertimeField();(staff||[]).forEach(kucheV164NormalizeWorker);saveStaff();renderStaff();if(currentSession?.cloud&&cloudOrganization&&typeof opsFinalLoadAllCloudStaff==="function")opsFinalLoadAllCloudStaff();},1450);
 </script>
 
 </body>
