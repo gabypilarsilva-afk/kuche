@@ -18449,6 +18449,135 @@ showPage=function(pageId,button){
   if(pageId==="staff"){kucheV164InstallOvertimeField();renderStaff();}
 };
 setTimeout(()=>{kucheV164InstallOvertimeField();(staff||[]).forEach(kucheV164NormalizeWorker);saveStaff();renderStaff();if(currentSession?.cloud&&cloudOrganization&&typeof opsFinalLoadAllCloudStaff==="function")opsFinalLoadAllCloudStaff();},1450);
+
+/* =====================================================
+   KÜCHE V1.6.5 · PRECIO DE INVENTARIO CON IVA POR DEFECTO
+   - El precio inicial se interpreta con IVA incluido.
+   - Una casilla permite indicar que el valor ingresado es neto.
+   - Conserva por separado costo neto, IVA y costo con IVA.
+===================================================== */
+const KUCHE_V165_VERSION="1.6.5";
+
+function kucheV165InventoryVatRate(){
+  const configured=Number(costSettings?.vat??19);
+  return Number.isFinite(configured)&&configured>=0?configured:19;
+}
+function kucheV165PriceText(value){
+  return Number(value||0).toLocaleString("es-CL",{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function kucheV165InstallInventoryVatControl(){
+  const input=document.getElementById("cost");if(!input)return;
+  const field=input.closest(".field");if(!field)return;
+  const label=field.querySelector("label");if(label)label.textContent="Precio / costo inicial por unidad";
+  let note=field.querySelector(".inline-note");
+  if(note)note.textContent="Por defecto KÜCHE entiende que el precio incluye IVA. Marca la casilla solamente cuando el valor que escribiste viene sin IVA.";
+  let control=document.getElementById("inventoryPriceWithoutVat");
+  if(!control){
+    const line=document.createElement("label");
+    line.className="switch-line";
+    line.style.marginTop="10px";
+    line.innerHTML='<input id="inventoryPriceWithoutVat" type="checkbox"> El precio ingresado es sin IVA';
+    field.appendChild(line);
+    control=line.querySelector("input");
+  }
+  let preview=document.getElementById("inventoryPriceVatPreview");
+  if(!preview){
+    preview=document.createElement("div");
+    preview.id="inventoryPriceVatPreview";
+    preview.className="status-box";
+    preview.style.marginTop="10px";
+    field.appendChild(preview);
+  }
+  if(!input.dataset.kucheV165Wired){
+    input.dataset.kucheV165Wired="1";
+    input.addEventListener("input",kucheV165UpdateInventoryVatPreview);
+  }
+  if(!control.dataset.kucheV165Wired){
+    control.dataset.kucheV165Wired="1";
+    control.addEventListener("change",kucheV165UpdateInventoryVatPreview);
+  }
+  kucheV165UpdateInventoryVatPreview();
+}
+function kucheV165InventoryPriceCalculation(){
+  const input=document.getElementById("cost"),control=document.getElementById("inventoryPriceWithoutVat");
+  const entered=Math.max(0,Number(input?.value)||0),vatPct=kucheV165InventoryVatRate(),enteredWithoutVat=!!control?.checked;
+  const net=enteredWithoutVat?entered:entered/(1+vatPct/100);
+  const gross=enteredWithoutVat?entered*(1+vatPct/100):entered;
+  return {entered,enteredWithoutVat,vatPct,net,gross,vatAmount:Math.max(0,gross-net)};
+}
+function kucheV165UpdateInventoryVatPreview(){
+  const input=document.getElementById("cost"),control=document.getElementById("inventoryPriceWithoutVat"),preview=document.getElementById("inventoryPriceVatPreview");
+  if(!input||!control||!preview)return;
+  control.disabled=!!input.disabled;
+  if(input.disabled){preview.className="status-box warning";preview.innerHTML="Este insumo ya tiene compras registradas. Su costo se actualiza automáticamente desde <strong>Compras</strong>.";return;}
+  const c=kucheV165InventoryPriceCalculation();
+  preview.className="status-box";
+  if(!input.value){preview.innerHTML=`Escribe el precio por unidad. Se considerará <strong>con IVA incluido (${c.vatPct}%)</strong> mientras la casilla esté desmarcada.`;return;}
+  preview.innerHTML=c.enteredWithoutVat
+    ?`Precio neto: <strong>$${kucheV165PriceText(c.net)}</strong> · IVA: <strong>$${kucheV165PriceText(c.vatAmount)}</strong> · Precio final con IVA: <strong>$${kucheV165PriceText(c.gross)}</strong>`
+    :`Precio con IVA: <strong>$${kucheV165PriceText(c.gross)}</strong> · Neto utilizado en costos: <strong>$${kucheV165PriceText(c.net)}</strong> · IVA: <strong>$${kucheV165PriceText(c.vatAmount)}</strong>`;
+}
+
+const _kucheV165NewProduct=newProduct;
+newProduct=function(){
+  _kucheV165NewProduct();
+  kucheV165InstallInventoryVatControl();
+  const control=document.getElementById("inventoryPriceWithoutVat");
+  if(control){control.checked=false;control.disabled=false;}
+  if(cost){cost.disabled=false;cost.value="";cost.placeholder="Ej. 1990";}
+  kucheV165UpdateInventoryVatPreview();
+};
+
+const _kucheV165EditProduct=editProduct;
+editProduct=function(id){
+  _kucheV165EditProduct(id);
+  kucheV165InstallInventoryVatControl();
+  const p=inventory.find(x=>String(x.id)===String(id));if(!p)return;
+  if(typeof opsFinalNormalizeProduct==="function")opsFinalNormalizeProduct(p);
+  const locked=typeof kucheV16HasPurchaseHistory==="function"&&kucheV16HasPurchaseHistory(p);
+  const vatPct=Number(p.vatPct??kucheV165InventoryVatRate()),net=Number(p.costNet??p.cost??0)||0;
+  const gross=Number(p.costGross||0)||net*(1+vatPct/100);
+  const control=document.getElementById("inventoryPriceWithoutVat");
+  if(control){control.checked=false;control.disabled=locked;}
+  if(cost){cost.disabled=locked;cost.value=Number(gross.toFixed(2));cost.placeholder="Ej. 1990";}
+  kucheV165UpdateInventoryVatPreview();
+};
+
+const _kucheV165SaveProduct=saveProduct;
+saveProduct=async function(){
+  kucheV165InstallInventoryVatControl();
+  const target=editingId!==null?inventory.find(x=>String(x.id)===String(editingId)):null;
+  const mayEditCost=!target||!(typeof kucheV16HasPurchaseHistory==="function"&&kucheV16HasPurchaseHistory(target));
+  const enteredValue=document.getElementById("cost")?.value??"";
+  if(mayEditCost){
+    const c=kucheV165InventoryPriceCalculation();
+    if(cost)cost.value=String(c.net);
+  }
+  await _kucheV165SaveProduct();
+  if(document.getElementById("inventoryForm")?.classList.contains("open")&&mayEditCost){
+    if(cost)cost.value=enteredValue;
+    kucheV165UpdateInventoryVatPreview();
+  }
+};
+
+const _kucheV165RenderInventory=renderInventory;
+renderInventory=function(){
+  _kucheV165RenderInventory();
+  const visible=inventory.filter(p=>p.name.toLowerCase().includes((searchInput?.value||"").toLowerCase())).filter(p=>!lowStockFilter||Number(p.quantity)<=Number(p.minimum));
+  [...document.querySelectorAll("#inventoryTable tr")].forEach((row,index)=>{
+    const p=visible[index];if(!p||!row.children[5])return;
+    if(typeof opsFinalNormalizeProduct==="function")opsFinalNormalizeProduct(p);
+    const useful=typeof opsFinalUsefulBasePerPurchase==="function"?Number(p.costNet||0)/opsFinalUsefulBasePerPurchase(p):Number(p.costNet??p.cost??0);
+    row.children[5].innerHTML=`$${formatMoney(p.costGross)} con IVA / ${escapeHTML(p.unit)}<div class="category">$${formatMoney(p.costNet)} neto · útil $${formatMoney(useful)} / ${escapeHTML(p.baseUnit||p.unit)}</div>`;
+  });
+};
+
+const _kucheV165ShowPage=showPage;
+showPage=function(pageId,button){
+  _kucheV165ShowPage(pageId,button);
+  if(pageId==="inventory")kucheV165InstallInventoryVatControl();
+};
+setTimeout(kucheV165InstallInventoryVatControl,1550);
 </script>
 
 </body>
