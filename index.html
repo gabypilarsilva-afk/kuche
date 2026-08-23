@@ -17469,5 +17469,792 @@ setTimeout(()=>{v15InstallUI();v15ScheduleFrequencyUI();v15MealServiceUI();v15Re
 </script>
 
 
+<style id="kuche-v16-style">
+.kuche-v16-section{margin-top:16px;padding:16px;border:1px solid var(--border,#ddd);border-radius:14px;background:var(--card,#fff)}
+.kuche-v16-days{display:flex;flex-wrap:wrap;gap:8px;margin-top:7px}
+.kuche-v16-days label{display:flex;align-items:center;gap:5px;padding:7px 10px;border:1px solid var(--border,#ddd);border-radius:10px;background:#fff}
+.kuche-v16-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.kuche-v16-request{border:1px solid var(--border,#ddd);border-radius:12px;padding:12px;margin-top:9px;background:#fff}
+.kuche-v16-request .top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.kuche-v16-price-hint{margin-top:5px;font-size:12px;line-height:1.35}
+.kuche-v16-price-up{color:var(--danger,#9d2e2e);font-weight:700}.kuche-v16-price-down{color:var(--success,#28633f);font-weight:700}
+.kuche-v16-shift-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.kuche-v16-shift-actions button{padding:6px 8px;font-size:11px}
+.kuche-v16-note{padding:10px 12px;border-radius:10px;background:rgba(23,63,53,.06);font-size:13px;line-height:1.45}
+@media(max-width:900px){.kuche-v16-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.kuche-v16-grid{grid-template-columns:1fr}.kuche-v16-request .top{display:block}}
+</style>
+<script id="kuche-v16-script">
+/* =====================================================
+   KÜCHE V1.6 · CARGA INICIAL, PROVEEDORES Y TURNOS
+   - Precio inicial manual de inventario.
+   - Compras recuerdan último precio por proveedor/producto.
+   - Condiciones de pedido dentro de la ficha del proveedor.
+   - Planificación semanal y copia de semana.
+   - Solicitudes de cambio/oferta de turno con aprobación.
+   - Corrección robusta de eliminación de asistencia/pagos.
+===================================================== */
+const KUCHE_V16_VERSION="1.6";
+let kucheV16SupplierPriceCache=JSON.parse(localStorage.getItem("kucheV16SupplierPriceCache")||"{}");
+let kucheV16ShiftRequests=JSON.parse(localStorage.getItem("kucheV16ShiftRequests")||"[]");
+let kucheV16RequestSourceId=null;
+let kucheV16SwapCandidates=[];
+
+function kucheV16SavePriceCache(){localStorage.setItem("kucheV16SupplierPriceCache",JSON.stringify(kucheV16SupplierPriceCache));}
+function kucheV16SaveShiftRequests(){localStorage.setItem("kucheV16ShiftRequests",JSON.stringify(kucheV16ShiftRequests));}
+function kucheV16Key(supplierId,productId){return String(supplierId||"")+"::"+String(productId||"");}
+function kucheV16Role(){return typeof v15Role==="function"?v15Role():(currentSession?.accessRole||(currentSession?.role==="admin"?"admin":"trabajador"));}
+function kucheV16IsAdmin(){return ["admin","manager"].includes(kucheV16Role());}
+function kucheV16CloudStaffId(){const w=typeof getCurrentWorker==="function"?getCurrentWorker():null;return cloudStaffRecord?.id||w?.cloudStaffId||null;}
+function kucheV16ShiftCloudId(s){return s?.cloudId||(typeof rtIsUUID==="function"&&rtIsUUID(s?.id)?s.id:null);}
+function kucheV16FmtTime(t){return t?String(t).slice(0,5):"—";}
+function kucheV16LocalId(){return Date.now()+Math.random();}
+
+/* ---------- PRECIO INICIAL EN INVENTARIO ---------- */
+function kucheV16HasPurchaseHistory(product){
+ if(!product)return false;
+ if(Array.isArray(opsFinalPurchaseCostHistory)&&opsFinalPurchaseCostHistory.some(h=>String(h.productId)===String(product.id)))return true;
+ return (purchases||[]).some(p=>p.status!=="anulada"&&(p.lines||[]).some(l=>String(l.productId)===String(product.id)||String(l.productName||"").toLowerCase()===String(product.name||"").toLowerCase()));
+}
+function kucheV16InstallInventoryPriceField(){
+ const input=document.getElementById("cost");if(!input)return;
+ const field=input.closest(".field");if(!field)return;
+ const label=field.querySelector("label");if(label)label.textContent="Precio / costo inicial neto por unidad";
+ let note=field.querySelector(".inline-note");if(note)note.textContent="Ingresa el precio conocido al crear el insumo. Después KÜCHE lo reemplaza automáticamente por el costo promedio ponderado de las compras reales.";
+}
+const _kucheV16NewProduct=newProduct;
+newProduct=function(){_kucheV16NewProduct();kucheV16InstallInventoryPriceField();if(cost){cost.disabled=false;cost.value="";cost.placeholder="Ej. 1500";}};
+const _kucheV16EditProduct=editProduct;
+editProduct=function(id){_kucheV16EditProduct(id);kucheV16InstallInventoryPriceField();const p=inventory.find(x=>String(x.id)===String(id));if(!p)return;const locked=kucheV16HasPurchaseHistory(p);cost.disabled=locked;cost.value=Number(p.costNet??p.cost??0)||0;const note=cost.closest(".field")?.querySelector(".inline-note");if(note)note.textContent=locked?"Este insumo ya tiene compras. El costo se modifica automáticamente desde Compras para conservar el promedio ponderado.":"Todavía no tiene compras: puedes corregir aquí el precio inicial de referencia.";};
+
+saveProduct=async function(){
+ const target=editingId!==null?inventory.find(x=>String(x.id)===String(editingId)):null;
+ const name=productName.value.trim(),cat=category.value,u=unit.value,min=Number(minimum.value);
+ if(!name||!cat||!u||isNaN(min)){alert("Completa nombre, categoría, unidad y stock mínimo.");return;}
+ const mayEditCost=!target||!kucheV16HasPurchaseHistory(target);
+ const initialNet=mayEditCost?Math.max(0,Number(cost.value)||0):Number(target?.costNet??target?.cost??0);
+ let p=target;
+ if(!p){p={id:Date.now(),name,category:cat,unit:u,quantity:0,minimum:min,cost:initialNet,costNet:initialNet,costGross:initialNet*(1+(Number(costSettings?.vat||19)/100)),primaryArea:document.getElementById("productArea")?.value||"cocina",areaStocks:{}};p.areaStocks[p.primaryArea]=0;inventory.push(p);}
+ p.name=name;p.category=cat;p.unit=u;p.minimum=min;p.primaryArea=document.getElementById("productArea")?.value||p.primaryArea||"cocina";
+ if(typeof opsFinalNormalizeProduct==="function")opsFinalNormalizeProduct(p);
+ if(mayEditCost){p.cost=initialNet;p.costNet=initialNet;p.vatPct=Number(p.vatPct??costSettings?.vat??19);p.costGross=initialNet*(1+p.vatPct/100);}
+ p.baseUnit=productBaseUnit.value||u;p.basePerPurchase=Math.max(.0001,Number(productBasePerPurchase.value)||1);p.yieldPct=Math.max(1,Math.min(100,Number(productYieldPct.value)||100));p.consumptionMode=productConsumptionMode.value||"exact";p.shelfLifeDays=Math.max(0,Number(productShelfLifeDays.value)||0);p.bulkAllowed=productBulkAllowed.value!=="no";p.conversions=typeof collectInventoryConversions==="function"?collectInventoryConversions():[];
+ saveInventory();closeForm();renderInventory();loadMovementProducts();renderRecipes();if(typeof renderInventoryAreas==="function")renderInventoryAreas();updateDashboard();
+ if(kucheCloud&&cloudOrganization){
+   const cloudId=await ops3EnsureCloudInventoryItem(p,{allowInitialMigration:false});
+   if(cloudId&&mayEditCost){const payload={unit_cost:initialNet,unit_cost_net:initialNet,unit_cost_gross:Number(p.costGross||0)};const {error}=await kucheCloud.from("inventory_items").update(payload).eq("id",cloudId).eq("organization_id",cloudOrganization.id);if(error)console.warn("Precio inicial inventario",error.message);}
+   if(typeof opsFinalSyncInventoryMetaCloud==="function")await opsFinalSyncInventoryMetaCloud(p);
+ }
+};
+
+/* ---------- COMPRAS: ÚLTIMO PRECIO AUTOMÁTICO ---------- */
+function kucheV16PriceFromPurchases(product,supplier){
+ const rows=(purchases||[]).filter(p=>p.status!=="anulada"&&(String(p.supplierId)===String(supplier?.id)||String(p.supplierName||"").toLowerCase()===String(supplier?.name||"").toLowerCase())).sort((a,b)=>String(b.date||"").localeCompare(String(a.date||""))||String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
+ for(const p of rows){for(const l of (p.lines||[])){if(String(l.productId)===String(product?.id)||String(l.productName||"").toLowerCase()===String(product?.name||"").toLowerCase()){const n=Number(l.unitCostNet??l.unitCost);if(Number.isFinite(n)&&n>=0)return {net:n,source:"Última compra"};}}}
+ return null;
+}
+function kucheV16LastNetPrice(product,supplier){
+ if(!product)return {net:0,source:"Sin precio previo"};
+ if(supplier){const c=kucheV16SupplierPriceCache[kucheV16Key(supplier.id,product.id)];if(c&&Number(c.net)>=0)return {net:Number(c.net),source:"Último precio de "+supplier.name};}
+ const purchase=kucheV16PriceFromPurchases(product,supplier);if(purchase)return purchase;
+ if(supplier&&typeof v15SupplierTermFor==="function"){const t=v15SupplierTermFor(product,supplier.id);if(t&&Number(t.currentPrice)>=0){return {net:Number(t.currentPrice)/Math.max(.0001,Number(t.packStockQty||1)),source:"Precio configurado del proveedor"};}}
+ const ref=Number(product.costNet??product.cost??0);return {net:Math.max(0,ref),source:ref>0?"Precio inicial / costo actual":"Sin precio previo"};
+}
+function kucheV16InputPriceFromNet(net){const vat=Math.max(0,Number(document.getElementById("purchaseVatRate")?.value??costSettings?.vat??19)||0);return (document.getElementById("purchasePriceMode")?.value||"net")==="gross"?net*(1+vat/100):net;}
+function kucheV16NetFromInput(input){const vat=Math.max(0,Number(document.getElementById("purchaseVatRate")?.value??costSettings?.vat??19)||0);return (document.getElementById("purchasePriceMode")?.value||"net")==="gross"?input/(1+vat/100):input;}
+async function kucheV16LoadSupplierPriceHistory(){
+ const supplier=suppliers.find(s=>String(s.id)===String(document.getElementById("purchaseSupplier")?.value));if(!supplier||!kucheCloud||!cloudOrganization)return;
+ const sid=await ops3EnsureCloudSupplier(supplier);if(!sid)return;
+ try{const {data,error}=await kucheCloud.from("supplier_item_price_history").select("inventory_item_id,price,recorded_at").eq("organization_id",cloudOrganization.id).eq("supplier_id",sid).order("recorded_at",{ascending:false}).limit(500);if(error)throw error;const seen=new Set();(data||[]).forEach(r=>{if(seen.has(r.inventory_item_id))return;seen.add(r.inventory_item_id);const p=inventory.find(x=>String(x.cloudId)===String(r.inventory_item_id));if(p)kucheV16SupplierPriceCache[kucheV16Key(supplier.id,p.id)]={net:Number(r.price||0),date:r.recorded_at};});kucheV16SavePriceCache();}catch(e){console.warn("Historial de precios",e.message);}
+}
+function kucheV16UpdatePriceHint(row,baselineNet){
+ const hint=row.querySelector(".kuche-v16-price-hint"),input=row.querySelector(".purchaseCost");if(!hint||!input)return;const currentNet=kucheV16NetFromInput(Number(input.value)||0);const base=Number(baselineNet||0);if(base<=0){hint.textContent="Sin precio anterior. Ingresa el precio de esta compra.";hint.className="kuche-v16-price-hint category";return;}const pct=(currentNet-base)/base*100;const sign=pct>0?"+":"";hint.innerHTML=`Último precio: <strong>$${formatMoney(base)}</strong> neto · Actual: <strong>$${formatMoney(currentNet)}</strong> ${Math.abs(pct)>.01?`<span class="${pct>0?'kuche-v16-price-up':'kuche-v16-price-down'}">(${sign}${pct.toFixed(1)}%)</span>`:"· sin cambio"}`;}
+function kucheV16AutofillPurchaseRow(row,force=true){
+ const product=inventory.find(x=>String(x.id)===String(row.querySelector(".purchaseProduct")?.value));const supplier=suppliers.find(x=>String(x.id)===String(document.getElementById("purchaseSupplier")?.value));if(!product)return;const last=kucheV16LastNetPrice(product,supplier);row.dataset.kucheBaselineNet=String(last.net||0);const input=row.querySelector(".purchaseCost");if(input&&(force||!input.value)){input.value=last.net>0?String(Number(kucheV16InputPriceFromNet(last.net).toFixed(2))):"";}kucheV16UpdatePriceHint(row,last.net);updatePurchasePreview();
+}
+function kucheV16WirePurchaseRow(row){
+ if(!row||row.dataset.kucheV16Wired)return;row.dataset.kucheV16Wired="1";const priceField=row.querySelector(".purchaseCost")?.closest(".field");if(priceField&&!priceField.querySelector(".kuche-v16-price-hint")){const d=document.createElement("div");d.className="kuche-v16-price-hint category";d.textContent="Selecciona un insumo para cargar su último precio.";priceField.appendChild(d);}row.querySelector(".purchaseProduct")?.addEventListener("change",()=>kucheV16AutofillPurchaseRow(row,true));row.querySelector(".purchaseCost")?.addEventListener("input",()=>kucheV16UpdatePriceHint(row,Number(row.dataset.kucheBaselineNet||0)));
+}
+const _kucheV16AddPurchaseLine=addPurchaseLine;
+addPurchaseLine=function(){_kucheV16AddPurchaseLine();const row=document.querySelector("#purchaseLines .purchase-line:last-child");kucheV16WirePurchaseRow(row);};
+const _kucheV16OpenPurchaseForm=openPurchaseForm;
+openPurchaseForm=function(){_kucheV16OpenPurchaseForm();document.querySelectorAll("#purchaseLines .purchase-line").forEach(kucheV16WirePurchaseRow);};
+async function kucheV16RefreshPurchasePrices(){await kucheV16LoadSupplierPriceHistory();document.querySelectorAll("#purchaseLines .purchase-line").forEach(r=>kucheV16AutofillPurchaseRow(r,true));}
+function kucheV16InstallPurchaseEvents(){const s=document.getElementById("purchaseSupplier");if(s&&!s.dataset.kucheV16){s.dataset.kucheV16="1";s.addEventListener("change",kucheV16RefreshPurchasePrices);}const mode=document.getElementById("purchasePriceMode"),vat=document.getElementById("purchaseVatRate");[mode,vat].forEach(el=>{if(el&&!el.dataset.kucheV16){el.dataset.kucheV16="1";el.addEventListener("change",()=>document.querySelectorAll("#purchaseLines .purchase-line").forEach(r=>kucheV16AutofillPurchaseRow(r,true)));}});}
+async function kucheV16RecordPurchasePrices(supplier,lines){
+ if(!supplier||!lines?.length)return;const stamp=new Date().toISOString();for(const l of lines){const p=inventory.find(x=>String(x.id)===String(l.productId));if(!p)continue;const net=Number(l.unitCostNet??l.unitCost??0);kucheV16SupplierPriceCache[kucheV16Key(supplier.id,p.id)]={net,date:stamp};if(kucheCloud&&cloudOrganization){try{const sid=await ops3EnsureCloudSupplier(supplier),iid=await ops3EnsureCloudInventoryItem(p,{allowInitialMigration:false});if(sid&&iid){await kucheCloud.from("supplier_item_price_history").insert({organization_id:cloudOrganization.id,supplier_id:sid,inventory_item_id:iid,price:net,purchase_format:p.unit||null,pack_stock_qty:1});}}catch(e){console.warn("Guardar historial precio",e.message);}}}kucheV16SavePriceCache();
+}
+const _kucheV16SavePurchase=savePurchase;
+savePurchase=async function(){const supplier=suppliers.find(x=>String(x.id)===String(document.getElementById("purchaseSupplier")?.value));const lines=typeof getPurchaseLines==="function"?getPurchaseLines():[];const before=(purchases||[]).length;await _kucheV16SavePurchase();if((purchases||[]).length>before&&supplier)await kucheV16RecordPurchasePrices(supplier,lines);};
+
+/* ---------- CONDICIONES DE PEDIDO DENTRO DE PROVEEDORES ---------- */
+function kucheV16InstallSupplierFields(){
+ const form=document.getElementById("supplierForm");if(!form||document.getElementById("kucheSupplierOrderConditions"))return;const notes=document.getElementById("supplierNotes")?.closest(".field");if(!notes)return;const box=document.createElement("div");box.id="kucheSupplierOrderConditions";box.className="kuche-v16-section";box.innerHTML=`<h3>Condiciones de pedido</h3><div class="kuche-v16-note">Estas condiciones pertenecen a este proveedor. Abastecimiento y controles solo las utilizará para calcular alertas y sugerencias de pedido.</div><div class="kuche-v16-grid" style="margin-top:12px"><div class="field"><label>Hora desde</label><input id="supplierOrderStart" type="time"></div><div class="field"><label>Hora límite</label><input id="supplierOrderCutoff" type="time"></div><div class="field"><label>Plazo de entrega (días)</label><input id="supplierLeadDays" type="number" min="0" value="1"></div><div class="field"><label>Pedido mínimo $</label><input id="supplierMinimumOrder" type="number" min="0" value="0"></div></div><div class="field" style="margin-top:12px"><label>Días en que acepta pedidos</label><div id="supplierOrderDays" class="kuche-v16-days"></div></div><div class="field" style="margin-top:12px"><label>Días habituales de entrega</label><div id="supplierDeliveryDays" class="kuche-v16-days"></div></div><div class="field" style="margin-top:12px"><label>Notas de pedido</label><input id="supplierOrderNotes" placeholder="Ej. Pedido por WhatsApp antes de las 14:00"></div>`;notes.insertAdjacentElement("beforebegin",box);const names=(typeof KUCHE_V15_WEEKDAYS!=="undefined"?KUCHE_V15_WEEKDAYS:["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"]);["supplierOrderDays","supplierDeliveryDays"].forEach(id=>{document.getElementById(id).innerHTML=names.map((d,i)=>`<label><input type="checkbox" value="${i+1}"> ${d}</label>`).join("");});
+}
+function kucheV16SupplierDays(id){return [...document.querySelectorAll(`#${id} input:checked`)].map(x=>Number(x.value));}
+function kucheV16SetSupplierDays(id,days=[]){document.querySelectorAll(`#${id} input`).forEach(x=>x.checked=(days||[]).map(Number).includes(Number(x.value)));}
+function kucheV16ResetSupplierRuleFields(){if(!document.getElementById("supplierOrderStart"))return;supplierOrderStart.value="";supplierOrderCutoff.value="";supplierLeadDays.value="1";supplierMinimumOrder.value="0";supplierOrderNotes.value="";kucheV16SetSupplierDays("supplierOrderDays",[]);kucheV16SetSupplierDays("supplierDeliveryDays",[]);}
+function kucheV16RuleForSupplier(s){return (typeof v15SupplierRules!=="undefined"?v15SupplierRules:[]).find(r=>String(r.supplierLocalId)===String(s?.id)||String(r.supplierId)===String(s?.cloudId));}
+function kucheV16LoadSupplierRuleFields(s){kucheV16ResetSupplierRuleFields();const r=kucheV16RuleForSupplier(s);if(!r)return;supplierOrderStart.value=r.orderStartTime||"";supplierOrderCutoff.value=r.cutoffTime||"";supplierLeadDays.value=Number(r.leadTimeDays??1);supplierMinimumOrder.value=Number(r.minimumOrderAmount||0);supplierOrderNotes.value=r.notes||"";kucheV16SetSupplierDays("supplierOrderDays",r.orderWeekdays||[]);kucheV16SetSupplierDays("supplierDeliveryDays",r.deliveryWeekdays||[]);}
+function kucheV16CaptureSupplierRule(){return {orderWeekdays:kucheV16SupplierDays("supplierOrderDays"),deliveryWeekdays:kucheV16SupplierDays("supplierDeliveryDays"),orderStartTime:document.getElementById("supplierOrderStart")?.value||null,cutoffTime:document.getElementById("supplierOrderCutoff")?.value||null,leadTimeDays:Math.max(0,Number(document.getElementById("supplierLeadDays")?.value)||0),minimumOrderAmount:Math.max(0,Number(document.getElementById("supplierMinimumOrder")?.value)||0),notes:document.getElementById("supplierOrderNotes")?.value.trim()||""};}
+async function kucheV16SyncSupplierProfile(s){if(!kucheCloud||!cloudOrganization||!s)return;const sid=await ops3EnsureCloudSupplier(s);if(!sid)return;const {error}=await kucheCloud.from("suppliers").update({name:s.name,rut:s.rut||null,contact_name:s.contact||null,phone:s.phone||null,email:s.email||null,notes:s.notes||null,active:s.status!=="inactivo"}).eq("id",sid).eq("organization_id",cloudOrganization.id);if(error)console.warn("Actualizar proveedor",error.message);}
+async function kucheV16SaveSupplierRule(s,draft){
+ if(!s)return;const hasAny=draft.orderWeekdays.length||draft.deliveryWeekdays.length||draft.orderStartTime||draft.cutoffTime||draft.notes||draft.minimumOrderAmount>0;if(!hasAny)return;
+ if(!draft.orderWeekdays.length){alert("El proveedor se guardó, pero faltó seleccionar al menos un día en que acepta pedidos. Puedes editarlo cuando quieras.");return;}
+ const local={id:kucheV16RuleForSupplier(s)?.id||(typeof v15UUID==="function"?v15UUID():String(kucheV16LocalId())),supplierLocalId:s.id,supplierId:s.cloudId||null,...draft,active:true};
+ if(kucheCloud&&cloudOrganization){const sid=await ops3EnsureCloudSupplier(s);if(sid){const {data,error}=await kucheCloud.from("supplier_order_rules").upsert({organization_id:cloudOrganization.id,supplier_id:sid,order_weekdays:draft.orderWeekdays,order_start_time:draft.orderStartTime,cutoff_time:draft.cutoffTime,lead_time_days:draft.leadTimeDays,delivery_weekdays:draft.deliveryWeekdays,minimum_order_amount:draft.minimumOrderAmount,notes:draft.notes||null,active:true},{onConflict:"organization_id,supplier_id"}).select().single();if(error){alert("El proveedor se guardó, pero sus condiciones de pedido no pudieron sincronizarse: "+error.message);return;}local.id=data.id;local.supplierId=sid;}}
+ if(typeof v15SupplierRules!=="undefined"){v15SupplierRules=v15SupplierRules.filter(r=>String(r.supplierLocalId)!==String(s.id)&&String(r.supplierId)!==String(local.supplierId));v15SupplierRules.push(local);if(typeof v15SaveLocal==="function")v15SaveLocal();if(typeof v15RenderSupplyPlanner==="function")v15RenderSupplyPlanner();}
+}
+const _kucheV16OpenSupplierForm=openSupplierForm;
+openSupplierForm=function(){_kucheV16OpenSupplierForm();kucheV16InstallSupplierFields();kucheV16ResetSupplierRuleFields();};
+const _kucheV16EditSupplier=editSupplier;
+editSupplier=function(id){_kucheV16EditSupplier(id);kucheV16InstallSupplierFields();const s=suppliers.find(x=>String(x.id)===String(id));kucheV16LoadSupplierRuleFields(s);};
+const _kucheV16SaveSupplier=saveSupplier;
+saveSupplier=async function(){kucheV16InstallSupplierFields();const targetId=editingSupplierId,name=document.getElementById("supplierName")?.value.trim(),draft=kucheV16CaptureSupplierRule();_kucheV16SaveSupplier();const s=targetId!==null?suppliers.find(x=>String(x.id)===String(targetId)):suppliers.slice().reverse().find(x=>String(x.name).toLowerCase()===String(name||"").toLowerCase());if(!s)return;await kucheV16SyncSupplierProfile(s);await kucheV16SaveSupplierRule(s,draft);renderSuppliers();};
+const _kucheV16RenderSuppliers=renderSuppliers;
+renderSuppliers=function(){_kucheV16RenderSuppliers();const rows=[...document.querySelectorAll("#supplierTable tr")];const q=(document.getElementById("supplierSearch")?.value||"").toLowerCase();const list=suppliers.filter(x=>(x.name+" "+(x.rut||"")+" "+(x.category||"")).toLowerCase().includes(q));rows.forEach((row,i)=>{const s=list[i],cell=row.children[3];if(!s||!cell)return;const r=kucheV16RuleForSupplier(s);if(r){const days=(typeof v15DayNames==="function"?v15DayNames(r.orderWeekdays):(r.orderWeekdays||[]).join(", "));cell.innerHTML=`${escapeHTML(s.terms||"—")}<div class="category">Pedido: ${escapeHTML(days)}${r.cutoffTime?" · hasta "+escapeHTML(String(r.cutoffTime).slice(0,5)):""}</div>`;}});};
+function kucheV16EditSupplierFromRule(id){const r=(v15SupplierRules||[]).find(x=>String(x.id)===String(id));if(!r)return;const s=typeof v15SupplierByAnyId==="function"?v15SupplierByAnyId(r.supplierLocalId||r.supplierId):null;if(!s)return;const btn=[...document.querySelectorAll(".nav-item")].find(b=>(b.getAttribute("onclick")||"").includes("'suppliers'"));showPage("suppliers",btn);editSupplier(s.id);document.getElementById("supplierForm")?.scrollIntoView({behavior:"smooth",block:"start"});}
+function kucheV16TransformSupplyPlanner(){const orders=document.getElementById("v15SupplyOrders");if(!orders||orders.dataset.kucheV16)return;orders.dataset.kucheV16="1";const form=orders.querySelector(".integral-panel");if(form)form.innerHTML=`<h2>Condiciones de pedido por proveedor</h2><div class="kuche-v16-note">Las condiciones se ingresan y editan directamente en <strong>Proveedores</strong>. Esta pantalla las utiliza para calcular cuándo conviene pedir y si el stock alcanzará hasta la próxima entrega.</div>`;const tab=[...document.querySelectorAll(".v15-tabs button")].find(b=>(b.getAttribute("onclick")||"").includes("'orders'"));if(tab)tab.textContent="Calendario de pedidos";}
+if(typeof v15RenderSupplierRules==="function")v15RenderSupplierRules=function(){const body=document.getElementById("v15RuleTable");if(!body)return;body.innerHTML=v15SupplierRules.length?v15SupplierRules.map(r=>`<tr><td><strong>${escapeHTML(v15SupplierName(r.supplierLocalId||r.supplierId))}</strong></td><td>${escapeHTML(v15DayNames(r.orderWeekdays))}</td><td>${r.orderStartTime?String(r.orderStartTime).slice(0,5)+'–':''}${r.cutoffTime?String(r.cutoffTime).slice(0,5):'Sin límite'}</td><td>${escapeHTML(v15DayNames(r.deliveryWeekdays))}</td><td>${Number(r.leadTimeDays||0)} día(s)</td><td><button class="secondary-button" onclick="kucheV16EditSupplierFromRule('${ops2EscapeAttr(r.id)}')">Editar proveedor</button></td></tr>`).join(""):'<tr><td colspan="6"><div class="empty-state"><strong>Sin condiciones configuradas</strong><div class="category">Agrégalas directamente desde Proveedores.</div></div></td></tr>';};
+
+/* ---------- TURNOS SEMANALES ---------- */
+function kucheV16InstallShiftUI(){
+ const page=document.getElementById("shifts");if(!page)return;const newBtn=document.getElementById("newShiftButton");if(newBtn&&kucheV16IsAdmin()&&!document.getElementById("kucheWeeklyShiftButton")){const weekly=document.createElement("button");weekly.id="kucheWeeklyShiftButton";weekly.className="secondary-button admin-sensitive";weekly.textContent="+ Asignar semana";weekly.onclick=()=>{kucheV16OpenWeeklyPanel();};newBtn.insertAdjacentElement("beforebegin",weekly);const copy=document.createElement("button");copy.id="kucheCopyWeekButton";copy.className="secondary-button admin-sensitive";copy.textContent="Copiar semana anterior";copy.onclick=kucheV16CopyPreviousWeek;weekly.insertAdjacentElement("beforebegin",copy);}
+ if(document.getElementById("kucheWeeklyShiftPanel"))return;
+ const shiftPanel=document.getElementById("shiftPanel");const panel=document.createElement("div");panel.id="kucheWeeklyShiftPanel";panel.className="form-panel";panel.innerHTML=`<div class="form-title">Asignar turnos por semana</div><div class="kuche-v16-grid"><div class="field"><label>Trabajador</label><select id="kucheWeeklyStaff"></select></div><div class="field"><label>Entrada</label><input id="kucheWeeklyStart" type="time"></div><div class="field"><label>Salida</label><input id="kucheWeeklyEnd" type="time"></div><div class="field"><label>Colación min</label><input id="kucheWeeklyBreak" type="number" min="0" value="30"></div></div><div class="field" style="margin-top:12px"><label>Días de esta semana</label><div id="kucheWeeklyDays" class="kuche-v16-days"></div></div><div class="form-actions"><button class="primary-button" onclick="kucheV16SaveWeeklyShift()">Guardar semana</button><button class="secondary-button" onclick="document.getElementById('kucheWeeklyShiftPanel').classList.remove('open')">Cancelar</button></div>`;shiftPanel.insertAdjacentElement("afterend",panel);document.getElementById("kucheWeeklyDays").innerHTML=["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"].map((d,i)=>`<label><input type="checkbox" value="${i}" ${i<5?'checked':''}> ${d}</label>`).join("");
+ const req=document.createElement("div");req.id="kucheShiftRequestPanel";req.className="form-panel";req.innerHTML=`<div class="form-title" id="kucheShiftRequestTitle">Solicitar cambio de turno</div><div id="kucheShiftRequestSource" class="kuche-v16-note"></div><div id="kucheSwapFields" class="kuche-v16-grid" style="margin-top:12px"><div class="field"><label>Trabajador</label><select id="kucheSwapStaff" onchange="kucheV16PopulateTargetShifts()"></select></div><div class="field"><label>Turno que recibirías</label><select id="kucheSwapShift"></select></div></div><div class="field" style="margin-top:12px"><label>Comentario opcional</label><input id="kucheShiftRequestNote" placeholder="Ej. Necesito cambiar por trámite médico"></div><input id="kucheShiftRequestType" type="hidden"><div class="form-actions"><button class="primary-button" onclick="kucheV16SubmitShiftRequest()">Enviar solicitud</button><button class="secondary-button" onclick="document.getElementById('kucheShiftRequestPanel').classList.remove('open')">Cancelar</button></div>`;panel.insertAdjacentElement("afterend",req);
+ const history=document.createElement("div");history.className="kuche-v16-section";history.innerHTML=`<div class="page-header" style="margin-bottom:8px"><div><h2>Solicitudes y cambios de turno</h2><p>Los intercambios requieren aceptación del trabajador y aprobación de Administración.</p></div><button class="secondary-button" onclick="kucheV16LoadShiftRequests()">Actualizar</button></div><div id="kucheShiftRequests"></div>`;document.getElementById("shiftWeekBoard").insertAdjacentElement("afterend",history);
+}
+function kucheV16OpenWeeklyPanel(){initializeShiftWeek();const panel=document.getElementById("kucheWeeklyShiftPanel");const sel=document.getElementById("kucheWeeklyStaff");sel.innerHTML='<option value="">Seleccionar</option>'+staff.filter(w=>w.status==="activo").map(w=>`<option value="${ops2EscapeAttr(w.id)}">${escapeHTML(w.name)}</option>`).join("");kucheWeeklyStart.value=appSettings.openTime||"";kucheWeeklyEnd.value=appSettings.closeTime||"";kucheWeeklyBreak.value=Number(appSettings.defaultBreak||0);panel.classList.add("open");}
+async function kucheV16UpsertShift(worker,date,start,end,breakMinutes,isHoliday=false){
+ if(!worker||!date||!start||!end)return null;let s=shifts.find(x=>String(x.staffId)===String(worker.id)&&x.date===date);const hours=Math.max(0,calculateWorkedHours(start,end,Number(breakMinutes)||0));if(s){s.staffName=worker.name;s.start=start;s.end=end;s.breakMinutes=Number(breakMinutes)||0;s.isHoliday=!!isHoliday;s.plannedHours=hours;}else{s={id:kucheV16LocalId(),staffId:worker.id,cloudStaffId:worker.cloudStaffId||null,staffName:worker.name,date,start,end,breakMinutes:Number(breakMinutes)||0,isHoliday:!!isHoliday,plannedHours:hours};shifts.push(s);}saveShiftData();
+ if(kucheCloud&&cloudOrganization&&worker.cloudStaffId){try{const {data,error}=await kucheCloud.from("shifts").upsert({organization_id:cloudOrganization.id,staff_id:worker.cloudStaffId,shift_date:date,planned_start:start,planned_end:end,break_minutes:Number(breakMinutes)||0,is_holiday:!!isHoliday,notes:s.notes||null},{onConflict:"staff_id,shift_date"}).select("id").single();if(error)throw error;s.cloudId=data.id;s.id=data.id;saveShiftData();}catch(e){alert("El turno quedó guardado en este dispositivo, pero no se pudo sincronizar: "+e.message);}}
+ return s;
+}
+async function kucheV16SaveWeeklyShift(){const worker=staff.find(w=>String(w.id)===String(kucheWeeklyStaff.value)),start=kucheWeeklyStart.value,end=kucheWeeklyEnd.value,br=Number(kucheWeeklyBreak.value)||0,selected=[...document.querySelectorAll("#kucheWeeklyDays input:checked")].map(x=>Number(x.value));if(!worker||!start||!end||!selected.length){alert("Selecciona trabajador, horario y al menos un día.");return;}initializeShiftWeek();const base=new Date(shiftWeekStart+"T12:00:00");const dates=selected.map(i=>{const d=new Date(base);d.setDate(d.getDate()+i);return getLocalDateString(d);});const existing=dates.filter(date=>shifts.some(s=>String(s.staffId)===String(worker.id)&&s.date===date));if(existing.length&&!confirm(`Ya existen ${existing.length} turno(s) de ${worker.name} en esos días. ¿Quieres actualizar esos horarios?`))return;for(const date of dates)await kucheV16UpsertShift(worker,date,start,end,br,false);document.getElementById("kucheWeeklyShiftPanel").classList.remove("open");renderShifts();updateShiftStats();}
+async function kucheV16CopyPreviousWeek(){if(!kucheV16IsAdmin())return;initializeShiftWeek();const current=new Date(shiftWeekStart+"T12:00:00"),prev=new Date(current);prev.setDate(prev.getDate()-7);const prevStart=getLocalDateString(prev),prevEnd=new Date(prev);prevEnd.setDate(prevEnd.getDate()+6);const src=shifts.filter(s=>s.date>=prevStart&&s.date<=getLocalDateString(prevEnd));if(!src.length){alert("La semana anterior no tiene turnos para copiar.");return;}if(!confirm(`Se copiarán ${src.length} turno(s) de la semana anterior. Si ya existe un turno del mismo trabajador y día, se actualizará. ¿Continuar?`))return;for(const s of src){const old=new Date(s.date+"T12:00:00"),dest=new Date(old);dest.setDate(dest.getDate()+7);const worker=staff.find(w=>String(w.id)===String(s.staffId)||String(w.cloudStaffId)===String(s.cloudStaffId));if(worker)await kucheV16UpsertShift(worker,getLocalDateString(dest),s.start,s.end,s.breakMinutes,s.isHoliday);}renderShifts();updateShiftStats();}
+
+/* ---------- SOLICITUDES DE CAMBIO / OFERTA ---------- */
+async function kucheV16LoadSwapCandidates(){
+ if(kucheCloud){try{const {data,error}=await kucheCloud.rpc("list_shift_swap_candidates");if(error)throw error;kucheV16SwapCandidates=(data||[]).map(x=>({staffId:x.staff_id,name:x.full_name||"Trabajador",jobTitle:x.job_title||"",shiftId:x.shift_id,date:x.shift_date,start:kucheV16FmtTime(x.planned_start),end:kucheV16FmtTime(x.planned_end)}));return;}catch(e){console.warn("Candidatos cambio de turno",e.message);}}
+ const me=typeof getCurrentWorker==="function"?getCurrentWorker():null;kucheV16SwapCandidates=[];staff.filter(w=>w.status==="activo"&&String(w.id)!==String(me?.id)).forEach(w=>{const ss=shifts.filter(s=>String(s.staffId)===String(w.id));if(ss.length)ss.forEach(s=>kucheV16SwapCandidates.push({staffId:w.cloudStaffId||w.id,name:w.name,jobTitle:w.role||"",shiftId:kucheV16ShiftCloudId(s)||s.id,date:s.date,start:s.start,end:s.end}));else kucheV16SwapCandidates.push({staffId:w.cloudStaffId||w.id,name:w.name,jobTitle:w.role||"",shiftId:null,date:null,start:null,end:null});});
+}
+async function kucheV16OpenShiftRequest(shiftId,type){const s=shifts.find(x=>String(x.id)===String(shiftId)||String(x.cloudId)===String(shiftId));if(!s)return;kucheV16RequestSourceId=s.id;kucheShiftRequestType.value=type;kucheShiftRequestTitle.textContent=type==="offer"?"Ofrecer mi turno":"Solicitar intercambio de turno";kucheShiftRequestSource.innerHTML=`Tu turno: <strong>${formatDate(s.date)} · ${escapeHTML(s.start)}–${escapeHTML(s.end)}</strong>`;kucheShiftRequestNote.value="";kucheSwapFields.style.display=type==="swap"?"grid":"none";if(type==="swap"){await kucheV16LoadSwapCandidates();const unique=[];const seen=new Set();kucheV16SwapCandidates.forEach(c=>{if(!seen.has(String(c.staffId))){seen.add(String(c.staffId));unique.push(c);}});kucheSwapStaff.innerHTML='<option value="">Seleccionar trabajador</option>'+unique.map(c=>`<option value="${ops2EscapeAttr(c.staffId)}">${escapeHTML(c.name)}${c.jobTitle?' · '+escapeHTML(c.jobTitle):''}</option>`).join("");kucheSwapShift.innerHTML='<option value="">Selecciona primero trabajador</option>';};kucheShiftRequestPanel.classList.add("open");}
+function kucheV16PopulateTargetShifts(){const id=kucheSwapStaff.value;const list=kucheV16SwapCandidates.filter(c=>String(c.staffId)===String(id)&&c.shiftId);kucheSwapShift.innerHTML='<option value="">Seleccionar turno</option>'+list.map(c=>`<option value="${ops2EscapeAttr(c.shiftId)}">${formatDate(c.date)} · ${escapeHTML(c.start)}–${escapeHTML(c.end)}</option>`).join("");}
+async function kucheV16SubmitShiftRequest(){const src=shifts.find(x=>String(x.id)===String(kucheV16RequestSourceId));if(!src)return;const type=kucheShiftRequestType.value,note=kucheShiftRequestNote.value.trim();const sourceCloud=kucheV16ShiftCloudId(src);let targetStaff=null,targetShift=null;if(type==="swap"){targetStaff=kucheSwapStaff.value;targetShift=kucheSwapShift.value;if(!targetStaff||!targetShift){alert("Selecciona trabajador y turno para el intercambio.");return;}}
+ if(kucheCloud&&sourceCloud){try{const {error}=await kucheCloud.rpc("create_shift_change_request",{p_source_shift_id:sourceCloud,p_request_type:type,p_target_staff_id:type==="swap"?targetStaff:null,p_target_shift_id:type==="swap"?targetShift:null,p_note:note||null});if(error)throw error;kucheShiftRequestPanel.classList.remove("open");await kucheV16LoadShiftRequests();alert(type==="swap"?"Solicitud enviada. Falta que el otro trabajador la acepte y luego Administración la apruebe.":"Turno ofrecido. Otro trabajador podrá tomarlo y Administración deberá aprobar el cambio.");return;}catch(e){alert("No se pudo enviar la solicitud en KÜCHE Cloud: "+e.message);return;}}
+ const me=typeof getCurrentWorker==="function"?getCurrentWorker():null;const cand=kucheV16SwapCandidates.find(c=>String(c.staffId)===String(targetStaff));kucheV16ShiftRequests.unshift({id:String(kucheV16LocalId()),requester_staff_id:me?.id,requester_name:me?.name||currentSession?.name||"Trabajador",source_shift_id:src.id,source_date:src.date,source_start:src.start,source_end:src.end,request_type:type,target_staff_id:targetStaff,target_name:cand?.name||null,target_shift_id:targetShift,status:"pending",requester_note:note,requested_at:new Date().toISOString()});kucheV16SaveShiftRequests();kucheShiftRequestPanel.classList.remove("open");kucheV16RenderShiftRequests();}
+async function kucheV16LoadShiftRequests(){if(kucheCloud&&cloudOrganization){try{const {data,error}=await kucheCloud.from("shift_change_requests").select("*").eq("organization_id",cloudOrganization.id).order("requested_at",{ascending:false}).limit(200);if(error)throw error;kucheV16ShiftRequests=data||[];kucheV16SaveShiftRequests();}catch(e){console.warn("Solicitudes de turnos",e.message);}}kucheV16RenderShiftRequests();}
+async function kucheV16RespondRequest(id,accept){if(kucheCloud&&typeof v15IsUUID==="function"&&v15IsUUID(id)){try{const {error}=await kucheCloud.rpc("respond_shift_change_request",{p_request_id:id,p_accept:!!accept,p_note:null});if(error)throw error;await kucheV16LoadShiftRequests();return;}catch(e){alert("No se pudo responder: "+e.message);return;}}const r=kucheV16ShiftRequests.find(x=>String(x.id)===String(id));if(!r)return;r.status=accept?"accepted":"rejected";r.responded_at=new Date().toISOString();if(r.request_type==="offer"&&accept){const me=typeof getCurrentWorker==="function"?getCurrentWorker():null;r.target_staff_id=me?.id;r.target_name=me?.name;}kucheV16SaveShiftRequests();kucheV16RenderShiftRequests();}
+async function kucheV16ApproveRequest(id,approve){if(kucheCloud&&typeof v15IsUUID==="function"&&v15IsUUID(id)){try{const {error}=await kucheCloud.rpc("approve_shift_change_request",{p_request_id:id,p_approve:!!approve,p_note:null});if(error)throw error;if(typeof loadCloudShiftsForAttendance==="function")await loadCloudShiftsForAttendance();await kucheV16LoadShiftRequests();return;}catch(e){alert("No se pudo resolver la solicitud: "+e.message);return;}}const r=kucheV16ShiftRequests.find(x=>String(x.id)===String(id));if(!r)return;if(!approve){r.status="rejected";}else{const src=shifts.find(s=>String(s.id)===String(r.source_shift_id));if(!src){alert("El turno original ya no existe.");return;}if(r.request_type==="offer"){const target=staff.find(w=>String(w.id)===String(r.target_staff_id));if(!target){alert("Trabajador no encontrado.");return;}src.staffId=target.id;src.staffName=target.name;}else{const tgt=shifts.find(s=>String(s.id)===String(r.target_shift_id));if(!tgt){alert("El turno de intercambio ya no existe.");return;}const a={date:src.date,start:src.start,end:src.end,breakMinutes:src.breakMinutes,isHoliday:src.isHoliday,plannedHours:src.plannedHours},b={date:tgt.date,start:tgt.start,end:tgt.end,breakMinutes:tgt.breakMinutes,isHoliday:tgt.isHoliday,plannedHours:tgt.plannedHours};Object.assign(src,b);Object.assign(tgt,a);}r.status="approved";saveShiftData();renderShifts();updateShiftStats();}r.approved_at=new Date().toISOString();kucheV16SaveShiftRequests();kucheV16RenderShiftRequests();}
+function kucheV16RenderShiftRequests(){const box=document.getElementById("kucheShiftRequests");if(!box)return;const role=kucheV16Role(),me=kucheV16CloudStaffId()||(typeof getCurrentWorker==="function"?getCurrentWorker()?.id:null);let list=(kucheV16ShiftRequests||[]);if(!kucheV16IsAdmin())list=list.filter(r=>String(r.requester_staff_id)===String(me)||String(r.target_staff_id)===String(me)||(r.request_type==="offer"&&r.status==="pending"));if(!list.length){box.innerHTML='<div class="category">No hay solicitudes de cambio de turno.</div>';return;}const labels={pending:"Pendiente",accepted:"Aceptada · espera aprobación",rejected:"Rechazada",approved:"Aprobada",cancelled:"Cancelada"};box.innerHTML=list.map(r=>{const directed=String(r.target_staff_id)===String(me),isMine=String(r.requester_staff_id)===String(me),offerOpen=r.request_type==="offer"&&r.status==="pending"&&!isMine;let actions="";if(!kucheV16IsAdmin()&&r.status==="pending"&&directed&&r.request_type==="swap")actions=`<button class="primary-button" onclick="kucheV16RespondRequest('${ops2EscapeAttr(r.id)}',true)">Aceptar</button><button class="secondary-button" onclick="kucheV16RespondRequest('${ops2EscapeAttr(r.id)}',false)">Rechazar</button>`;if(!kucheV16IsAdmin()&&offerOpen)actions=`<button class="primary-button" onclick="kucheV16RespondRequest('${ops2EscapeAttr(r.id)}',true)">Tomar turno</button>`;if(kucheV16IsAdmin()&&r.status==="accepted")actions=`<button class="primary-button" onclick="kucheV16ApproveRequest('${ops2EscapeAttr(r.id)}',true)">Aprobar cambio</button><button class="secondary-button" onclick="kucheV16ApproveRequest('${ops2EscapeAttr(r.id)}',false)">Rechazar</button>`;return `<div class="kuche-v16-request"><div class="top"><div><strong>${r.request_type==='swap'?'Intercambio':'Turno ofrecido'} · ${escapeHTML(r.requester_name||'Trabajador')}</strong><div class="category">${formatDate(r.source_date)} · ${kucheV16FmtTime(r.source_start)}–${kucheV16FmtTime(r.source_end)}${r.target_name?' ↔ '+escapeHTML(r.target_name):''}${r.target_date?' · '+formatDate(r.target_date)+' '+kucheV16FmtTime(r.target_start)+'–'+kucheV16FmtTime(r.target_end):''}</div>${r.requester_note?`<div class="category">${escapeHTML(r.requester_note)}</div>`:''}</div><span class="badge ${r.status==='approved'?'badge-success':r.status==='rejected'?'badge-danger':'badge-warning'}">${escapeHTML(labels[r.status]||r.status)}</span></div>${actions?`<div class="form-actions" style="margin-top:8px">${actions}</div>`:''}</div>`;}).join("");}
+
+const _kucheV16RenderShifts=renderShifts;
+renderShifts=function(){if(!document.getElementById("shiftWeekBoard"))return;initializeShiftWeek();const start=new Date(shiftWeekStart+"T12:00:00"),days=[];for(let i=0;i<7;i++){const d=new Date(start);d.setDate(d.getDate()+i);days.push(getLocalDateString(d));}shiftWeekLabel.textContent=formatDate(days[0])+" — "+formatDate(days[6]);let visible=shifts.filter(s=>days.includes(s.date));const workerMode=currentSession?.role==="worker";if(workerMode){const me=typeof getCurrentWorker==="function"?getCurrentWorker():null;visible=visible.filter(s=>String(s.staffId)===String(currentSession.workerId)||String(s.cloudStaffId)===String(me?.cloudStaffId)||String(s.staffId)===String(me?.id));}const names=["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];shiftWeekBoard.innerHTML=days.map((date,i)=>`<div class="day-column"><h4>${names[i]} ${formatDate(date).slice(0,5)}</h4>${visible.filter(s=>s.date===date).map(s=>{const m=shiftMetrics(s),key=ops2EscapeAttr(s.id);return `<div class="shift-chip"><strong>${escapeHTML(s.staffName)}</strong>${escapeHTML(s.start)}–${escapeHTML(s.end)} · ${Number(s.plannedHours||0).toFixed(1)} h${s.isHoliday?' · Feriado':''}${m.late>0?`<div style="color:var(--danger)">Atraso ${m.late} min</div>`:''}${workerMode?`<div class="kuche-v16-shift-actions"><button class="secondary-button" onclick="kucheV16OpenShiftRequest('${key}','swap')">Solicitar cambio</button><button class="secondary-button" onclick="kucheV16OpenShiftRequest('${key}','offer')">Ofrecer turno</button></div>`:''}</div>`}).join("")||'<div class="category">Sin turnos</div>'}</div>`).join("");shiftTableBody.innerHTML=visible.length?visible.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(s=>{const m=shiftMetrics(s),key=ops2EscapeAttr(s.id);return `<tr><td>${formatDate(s.date)}</td><td>${escapeHTML(s.staffName)}</td><td>${escapeHTML(s.start)}–${escapeHTML(s.end)}<div class="category">${Number(s.plannedHours||0).toFixed(2)} h</div></td><td>${m.worked.toFixed(2)} h</td><td>${m.late?m.late+' min':'—'}</td><td>${m.overtime.toFixed(2)} h</td><td>${s.isHoliday?'Sí':'No'}</td><td class="admin-sensitive"><div class="actions"><button class="secondary-button" onclick="editShift('${key}')">Editar</button><button class="danger-button" onclick="deleteShift('${key}')">Eliminar</button></div></td></tr>`}).join(""):'<tr><td colspan="8"><div class="empty-state"><strong>Sin turnos esta semana</strong></div></td></tr>';applyAccessMode();kucheV16RenderShiftRequests();};
+
+/* ---------- ELIMINAR ASISTENCIA / PAGOS ---------- */
+deleteAttendance=async function(id){
+ const rec=attendance.find(x=>String(x.id)===String(id)||String(x.cloudId)===String(id));if(!rec)return;if(!confirm("¿Eliminar este registro del historial de asistencia y pagos? La ficha del trabajador no se eliminará."))return;const cloudId=rec.cloudId||((typeof rtIsUUID==="function"&&rtIsUUID(rec.id))?rec.id:null);
+ if(cloudId&&kucheCloud){let ok=false;try{const {error}=await kucheCloud.rpc("delete_attendance_record",{p_attendance_id:cloudId});if(error)throw error;ok=true;}catch(e){console.warn("RPC eliminar asistencia",e.message);try{const {error}=await kucheCloud.from("attendance").delete().eq("id",cloudId);if(error)throw error;ok=true;}catch(e2){alert("No se pudo eliminar el registro en KÜCHE Cloud. Ejecuta el parche SQL V1.6 si todavía no lo has hecho. Detalle: "+e2.message);return;}}if(ok&&typeof ops3LoadCloudAttendance==="function"){await ops3LoadCloudAttendance();return;}}
+ attendance=attendance.filter(x=>String(x.id)!==String(id)&&String(x.cloudId)!==String(id));saveAttendanceData();renderAttendanceHistory();updateStaffStats();if(typeof updateLaborStats==="function")updateLaborStats();updateDashboard();
+};
+
+/* ---------- CARGA / REALTIME V1.6 ---------- */
+const _kucheV16ShowPage=showPage;
+showPage=function(pageId,button){_kucheV16ShowPage(pageId,button);if(pageId==="inventory")kucheV16InstallInventoryPriceField();if(pageId==="purchases")kucheV16InstallPurchaseEvents();if(pageId==="suppliers"){kucheV16InstallSupplierFields();renderSuppliers();}if(pageId==="supplyplanner")setTimeout(()=>{kucheV16TransformSupplyPlanner();if(typeof v15RenderSupplierRules==="function")v15RenderSupplierRules();},0);if(pageId==="shifts"){kucheV16InstallShiftUI();kucheV16LoadShiftRequests();}};
+const _kucheV16HandleCloud=handleCloudSession;
+handleCloudSession=async function(session){await _kucheV16HandleCloud(session);if(currentSession?.cloud&&cloudOrganization){if(typeof loadCloudShiftsForAttendance==="function")await loadCloudShiftsForAttendance();await kucheV16LoadShiftRequests();kucheV16InstallShiftUI();kucheV16StartRealtime();}};
+function kucheV16StartRealtime(){if(!kucheCloud||!cloudOrganization||!kucheV16IsAdmin()&&currentSession?.role!=="worker")return;try{if(window.kucheV16ShiftChannel)kucheCloud.removeChannel(window.kucheV16ShiftChannel);window.kucheV16ShiftChannel=kucheCloud.channel(`kuche-v16-turnos-${cloudOrganization.id}`).on("postgres_changes",{event:"*",schema:"public",table:"shift_change_requests",filter:`organization_id=eq.${cloudOrganization.id}`},()=>kucheV16LoadShiftRequests()).on("postgres_changes",{event:"*",schema:"public",table:"shifts",filter:`organization_id=eq.${cloudOrganization.id}`},async()=>{if(typeof loadCloudShiftsForAttendance==="function")await loadCloudShiftsForAttendance();}).subscribe();}catch(e){console.warn("Realtime turnos V1.6",e.message);}}
+setTimeout(()=>{kucheV16InstallInventoryPriceField();kucheV16InstallPurchaseEvents();kucheV16InstallSupplierFields();kucheV16InstallShiftUI();kucheV16TransformSupplyPlanner();if(typeof v15RenderSupplierRules==="function")v15RenderSupplierRules();kucheV16LoadShiftRequests();if(currentSession?.cloud&&cloudOrganization)kucheV16StartRealtime();},650);
+</script>
+
+
+<style id="kuche-v161-checklist-style">
+.kuche-v161-checklist-filter{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0 16px;padding:10px 12px;border:1px solid var(--border,#ddd);border-radius:12px;background:#fff}
+.kuche-v161-checklist-filter strong{font-size:12px;color:var(--green-dark,#173F35);margin-right:4px}
+.kuche-v161-checklist-filter button.active{background:var(--green-dark,#173F35);color:#fff;border-color:var(--green-dark,#173F35)}
+.kuche-v161-shift-meta{margin-top:4px;font-weight:650;color:var(--green-dark,#173F35)}
+.kuche-v161-task-hidden{display:none!important}
+@media(max-width:620px){.kuche-v161-checklist-filter{align-items:stretch}.kuche-v161-checklist-filter button{flex:1 1 auto}}
+</style>
+<script id="kuche-v161-checklist-script">
+/* =====================================================
+   KÜCHE V1.6.1 · CHECKLISTS POR PERSONA Y/O TURNO
+   - Permite asignar tareas por trabajador, por turno, por ambos o a todo el equipo.
+   - Usa los turnos operativos configurados en KÜCHE.
+   - En modo trabajador muestra solo las tareas que le corresponden.
+===================================================== */
+const KUCHE_V161_VERSION="1.6.1";
+let kucheV161ChecklistShiftFilter="all";
+
+function kucheV161ActiveOperationalShifts(){
+  const rows=(typeof tipShiftSettings!=="undefined"&&Array.isArray(tipShiftSettings)?tipShiftSettings:[]).filter(s=>s.active!==false);
+  return rows.length?rows:[{key:"turno1",name:"Turno 1",start:"13:00",end:"17:00",active:true},{key:"turno2",name:"Turno 2",start:"17:00",end:"21:00",active:true}];
+}
+function kucheV161NormalizeTaskAssignment(task){
+  if(!task)return task;
+  if(!task.assignmentMode)task.assignmentMode=task.shiftKey?(task.responsible?"both":"shift"):(task.responsible?"person":"all");
+  task.shiftKey=task.shiftKey||"";
+  if(task.shiftKey&&!task.shiftName){const s=kucheV161ActiveOperationalShifts().find(x=>String(x.key)===String(task.shiftKey));task.shiftName=s?.name||task.shiftKey;}
+  task.shiftName=task.shiftName||"";
+  return task;
+}
+function kucheV161PopulateTaskShiftSelect(selected=""){
+  const sel=document.getElementById("taskShiftKey");if(!sel)return;
+  const shifts=kucheV161ActiveOperationalShifts();
+  sel.innerHTML='<option value="">Seleccionar turno</option>'+shifts.map(s=>`<option value="${ops2EscapeAttr(s.key)}">${escapeHTML(s.name)} · ${escapeHTML(String(s.start||"").slice(0,5))}–${escapeHTML(String(s.end||"").slice(0,5))}</option>`).join("");
+  sel.value=selected||"";
+}
+function kucheV161TaskAssignmentUI(){
+  const mode=document.getElementById("taskAssignmentMode")?.value||"person";
+  const responsible=document.getElementById("taskResponsible")?.closest(".field");
+  const shift=document.getElementById("taskShiftField");
+  if(responsible)responsible.style.display=["person","both"].includes(mode)?"":"none";
+  if(shift)shift.style.display=["shift","both"].includes(mode)?"":"none";
+}
+function kucheV161InstallChecklistShiftUI(){
+  const page=document.getElementById("checklists");if(!page)return;
+  const grid=document.querySelector("#taskPanel .task-form-grid");
+  if(grid&&!document.getElementById("taskAssignmentMode")){
+    const assignment=document.createElement("div");assignment.className="field";assignment.innerHTML='<label>Asignar tarea por</label><select id="taskAssignmentMode" onchange="kucheV161TaskAssignmentUI()"><option value="person">Trabajador específico</option><option value="shift">Turno</option><option value="both">Trabajador + turno</option><option value="all">Todo el equipo</option></select>';
+    const shift=document.createElement("div");shift.className="field";shift.id="taskShiftField";shift.innerHTML='<label>Turno</label><select id="taskShiftKey"></select>';
+    grid.appendChild(assignment);grid.appendChild(shift);kucheV161PopulateTaskShiftSelect();kucheV161TaskAssignmentUI();
+  }
+  const note=page.querySelector(".checklist-note");
+  if(note)note.textContent="Apertura y Cierre siempre permanecerán en KÜCHE. Las tareas pueden asignarse a una persona, a un turno, a ambos o a todo el equipo.";
+  if(!document.getElementById("kucheChecklistShiftFilter")){
+    const dateBar=page.querySelector(".checklist-date-bar");const bar=document.createElement("div");bar.id="kucheChecklistShiftFilter";bar.className="kuche-v161-checklist-filter";dateBar?.insertAdjacentElement("afterend",bar);
+  }
+  kucheV161RenderChecklistShiftFilter();
+}
+function kucheV161RenderChecklistShiftFilter(){
+  const bar=document.getElementById("kucheChecklistShiftFilter");if(!bar)return;
+  const shifts=kucheV161ActiveOperationalShifts();
+  const buttons=[{key:"all",name:"Todos"},...shifts.map(s=>({key:s.key,name:s.name})),{key:"unassigned",name:"Sin turno"}];
+  bar.innerHTML='<strong>Ver tareas:</strong>'+buttons.map(b=>`<button type="button" class="secondary-button ${String(kucheV161ChecklistShiftFilter)===String(b.key)?'active':''}" onclick="kucheV161SetChecklistShiftFilter('${ops2EscapeAttr(b.key)}')">${escapeHTML(b.name)}</button>`).join("");
+  if(currentSession?.role==="worker")bar.style.display="none";else bar.style.display="flex";
+}
+function kucheV161SetChecklistShiftFilter(key){kucheV161ChecklistShiftFilter=key||"all";kucheV161RenderChecklistShiftFilter();renderChecklists();}
+function kucheV161Minutes(t){if(typeof timeToMinutes==="function")return timeToMinutes(t);const p=String(t||"0:0").split(":").map(Number);return (p[0]||0)*60+(p[1]||0);}
+function kucheV161RangesOverlap(aStart,aEnd,bStart,bEnd){
+  let a=kucheV161Minutes(aStart),b=kucheV161Minutes(aEnd),c=kucheV161Minutes(bStart),d=kucheV161Minutes(bEnd);if(b<a)b+=1440;if(d<c)d+=1440;
+  return Math.max(a,c)<Math.min(b,d)||Math.max(a,c+1440)<Math.min(b,d+1440)||Math.max(a+1440,c)<Math.min(b+1440,d);
+}
+function kucheV161CurrentWorker(){return typeof getCurrentWorker==="function"?getCurrentWorker():null;}
+function kucheV161WorkerShiftKeysForDate(date){
+  const me=kucheV161CurrentWorker();if(!me)return [];
+  const mine=(shifts||[]).filter(s=>s.date===date&&(String(s.staffId)===String(me.id)||String(s.cloudStaffId||"")===String(me.cloudStaffId||"")||String(s.staffId)===String(currentSession?.workerId||"")));
+  const keys=new Set();mine.forEach(sh=>kucheV161ActiveOperationalShifts().forEach(op=>{if(kucheV161RangesOverlap(sh.start,sh.end,op.start,op.end))keys.add(String(op.key));}));return [...keys];
+}
+function kucheV161WorkerNameMatches(name){
+  if(!name)return false;const me=kucheV161CurrentWorker();const candidates=[me?.name,me?.full_name,currentSession?.name,cloudStaffRecord?.full_name].filter(Boolean).map(x=>String(x).trim().toLowerCase());return candidates.includes(String(name).trim().toLowerCase());
+}
+function kucheV161TaskVisible(task,date){
+  kucheV161NormalizeTaskAssignment(task);const mode=task.assignmentMode;
+  if(currentSession?.role!=="worker"){
+    if(kucheV161ChecklistShiftFilter==="all")return true;
+    if(kucheV161ChecklistShiftFilter==="unassigned")return !task.shiftKey;
+    return String(task.shiftKey||"")===String(kucheV161ChecklistShiftFilter);
+  }
+  if(mode==="all")return true;
+  const person=kucheV161WorkerNameMatches(task.responsible);
+  const shift=task.shiftKey&&kucheV161WorkerShiftKeysForDate(date).includes(String(task.shiftKey));
+  if(mode==="person")return person;
+  if(mode==="shift")return !!shift;
+  if(mode==="both")return person&&!!shift;
+  return true;
+}
+function kucheV161AssignmentLabel(task){
+  kucheV161NormalizeTaskAssignment(task);const who=task.responsible||"Sin trabajador",turn=task.shiftName||kucheV161ActiveOperationalShifts().find(x=>String(x.key)===String(task.shiftKey))?.name||"Sin turno";
+  if(task.assignmentMode==="shift")return `Turno: ${turn}`;
+  if(task.assignmentMode==="both")return `${who} · ${turn}`;
+  if(task.assignmentMode==="all")return "Todo el equipo";
+  return `Responsable: ${who}`;
+}
+function kucheV161ApplyChecklistVisibility(){
+  const date=document.getElementById("checklistDate")?.value||getToday();const cards=[...document.querySelectorAll("#checklistGrid .checklist-card")];
+  cards.forEach((card,ci)=>{const checklist=checklists[ci];if(!checklist)return;const rows=[...card.querySelectorAll(".checklist-task")],tasks=checklist.tasks||[];let visibleTotal=0,visibleCompleted=0;
+    rows.forEach((row,ti)=>{const task=tasks[ti];if(!task)return;kucheV161NormalizeTaskAssignment(task);const visible=kucheV161TaskVisible(task,date);row.classList.toggle("kuche-v161-task-hidden",!visible);if(visible){visibleTotal++;const rec=getChecklistRecord(date,checklist.id,task.id);if(rec?.completed)visibleCompleted++;}
+      const content=row.children?.[1];if(content&&!content.querySelector(".kuche-v161-shift-meta")){const meta=document.createElement("div");meta.className="task-meta kuche-v161-shift-meta";content.appendChild(meta);}const meta=content?.querySelector(".kuche-v161-shift-meta");if(meta)meta.textContent="Asignación: "+kucheV161AssignmentLabel(task);
+    });
+    const percent=visibleTotal?Math.round(visibleCompleted/visibleTotal*100):0;const badge=card.querySelector(".checklist-card-header .badge");if(badge){badge.textContent=percent+"%";badge.className="badge "+(percent===100&&visibleTotal?"badge-success":percent>0?"badge-warning":"badge-blue");}
+    const info=card.querySelector(".checklist-progress-info");if(info){const spans=info.querySelectorAll("span,strong");if(spans[0])spans[0].textContent=`${visibleCompleted} de ${visibleTotal} tareas`;if(spans[1])spans[1].textContent=percent+"% completado";}
+    const prog=card.querySelector(".checklist-progress span");if(prog)prog.style.width=percent+"%";
+  });
+}
+const _kucheV161OpenTaskPanel=openTaskPanel;
+openTaskPanel=function(checklistId){_kucheV161OpenTaskPanel(checklistId);kucheV161InstallChecklistShiftUI();taskAssignmentMode.value="shift";kucheV161PopulateTaskShiftSelect();const shiftsNow=kucheV161ActiveOperationalShifts();if(shiftsNow.length)taskShiftKey.value=shiftsNow[0].key;kucheV161TaskAssignmentUI();};
+const _kucheV161EditChecklistTask=editChecklistTask;
+editChecklistTask=function(checklistId,taskId){_kucheV161EditChecklistTask(checklistId,taskId);kucheV161InstallChecklistShiftUI();const list=checklists.find(x=>String(x.id)===String(checklistId)),task=list?.tasks?.find(x=>String(x.id)===String(taskId));if(!task)return;kucheV161NormalizeTaskAssignment(task);taskAssignmentMode.value=task.assignmentMode||"person";kucheV161PopulateTaskShiftSelect(task.shiftKey||"");kucheV161TaskAssignmentUI();};
+const _kucheV161SaveChecklistTask=saveChecklistTask;
+saveChecklistTask=function(){
+  kucheV161InstallChecklistShiftUI();const listId=activeTaskChecklistId,targetId=editingTaskId,name=taskName.value.trim(),mode=taskAssignmentMode?.value||"person",responsible=taskResponsible.value.trim(),shiftKey=taskShiftKey?.value||"";
+  if(["person","both"].includes(mode)&&!responsible){alert("Selecciona o escribe el trabajador responsable.");return;}if(["shift","both"].includes(mode)&&!shiftKey){alert("Selecciona el turno de esta tarea.");return;}
+  _kucheV161SaveChecklistTask();const list=checklists.find(x=>String(x.id)===String(listId));if(!list)return;let task=targetId!==null?list.tasks.find(x=>String(x.id)===String(targetId)):([...list.tasks].reverse().find(x=>x.name===name));if(!task)return;const shift=kucheV161ActiveOperationalShifts().find(x=>String(x.key)===String(shiftKey));task.assignmentMode=mode;task.responsible=["person","both"].includes(mode)?responsible:"";task.shiftKey=["shift","both"].includes(mode)?shiftKey:"";task.shiftName=task.shiftKey?(shift?.name||shiftKey):"";saveChecklists();renderChecklists();updateChecklistStats();
+};
+const _kucheV161ToggleChecklistTask=toggleChecklistTask;
+toggleChecklistTask=function(checklistId,taskId,completed){_kucheV161ToggleChecklistTask(checklistId,taskId,completed);const date=document.getElementById("checklistDate")?.value||getToday(),list=checklists.find(x=>String(x.id)===String(checklistId)),task=list?.tasks?.find(x=>String(x.id)===String(taskId)),rec=getChecklistRecord(date,checklistId,taskId);if(task&&rec){kucheV161NormalizeTaskAssignment(task);rec.assignmentMode=task.assignmentMode;rec.shiftKey=task.shiftKey||"";rec.shiftName=task.shiftName||"";saveChecklistRecords();}kucheV161ApplyChecklistVisibility();};
+const _kucheV161AddChecklistObservation=addChecklistObservation;
+addChecklistObservation=function(checklistId,taskId){_kucheV161AddChecklistObservation(checklistId,taskId);const date=document.getElementById("checklistDate")?.value||getToday(),list=checklists.find(x=>String(x.id)===String(checklistId)),task=list?.tasks?.find(x=>String(x.id)===String(taskId)),rec=getChecklistRecord(date,checklistId,taskId);if(task&&rec){kucheV161NormalizeTaskAssignment(task);rec.assignmentMode=task.assignmentMode;rec.shiftKey=task.shiftKey||"";rec.shiftName=task.shiftName||"";saveChecklistRecords();}kucheV161ApplyChecklistVisibility();};
+const _kucheV161RenderChecklists=renderChecklists;
+renderChecklists=function(){checklists.forEach(c=>(c.tasks||[]).forEach(kucheV161NormalizeTaskAssignment));_kucheV161RenderChecklists();kucheV161InstallChecklistShiftUI();kucheV161ApplyChecklistVisibility();};
+const _kucheV161RenderChecklistHistory=renderChecklistHistory;
+renderChecklistHistory=function(){_kucheV161RenderChecklistHistory();const date=document.getElementById("checklistHistoryDate")?.value;const records=checklistRecords.filter(r=>r.date===date).sort((a,b)=>String(a.checklistName).localeCompare(String(b.checklistName)));const rows=[...document.querySelectorAll("#checklistHistoryTable tr")];rows.forEach((row,i)=>{const rec=records[i];if(!rec||row.children.length<3)return;const list=checklists.find(c=>String(c.id)===String(rec.checklistId)),task=list?.tasks?.find(t=>String(t.id)===String(rec.taskId));if(task){kucheV161NormalizeTaskAssignment(task);const label=kucheV161AssignmentLabel(task);row.children[2].innerHTML=`${escapeHTML(rec.responsible||task.responsible||"—")}<div class="category">${escapeHTML(label)}</div>`;}});};
+const _kucheV161UpdateChecklistStats=updateChecklistStats;
+updateChecklistStats=function(){_kucheV161UpdateChecklistStats();if(currentSession?.role!=="worker"&&kucheV161ChecklistShiftFilter==="all")return;const date=document.getElementById("checklistDate")?.value||getToday();let total=0,completed=0;checklists.forEach(c=>(c.tasks||[]).forEach(t=>{if(!kucheV161TaskVisible(t,date))return;total++;if(getChecklistRecord(date,c.id,t.id)?.completed)completed++;}));const pending=total-completed,pct=total?Math.round(completed/total*100):0;if(document.getElementById("checklistTotalTasks"))checklistTotalTasks.textContent=total;if(document.getElementById("checklistCompletedTasks"))checklistCompletedTasks.textContent=completed;if(document.getElementById("checklistPendingTasks"))checklistPendingTasks.textContent=pending;if(document.getElementById("checklistCompliance"))checklistCompliance.textContent=pct+"%";};
+const _kucheV161ShowPage=showPage;
+showPage=function(pageId,button){_kucheV161ShowPage(pageId,button);if(pageId==="checklists"){kucheV161InstallChecklistShiftUI();renderChecklists();updateChecklistStats();}};
+setTimeout(()=>{kucheV161InstallChecklistShiftUI();checklists.forEach(c=>(c.tasks||[]).forEach(kucheV161NormalizeTaskAssignment));saveChecklists();if(document.querySelector("#checklists.page.active")){renderChecklists();updateChecklistStats();}},850);
+</script>
+
+
+
+<style id="kuche-v162-checklist-area-style">
+.kuche-v162-filter-group{display:flex;gap:7px;flex-wrap:wrap;align-items:center;width:100%}
+.kuche-v162-filter-group+.kuche-v162-filter-group{margin-top:8px;padding-top:8px;border-top:1px solid var(--border,#ddd)}
+.kuche-v162-area-meta{margin-top:4px;font-weight:650;color:var(--green-dark,#173F35)}
+@media(max-width:620px){.kuche-v162-filter-group{align-items:stretch}.kuche-v162-filter-group button{flex:1 1 auto}}
+</style>
+<script id="kuche-v162-checklist-area-script">
+/* =====================================================
+   KÜCHE V1.6.2 · CHECKLISTS POR TURNO Y ÁREA
+   - Agrega Área como criterio de asignación independiente.
+   - Permite combinar trabajador, turno y área.
+   - Administración puede filtrar por turno y por área.
+   - Trabajadores ven solo tareas compatibles con su persona, turno y área.
+===================================================== */
+const KUCHE_V162_VERSION="1.6.2";
+let kucheV162ChecklistAreaFilter="all";
+
+function kucheV162Areas(){
+  const rows=(typeof inventoryAreas!=="undefined"&&Array.isArray(inventoryAreas)?inventoryAreas:[]).filter(a=>a&&a.key&&a.name);
+  return rows.length?rows:[
+    {key:"cocina",name:"Cocina"},{key:"barra",name:"Barra"},{key:"bebestibles",name:"Bebestibles"},{key:"salon",name:"Salón"}
+  ];
+}
+function kucheV162AreaName(key){
+  if(!key)return "Todas las áreas";
+  return kucheV162Areas().find(a=>String(a.key)===String(key))?.name||String(key);
+}
+function kucheV162PopulateTaskAreaSelect(selected=""){
+  const sel=document.getElementById("taskAreaKey");if(!sel)return;
+  sel.innerHTML='<option value="">Seleccionar área</option>'+kucheV162Areas().map(a=>`<option value="${ops2EscapeAttr(a.key)}">${escapeHTML(a.name)}</option>`).join("");
+  sel.value=selected||"";
+}
+function kucheV162ModeNeedsPerson(mode){return ["person","both","person_area","person_area_shift"].includes(mode);}
+function kucheV162ModeNeedsShift(mode){return ["shift","both","area_shift","person_area_shift"].includes(mode);}
+function kucheV162ModeNeedsArea(mode){return ["area","area_shift","person_area","person_area_shift"].includes(mode);}
+
+const _kucheV162NormalizeTaskAssignment=kucheV161NormalizeTaskAssignment;
+kucheV161NormalizeTaskAssignment=function(task){
+  task=_kucheV162NormalizeTaskAssignment(task);if(!task)return task;
+  task.areaKey=task.areaKey||"";
+  if(task.areaKey&&!task.areaName)task.areaName=kucheV162AreaName(task.areaKey);
+  task.areaName=task.areaName||"";
+  return task;
+};
+
+kucheV161TaskAssignmentUI=function(){
+  const mode=document.getElementById("taskAssignmentMode")?.value||"person";
+  const responsible=document.getElementById("taskResponsible")?.closest(".field");
+  const shift=document.getElementById("taskShiftField");
+  const area=document.getElementById("taskAreaField");
+  if(responsible)responsible.style.display=kucheV162ModeNeedsPerson(mode)?"":"none";
+  if(shift)shift.style.display=kucheV162ModeNeedsShift(mode)?"":"none";
+  if(area)area.style.display=kucheV162ModeNeedsArea(mode)?"":"none";
+};
+
+const _kucheV162InstallChecklistUI=kucheV161InstallChecklistShiftUI;
+kucheV161InstallChecklistShiftUI=function(){
+  _kucheV162InstallChecklistUI();
+  const page=document.getElementById("checklists");if(!page)return;
+  const mode=document.getElementById("taskAssignmentMode");
+  if(mode&&!mode.dataset.kucheV162){
+    const current=mode.value||"person";
+    mode.innerHTML=''
+      +'<option value="all">Todo el equipo</option>'
+      +'<option value="person">Trabajador específico</option>'
+      +'<option value="shift">Turno</option>'
+      +'<option value="area">Área</option>'
+      +'<option value="both">Trabajador + turno</option>'
+      +'<option value="area_shift">Área + turno</option>'
+      +'<option value="person_area">Trabajador + área</option>'
+      +'<option value="person_area_shift">Trabajador + área + turno</option>';
+    mode.value=[...mode.options].some(o=>o.value===current)?current:"all";
+    mode.dataset.kucheV162="1";
+  }
+  const grid=document.querySelector("#taskPanel .task-form-grid");
+  if(grid&&!document.getElementById("taskAreaField")){
+    const area=document.createElement("div");area.className="field";area.id="taskAreaField";area.innerHTML='<label>Área</label><select id="taskAreaKey"></select>';
+    grid.appendChild(area);
+  }
+  kucheV162PopulateTaskAreaSelect(document.getElementById("taskAreaKey")?.value||"");
+  kucheV161TaskAssignmentUI();
+  const note=page.querySelector(".checklist-note");
+  if(note)note.textContent="Apertura y Cierre siempre permanecerán en KÜCHE. Las tareas pueden asignarse por trabajador, turno, área o una combinación de estos criterios.";
+  kucheV161RenderChecklistShiftFilter();
+};
+
+kucheV161RenderChecklistShiftFilter=function(){
+  const bar=document.getElementById("kucheChecklistShiftFilter");if(!bar)return;
+  const shifts=kucheV161ActiveOperationalShifts();
+  const shiftButtons=[{key:"all",name:"Todos"},...shifts.map(s=>({key:s.key,name:s.name})),{key:"unassigned",name:"Sin turno"}];
+  const areaButtons=[{key:"all",name:"Todas"},...kucheV162Areas().map(a=>({key:a.key,name:a.name})),{key:"unassigned",name:"Sin área"}];
+  bar.innerHTML=`<div class="kuche-v162-filter-group"><strong>Turno:</strong>${shiftButtons.map(b=>`<button type="button" class="secondary-button ${String(kucheV161ChecklistShiftFilter)===String(b.key)?'active':''}" onclick="kucheV161SetChecklistShiftFilter('${ops2EscapeAttr(b.key)}')">${escapeHTML(b.name)}</button>`).join("")}</div><div class="kuche-v162-filter-group"><strong>Área:</strong>${areaButtons.map(b=>`<button type="button" class="secondary-button ${String(kucheV162ChecklistAreaFilter)===String(b.key)?'active':''}" onclick="kucheV162SetChecklistAreaFilter('${ops2EscapeAttr(b.key)}')">${escapeHTML(b.name)}</button>`).join("")}</div>`;
+  if(currentSession?.role==="worker")bar.style.display="none";else bar.style.display="block";
+};
+function kucheV162SetChecklistAreaFilter(key){
+  kucheV162ChecklistAreaFilter=key||"all";kucheV161RenderChecklistShiftFilter();renderChecklists();updateChecklistStats();
+}
+function kucheV162CurrentWorkerAreaKeys(){
+  const me=kucheV161CurrentWorker();
+  const roles=[currentSession?.accessRole,me?.accessRole,me?.access_role,me?.role,typeof mapStaffRoleToAccessRole==="function"?mapStaffRoleToAccessRole(me?.role):null]
+    .filter(Boolean).map(x=>String(x).trim().toLowerCase());
+  const keys=new Set();
+  const assigns=(typeof inventoryAreaAssignments!=="undefined"&&Array.isArray(inventoryAreaAssignments)?inventoryAreaAssignments:[]);
+  assigns.forEach(a=>{if(roles.includes(String(a.role||"").trim().toLowerCase())&&a.area)keys.add(String(a.area));});
+  if(!keys.size){
+    if(roles.some(r=>r.includes("cocina")))keys.add("cocina");
+    if(roles.some(r=>r.includes("bar")))keys.add("barra");
+    if(roles.some(r=>r.includes("garzon")||r.includes("garzón")))keys.add("salon");
+    if(roles.some(r=>r.includes("bodega")))keys.add("cocina");
+  }
+  return [...keys];
+}
+function kucheV162AreaMatchesWorker(task){
+  if(!task.areaKey)return true;
+  return kucheV162CurrentWorkerAreaKeys().includes(String(task.areaKey));
+}
+
+kucheV161TaskVisible=function(task,date){
+  kucheV161NormalizeTaskAssignment(task);const mode=task.assignmentMode||"all";
+  if(currentSession?.role!=="worker"){
+    const shiftOk=kucheV161ChecklistShiftFilter==="all"?true:kucheV161ChecklistShiftFilter==="unassigned"?!task.shiftKey:String(task.shiftKey||"")===String(kucheV161ChecklistShiftFilter);
+    const areaOk=kucheV162ChecklistAreaFilter==="all"?true:kucheV162ChecklistAreaFilter==="unassigned"?!task.areaKey:String(task.areaKey||"")===String(kucheV162ChecklistAreaFilter);
+    return shiftOk&&areaOk;
+  }
+  if(mode==="all")return true;
+  const person=kucheV161WorkerNameMatches(task.responsible);
+  const shift=!task.shiftKey||kucheV161WorkerShiftKeysForDate(date).includes(String(task.shiftKey));
+  const area=kucheV162AreaMatchesWorker(task);
+  if(mode==="person")return person;
+  if(mode==="shift")return !!shift;
+  if(mode==="area")return !!area;
+  if(mode==="both")return person&&!!shift;
+  if(mode==="area_shift")return !!area&&!!shift;
+  if(mode==="person_area")return person&&!!area;
+  if(mode==="person_area_shift")return person&&!!area&&!!shift;
+  return true;
+};
+
+kucheV161AssignmentLabel=function(task){
+  kucheV161NormalizeTaskAssignment(task);
+  const who=task.responsible||"Sin trabajador";
+  const turn=task.shiftName||kucheV161ActiveOperationalShifts().find(x=>String(x.key)===String(task.shiftKey))?.name||"Sin turno";
+  const area=task.areaName||kucheV162AreaName(task.areaKey);
+  if(task.assignmentMode==="shift")return `Turno: ${turn}`;
+  if(task.assignmentMode==="area")return `Área: ${area}`;
+  if(task.assignmentMode==="both")return `${who} · ${turn}`;
+  if(task.assignmentMode==="area_shift")return `${area} · ${turn}`;
+  if(task.assignmentMode==="person_area")return `${who} · ${area}`;
+  if(task.assignmentMode==="person_area_shift")return `${who} · ${area} · ${turn}`;
+  if(task.assignmentMode==="all")return "Todo el equipo";
+  return `Responsable: ${who}`;
+};
+
+const _kucheV162OpenTaskPanel=openTaskPanel;
+openTaskPanel=function(checklistId){
+  _kucheV162OpenTaskPanel(checklistId);kucheV161InstallChecklistShiftUI();
+  if(document.getElementById("taskAssignmentMode"))taskAssignmentMode.value="area_shift";
+  kucheV162PopulateTaskAreaSelect();const areas=kucheV162Areas();if(areas.length&&document.getElementById("taskAreaKey"))taskAreaKey.value=areas[0].key;
+  kucheV161TaskAssignmentUI();
+};
+const _kucheV162EditChecklistTask=editChecklistTask;
+editChecklistTask=function(checklistId,taskId){
+  _kucheV162EditChecklistTask(checklistId,taskId);kucheV161InstallChecklistShiftUI();
+  const list=checklists.find(x=>String(x.id)===String(checklistId)),task=list?.tasks?.find(x=>String(x.id)===String(taskId));if(!task)return;
+  kucheV161NormalizeTaskAssignment(task);kucheV162PopulateTaskAreaSelect(task.areaKey||"");if(document.getElementById("taskAssignmentMode"))taskAssignmentMode.value=task.assignmentMode||"person";kucheV161TaskAssignmentUI();
+};
+const _kucheV162SaveChecklistTask=saveChecklistTask;
+saveChecklistTask=function(){
+  kucheV161InstallChecklistShiftUI();
+  const listId=activeTaskChecklistId,targetId=editingTaskId,name=taskName.value.trim(),mode=taskAssignmentMode?.value||"all",responsible=taskResponsible.value.trim(),shiftKey=taskShiftKey?.value||"",areaKey=taskAreaKey?.value||"";
+  if(kucheV162ModeNeedsPerson(mode)&&!responsible){alert("Selecciona o escribe el trabajador responsable.");return;}
+  if(kucheV162ModeNeedsShift(mode)&&!shiftKey){alert("Selecciona el turno de esta tarea.");return;}
+  if(kucheV162ModeNeedsArea(mode)&&!areaKey){alert("Selecciona el área de esta tarea.");return;}
+  _kucheV162SaveChecklistTask();
+  const list=checklists.find(x=>String(x.id)===String(listId));if(!list)return;
+  let task=targetId!==null?list.tasks.find(x=>String(x.id)===String(targetId)):([...list.tasks].reverse().find(x=>x.name===name));if(!task)return;
+  const shift=kucheV161ActiveOperationalShifts().find(x=>String(x.key)===String(shiftKey));
+  task.assignmentMode=mode;
+  task.responsible=kucheV162ModeNeedsPerson(mode)?responsible:"";
+  task.shiftKey=kucheV162ModeNeedsShift(mode)?shiftKey:"";
+  task.shiftName=task.shiftKey?(shift?.name||shiftKey):"";
+  task.areaKey=kucheV162ModeNeedsArea(mode)?areaKey:"";
+  task.areaName=task.areaKey?kucheV162AreaName(task.areaKey):"";
+  saveChecklists();renderChecklists();updateChecklistStats();
+};
+
+const _kucheV162ToggleChecklistTask=toggleChecklistTask;
+toggleChecklistTask=function(checklistId,taskId,completed){
+  _kucheV162ToggleChecklistTask(checklistId,taskId,completed);
+  const date=document.getElementById("checklistDate")?.value||getToday(),list=checklists.find(x=>String(x.id)===String(checklistId)),task=list?.tasks?.find(x=>String(x.id)===String(taskId)),rec=getChecklistRecord(date,checklistId,taskId);
+  if(task&&rec){kucheV161NormalizeTaskAssignment(task);rec.areaKey=task.areaKey||"";rec.areaName=task.areaName||"";rec.assignmentMode=task.assignmentMode;rec.shiftKey=task.shiftKey||"";rec.shiftName=task.shiftName||"";saveChecklistRecords();}
+  kucheV161ApplyChecklistVisibility();
+};
+const _kucheV162AddChecklistObservation=addChecklistObservation;
+addChecklistObservation=function(checklistId,taskId){
+  _kucheV162AddChecklistObservation(checklistId,taskId);
+  const date=document.getElementById("checklistDate")?.value||getToday(),list=checklists.find(x=>String(x.id)===String(checklistId)),task=list?.tasks?.find(x=>String(x.id)===String(taskId)),rec=getChecklistRecord(date,checklistId,taskId);
+  if(task&&rec){kucheV161NormalizeTaskAssignment(task);rec.areaKey=task.areaKey||"";rec.areaName=task.areaName||"";rec.assignmentMode=task.assignmentMode;rec.shiftKey=task.shiftKey||"";rec.shiftName=task.shiftName||"";saveChecklistRecords();}
+  kucheV161ApplyChecklistVisibility();
+};
+
+setTimeout(()=>{
+  checklists.forEach(c=>(c.tasks||[]).forEach(kucheV161NormalizeTaskAssignment));saveChecklists();kucheV161InstallChecklistShiftUI();
+  if(document.querySelector("#checklists.page.active")){renderChecklists();updateChecklistStats();}
+},1050);
+</script>
+
+<style id="kuche-v163-style">
+.kuche-v163-fixed-note{margin-top:6px;padding:8px 10px;border-radius:9px;background:rgba(23,63,53,.06);font-size:11px;line-height:1.45;color:var(--green-dark)}
+.kuche-v163-margin-alert{margin-top:12px;padding:11px 13px;border-radius:10px;border:1px solid var(--border);font-size:12px;line-height:1.45}
+.kuche-v163-margin-alert.ok{background:var(--success-soft);color:var(--success)}
+.kuche-v163-margin-alert.warn{background:var(--warning-soft);color:var(--warning)}
+.kuche-v163-margin-alert.danger{background:var(--danger-soft);color:var(--danger)}
+.kuche-v163-fixed-price-badge{display:inline-block;margin-top:6px;font-size:10px;font-weight:700;color:var(--green-dark);background:var(--green-soft);padding:4px 7px;border-radius:999px}
+</style>
+<script id="kuche-v163-fixed-pricing-script">
+/* =====================================================
+   KÜCHE V1.6.3 · PRECIO DE VENTA FIJO Y MARGEN VARIABLE
+   - IVA, MOD y CIF son porcentajes globales fijos.
+   - El precio de venta con IVA se define manualmente por receta.
+   - Las variaciones de costo nunca cambian el precio de venta.
+   - La utilidad y el margen se recalculan con los costos vigentes.
+===================================================== */
+const KUCHE_V163_VERSION="1.6.3";
+const _kucheV163LegacyCalculateSavedRecipe=calculateSavedRecipe;
+let kucheV163SalePriceMap=JSON.parse(localStorage.getItem("kucheV163SalePriceMap")||"{}");
+
+function kucheV163RecipeKey(recipe){return String(recipe?.id??recipe?.sourceLocalId??"");}
+function kucheV163SavePriceMap(){localStorage.setItem("kucheV163SalePriceMap",JSON.stringify(kucheV163SalePriceMap));}
+function kucheV163LegacyPrice(recipe){
+  const direct=Number(recipe?.fixedSalePriceGross??recipe?.salePriceGross??recipe?.manualSalePriceGross??recipe?.finalPerPortion);
+  if(Number.isFinite(direct)&&direct>0)return direct;
+  try{const c=_kucheV163LegacyCalculateSavedRecipe(recipe);const n=Number(c?.finalPerPortion);return Number.isFinite(n)&&n>0?n:0;}catch(e){return 0;}
+}
+function kucheV163FixedSalePrice(recipe){
+  const key=kucheV163RecipeKey(recipe),hasMapped=Object.prototype.hasOwnProperty.call(kucheV163SalePriceMap,key),mapped=Number(kucheV163SalePriceMap[key]);
+  if(hasMapped&&Number.isFinite(mapped)&&mapped>=0)return mapped;
+  const own=Number(recipe?.fixedSalePriceGross??recipe?.salePriceGross??recipe?.manualSalePriceGross);
+  if(recipe?.priceLocked===true&&Number.isFinite(own)&&own>=0)return own;
+  if(Number.isFinite(own)&&own>0)return own;
+  return kucheV163LegacyPrice(recipe);
+}
+function kucheV163MigratePrices(){
+  let changed=false;
+  (recipes||[]).forEach(r=>{
+    const key=kucheV163RecipeKey(r);if(!key)return;
+    let price=Number(kucheV163SalePriceMap[key]);
+    if(!(price>0))price=kucheV163LegacyPrice(r);
+    if(price>0){
+      if(Number(r.fixedSalePriceGross)!==price){r.fixedSalePriceGross=price;r.salePriceGross=price;r.priceLocked=true;changed=true;}
+      if(Number(kucheV163SalePriceMap[key])!==price){kucheV163SalePriceMap[key]=price;changed=true;}
+    }
+  });
+  if(changed){kucheV163SavePriceMap();saveRecipes();}
+}
+kucheV163MigratePrices();
+
+function kucheV163InstallPricingUI(){
+  const form=document.getElementById("recipeForm"),grid=form?.querySelector(".recipe-main-grid");
+  if(grid&&!document.getElementById("recipeFixedSalePriceGross")){
+    const field=document.createElement("div");field.className="field";field.id="kucheFixedSalePriceField";
+    field.innerHTML='<label>Precio de venta con IVA / porción</label><input id="recipeFixedSalePriceGross" type="number" min="0" step="1" placeholder="Ej. 7000"><div class="kuche-v163-fixed-note">Este precio queda fijo. Si cambia el costo de un ingrediente, KÜCHE recalcula la utilidad y el margen, pero no modifica el precio de venta.</div>';
+    const yieldField=document.getElementById("recipeYield")?.closest(".field");
+    if(yieldField)yieldField.insertAdjacentElement("afterend",field);else grid.appendChild(field);
+    field.querySelector("input")?.addEventListener("input",()=>calculateRecipe());
+  }
+  const page=document.getElementById("recipes");
+  const intro=page?.querySelector(".page-header p");if(intro)intro.textContent="Costos actualizados con IVA, MOD y CIF fijos; el precio de venta se mantiene manual y la rentabilidad cambia con los costos.";
+  const auto=document.getElementById("recipeAutoLabor");
+  if(auto){auto.checked=false;auto.disabled=true;const line=auto.closest(".switch-line");if(line){[...line.childNodes].filter(n=>n.nodeType===3).forEach(n=>n.textContent=" MOD fija según Configuración");}}
+  const worker=document.getElementById("recipeLaborWorker")?.closest(".field");if(worker)worker.style.display="none";
+  const rate=document.getElementById("recipeLaborRatePreview")?.closest(".field");if(rate)rate.style.display="none";
+  const amount=document.getElementById("recipeLaborAmountPreview")?.closest(".field");if(amount){amount.style.display="";const l=amount.querySelector("label");if(l)l.textContent="MOD fija aplicada";}
+  const pctFields=[
+    ["recipeLabor","MOD fija %"],["recipeIndirect","CIF fijo %"],["recipeVat","IVA fijo %"],["recipeProfit","Margen actual %"]
+  ];
+  pctFields.forEach(([id,label])=>{const el=document.getElementById(id);if(!el)return;const l=el.closest(".field")?.querySelector("label");if(l)l.textContent=label;el.disabled=true;});
+  const method=document.getElementById("recipeProfitMethod");if(method){method.value="margin";const f=method.closest(".field");if(f)f.style.display="none";}
+  if(form&&!document.getElementById("kucheV163RecipeMarginAlert")){
+    const breakdown=form.querySelector(".cost-breakdown");const alertBox=document.createElement("div");alertBox.id="kucheV163RecipeMarginAlert";alertBox.className="kuche-v163-margin-alert";if(breakdown)breakdown.insertAdjacentElement("afterend",alertBox);else form.appendChild(alertBox);
+  }
+  kucheV163ApplyFinancialLabels();
+}
+
+function kucheV163ApplyFinancialLabels(){
+  const relabel=(id,text)=>{const el=document.getElementById(id);const l=el?.closest(".field")?.querySelector("label");if(l)l.textContent=text;};
+  relabel("defaultLabor","MOD fija %");relabel("defaultIndirect","CIF fijo %");relabel("defaultProfit","Margen objetivo % (solo alerta)");relabel("defaultVat","IVA fijo %");
+  relabel("settingsLabor","MOD fija %");relabel("settingsIndirect","CIF fijo %");relabel("settingsProfit","Margen objetivo % (solo alerta)");relabel("settingsVat","IVA fijo %");
+  const dm=document.getElementById("defaultProfitMethod");if(dm){dm.value="margin";const f=dm.closest(".field");if(f)f.style.display="none";}
+  const sm=document.getElementById("settingsProfitMethod");if(sm){sm.value="margin";const f=sm.closest(".field");if(f)f.style.display="none";}
+  const p=document.getElementById("settingsLabor")?.closest(".config-card")?.querySelector("p");if(p)p.textContent="IVA, MOD y CIF son porcentajes fijos del establecimiento. El margen objetivo se usa solo como alerta; nunca cambia automáticamente el precio de venta.";
+  const cp=document.getElementById("defaultLabor")?.closest(".cost-settings-panel");if(cp){const t=cp.querySelector(".form-title");if(t)t.textContent="Parámetros fijos de costos y objetivo de margen";}
+}
+
+function kucheV163LockRecipeFinancialInputs(){
+  kucheV163InstallPricingUI();
+  const labor=document.getElementById("recipeLabor"),indirect=document.getElementById("recipeIndirect"),vat=document.getElementById("recipeVat"),profit=document.getElementById("recipeProfit"),method=document.getElementById("recipeProfitMethod"),auto=document.getElementById("recipeAutoLabor"),prep=document.getElementById("recipePrepMinutes"),worker=document.getElementById("recipeLaborWorker");
+  if(labor){labor.value=Number(costSettings.labor||0);labor.disabled=true;}
+  if(indirect){indirect.value=Number(costSettings.indirect||0);indirect.disabled=true;}
+  if(vat){vat.value=Number(costSettings.vat||0);vat.disabled=true;}
+  if(method){method.value="margin";method.disabled=true;}
+  if(auto){auto.checked=false;auto.disabled=true;}
+  if(prep)prep.disabled=false;
+  if(worker)worker.disabled=true;
+  if(profit)profit.disabled=true;
+}
+
+updateRecipeLaborMode=function(){kucheV163LockRecipeFinancialInputs();calculateRecipe();};
+
+function kucheV163DraftIngredientCosts(){
+  let rawCost=0,rawGross=0;
+  document.querySelectorAll("#recipeIngredients .recipe-row").forEach(row=>{
+    if(typeof opsFinalIngredientCalcFromRow==="function"){
+      const c=opsFinalIngredientCalcFromRow(row);rawCost+=Number(c?.net||0);rawGross+=Number(c?.gross||0);return;
+    }
+    const p=inventory.find(x=>String(x.id)===String(row.querySelector(".recipeIngredientSelect")?.value)),qty=Number(row.querySelector(".recipeIngredientQuantity")?.value)||0;
+    if(p){const net=qty*Number(p.costNet??p.cost??0);rawCost+=net;rawGross+=net*(1+Number(p.vatPct??costSettings.vat??19)/100);const out=row.querySelector(".recipeIngredientCost");if(out)out.value="$"+formatMoney(net);}
+  });
+  return {rawCost,rawGross};
+}
+function kucheV163CalcFinancials({rawCost,rawGross,yieldValue,saleGrossPerPortion}){
+  const laborPct=Math.max(0,Number(costSettings.labor)||0),indirectPct=Math.max(0,Number(costSettings.indirect)||0),vatPct=Math.max(0,Number(costSettings.vat)||0),targetMargin=Math.max(0,Number(costSettings.profit)||0);
+  const laborAmount=rawCost*laborPct/100,indirectAmount=rawCost*indirectPct/100,realCost=rawCost+laborAmount+indirectAmount;
+  const finalPerPortion=Math.max(0,Number(saleGrossPerPortion)||0),finalPrice=finalPerPortion*yieldValue;
+  const netPrice=vatPct>=0?finalPrice/(1+vatPct/100):finalPrice,vatAmount=Math.max(0,finalPrice-netPrice),profitAmount=netPrice-realCost;
+  const costPerPortion=realCost/yieldValue,netPerPortion=netPrice/yieldValue,profitPerPortion=profitAmount/yieldValue;
+  const realMargin=netPrice>0?profitAmount/netPrice*100:0,foodCost=netPrice>0?rawCost/netPrice*100:0;
+  return {laborPct,laborAmount,indirectPct,indirectAmount,vatPct,targetMargin,realCost,finalPerPortion,finalPrice,netPrice,vatAmount,profitAmount,costPerPortion,netPerPortion,profitPerPortion,realMargin,foodCost,profitPct:realMargin,method:"margin"};
+}
+
+getCurrentRecipeCalculation=function(){
+  const {rawCost,rawGross}=kucheV163DraftIngredientCosts(),yieldValue=Math.max(.01,Number(document.getElementById("recipeYield")?.value)||1),saleGrossPerPortion=Math.max(0,Number(document.getElementById("recipeFixedSalePriceGross")?.value)||0);
+  const prepMinutes=Math.max(0,Number(document.getElementById("recipePrepMinutes")?.value)||0),cookMinutes=Math.max(0,Number(document.getElementById("recipeCookMinutes")?.value)||0),assemblyMinutes=Math.max(0,Number(document.getElementById("recipeAssemblyMinutes")?.value)||0),serviceTargetMinutes=Math.max(1,Number(document.getElementById("recipeServiceTargetMinutes")?.value)||10);
+  const c=kucheV163CalcFinancials({rawCost,rawGross,yieldValue,saleGrossPerPortion});
+  if(document.getElementById("recipeTotalTimePreview"))recipeTotalTimePreview.value=(prepMinutes+cookMinutes+assemblyMinutes)+" min";
+  if(document.getElementById("recipeLaborRatePreview"))recipeLaborRatePreview.value="Porcentaje fijo";
+  if(document.getElementById("recipeLaborAmountPreview"))recipeLaborAmountPreview.value="$"+formatMoney(c.laborAmount);
+  return {...c,rawCost,rawGross,purchaseVat:rawGross-rawCost,yieldValue,laborRate:0,autoLabor:false,prepMinutes,cookMinutes,assemblyMinutes,serviceTargetMinutes,laborWorkerId:"fixed"};
+};
+
+calculateSavedRecipe=function(recipe){
+  let rawCost=0,rawGross=0;
+  (recipe.ingredients||[]).forEach(i=>{
+    const p=inventory.find(x=>String(x.id)===String(i.productId));if(!p)return;
+    const u=i.recipeUnit||i.unit||p.baseUnit||p.unit;
+    if(typeof opsFinalIngredientNetCost==="function")rawCost+=opsFinalIngredientNetCost(p,Number(i.quantity||0),u);else rawCost+=Number(i.quantity||0)*Number(p.costNet??p.cost??0);
+    if(typeof opsFinalIngredientGrossCost==="function")rawGross+=opsFinalIngredientGrossCost(p,Number(i.quantity||0),u);else rawGross+=Number(i.quantity||0)*Number(p.costGross??p.cost??0);
+  });
+  const yieldValue=Math.max(.01,Number(recipe.yield)||1),saleGrossPerPortion=kucheV163FixedSalePrice(recipe),c=kucheV163CalcFinancials({rawCost,rawGross,yieldValue,saleGrossPerPortion});
+  return {...recipe,...c,rawCost,rawGross,purchaseVat:rawGross-rawCost,yieldValue,laborAuto:false,laborWorkerId:"fixed",fixedSalePriceGross:saleGrossPerPortion,salePriceGross:saleGrossPerPortion,priceLocked:true,profitTargetPct:c.targetMargin,profitMethod:"margin"};
+};
+
+const _kucheV163CalculateRecipe=calculateRecipe;
+calculateRecipe=function(){
+  kucheV163LockRecipeFinancialInputs();
+  _kucheV163CalculateRecipe();
+  const c=getCurrentRecipeCalculation();
+  if(document.getElementById("recipeProfit"))recipeProfit.value=Number(c.realMargin||0).toFixed(2);
+  if(document.getElementById("breakLaborLabel"))breakLaborLabel.textContent=`MOD fija (${Number(c.laborPct).toFixed(1)}%)`;
+  if(document.getElementById("breakIndirectLabel"))breakIndirectLabel.textContent=`CIF fijo (${Number(c.indirectPct).toFixed(1)}%)`;
+  if(document.getElementById("breakProfitLabel"))breakProfitLabel.textContent=`Ganancia actual · margen ${Number(c.realMargin).toFixed(1)}%`;
+  if(document.getElementById("breakVatLabel"))breakVatLabel.textContent=`IVA fijo (${Number(c.vatPct).toFixed(1)}%)`;
+  if(document.getElementById("recipeNetPrice"))recipeNetPrice.textContent="$"+formatMoney(c.netPrice);
+  if(document.getElementById("recipeFinalPrice"))recipeFinalPrice.textContent="$"+formatMoney(c.finalPrice);
+  const box=document.getElementById("kucheV163RecipeMarginAlert"),price=Number(c.finalPerPortion||0),target=Number(c.targetMargin||0);
+  if(box){
+    if(price<=0){box.className="kuche-v163-margin-alert warn";box.innerHTML="Ingresa el <strong>precio de venta con IVA por porción</strong>. KÜCHE no lo calculará ni lo cambiará automáticamente.";}
+    else if(c.profitAmount<0){box.className="kuche-v163-margin-alert danger";box.innerHTML=`El precio se mantiene en <strong>$${formatMoney(price)}</strong>, pero el costo actual genera una pérdida neta aproximada de <strong>$${formatMoney(Math.abs(c.profitPerPortion))}</strong> por porción.`;}
+    else if(target>0&&c.realMargin<target){box.className="kuche-v163-margin-alert warn";box.innerHTML=`Precio fijo: <strong>$${formatMoney(price)}</strong>. Margen actual: <strong>${c.realMargin.toFixed(1)}%</strong>, bajo el objetivo de <strong>${target.toFixed(1)}%</strong>. KÜCHE avisa, pero no cambia el precio.`;}
+    else{box.className="kuche-v163-margin-alert ok";box.innerHTML=`Precio fijo: <strong>$${formatMoney(price)}</strong>. Margen actual: <strong>${c.realMargin.toFixed(1)}%</strong>${target>0?` · objetivo ${target.toFixed(1)}%`:""}.`}
+  }
+};
+
+const _kucheV163NewRecipe=newRecipe;
+newRecipe=function(){kucheV163InstallPricingUI();_kucheV163NewRecipe();const input=document.getElementById("recipeFixedSalePriceGross");if(input)input.value="";kucheV163LockRecipeFinancialInputs();calculateRecipe();};
+const _kucheV163EditRecipe=editRecipe;
+editRecipe=function(id){kucheV163InstallPricingUI();_kucheV163EditRecipe(id);const r=recipes.find(x=>String(x.id)===String(id)),input=document.getElementById("recipeFixedSalePriceGross");if(input)input.value=r?kucheV163FixedSalePrice(r):"";kucheV163LockRecipeFinancialInputs();calculateRecipe();};
+
+const _kucheV163SaveRecipe=saveRecipe;
+saveRecipe=async function(){
+  kucheV163InstallPricingUI();const idBefore=editingRecipeId,nameBefore=document.getElementById("recipeName")?.value.trim(),type=document.getElementById("recipeType")?.value||"sale",price=Math.max(0,Number(document.getElementById("recipeFixedSalePriceGross")?.value)||0);
+  if(type!=="mise"&&price<=0){alert("Ingresa el precio de venta con IVA por porción. Este precio quedará fijo hasta que tú lo cambies.");return;}
+  await _kucheV163SaveRecipe();
+  const r=idBefore!==null?recipes.find(x=>String(x.id)===String(idBefore)):recipes.find(x=>x.name===nameBefore);if(!r)return;
+  r.fixedSalePriceGross=price;r.salePriceGross=price;r.priceLocked=true;r.laborPct=Number(costSettings.labor)||0;r.indirectPct=Number(costSettings.indirect)||0;r.vatPct=Number(costSettings.vat)||0;r.profitTargetPct=Number(costSettings.profit)||0;r.profitMethod="margin";r.laborAuto=false;r.laborWorkerId="fixed";
+  const calc=calculateSavedRecipe(r);Object.assign(r,calc);kucheV163SalePriceMap[kucheV163RecipeKey(r)]=price;kucheV163SavePriceMap();saveRecipes();
+  if(typeof syncRecipeGuideToCloud==="function")await syncRecipeGuideToCloud(r);await kucheV163SyncPricingSettingsToCloud();renderRecipes();if(typeof renderRecipeBook==="function")renderRecipeBook();if(typeof renderPOS==="function")renderPOS();
+};
+
+const _kucheV163DeleteRecipe=deleteRecipe;
+deleteRecipe=function(id){_kucheV163DeleteRecipe(id);if(!(recipes||[]).some(r=>String(r.id)===String(id))){delete kucheV163SalePriceMap[String(id)];kucheV163SavePriceMap();kucheV163SyncPricingSettingsToCloud();}};
+
+const _kucheV163RenderRecipes=renderRecipes;
+renderRecipes=function(){
+  _kucheV163RenderRecipes();
+  const q=(document.getElementById("recipeSearch")?.value||"").toLowerCase(),visible=(recipes||[]).filter(r=>String(r.name||"").toLowerCase().includes(q)),cards=[...document.querySelectorAll("#recipeList .recipe-card")];
+  cards.forEach((card,i)=>{
+    const r=visible[i];if(!r)return;const c=calculateSavedRecipe(r),metrics=card.querySelector(".recipe-card-metrics");
+    if(metrics){const m=document.createElement("div");m.className="recipe-metric";m.innerHTML=`<span>Margen actual</span><strong>${c.realMargin.toFixed(1)}%</strong>`;metrics.appendChild(m);const t=document.createElement("div");t.className="recipe-metric";t.innerHTML=`<span>Margen objetivo</span><strong>${Number(c.targetMargin||0).toFixed(1)}%</strong>`;metrics.appendChild(t);}
+    const priceMetric=[...card.querySelectorAll(".recipe-metric")].find(x=>(x.querySelector("span")?.textContent||"").includes("Precio con IVA / porción"));if(priceMetric){const s=document.createElement("div");s.className="kuche-v163-fixed-price-badge";s.textContent="Precio fijo manual";priceMetric.appendChild(s);}
+    const oldAlert=card.querySelector(".cost-change-alert");if(oldAlert)oldAlert.textContent="Cambió el costo de insumos. El precio de venta se mantiene fijo; revisa el margen actual.";
+    if(c.finalPerPortion>0&&Number(c.targetMargin||0)>0&&c.realMargin<Number(c.targetMargin)){const alert=document.createElement("div");alert.className="cost-change-alert";alert.innerHTML=`Margen actual <strong>${c.realMargin.toFixed(1)}%</strong> bajo el objetivo de <strong>${Number(c.targetMargin).toFixed(1)}%</strong>. Precio fijo: <strong>$${formatMoney(c.finalPerPortion)}</strong>.`;card.querySelector(".recipe-card-body")?.appendChild(alert);}
+  });
+};
+
+const _kucheV163LoadCostSettingsFields=loadCostSettingsFields;
+loadCostSettingsFields=function(){_kucheV163LoadCostSettingsFields();costSettings.profitMethod="margin";kucheV163ApplyFinancialLabels();};
+const _kucheV163SaveCostSettings=saveCostSettings;
+saveCostSettings=function(){if(document.getElementById("defaultProfitMethod"))defaultProfitMethod.value="margin";_kucheV163SaveCostSettings();costSettings.profitMethod="margin";localStorage.setItem("kucheCostSettings",JSON.stringify(costSettings));kucheV163LockRecipeFinancialInputs();renderRecipes();kucheV163SyncPricingSettingsToCloud();};
+
+const _kucheV163LoadSettingsForm=loadSettingsForm;
+loadSettingsForm=function(){_kucheV163LoadSettingsForm();costSettings.profitMethod="margin";if(document.getElementById("settingsProfitMethod"))settingsProfitMethod.value="margin";kucheV163ApplyFinancialLabels();};
+const _kucheV163SaveAllSettings=saveAllSettings;
+saveAllSettings=function(){if(document.getElementById("settingsProfitMethod"))settingsProfitMethod.value="margin";_kucheV163SaveAllSettings();costSettings.profitMethod="margin";localStorage.setItem("kucheCostSettings",JSON.stringify(costSettings));kucheV163LockRecipeFinancialInputs();renderRecipes();setTimeout(kucheV163SyncPricingSettingsToCloud,300);};
+
+async function kucheV163SyncPricingSettingsToCloud(){
+  if(!kucheCloud||!cloudOrganization||!["admin","manager"].includes(currentSession?.accessRole||""))return;
+  try{
+    const {data,error:readError}=await kucheCloud.from("organization_settings").select("settings").eq("organization_id",cloudOrganization.id).maybeSingle();if(readError)throw readError;
+    const settings={...(data?.settings||{}),pricing_mode:"fixed_manual_sale_price",fixed_mod_pct:Number(costSettings.labor)||0,fixed_cif_pct:Number(costSettings.indirect)||0,margin_target_pct:Number(costSettings.profit)||0,fixed_recipe_sale_prices:{...kucheV163SalePriceMap}};
+    const {error}=await kucheCloud.from("organization_settings").update({settings,vat_pct:Number(costSettings.vat)||0,default_profit_pct:Number(costSettings.profit)||0,profit_method:"margin"}).eq("organization_id",cloudOrganization.id);if(error)throw error;
+  }catch(e){console.warn("Configuración de precio fijo cloud",e.message);}
+}
+
+const _kucheV163HydrateCloudBasicSettings=hydrateCloudBasicSettings;
+hydrateCloudBasicSettings=async function(){
+  await _kucheV163HydrateCloudBasicSettings();if(!kucheCloud||!cloudOrganization)return;
+  try{
+    const {data,error}=await kucheCloud.from("organization_settings").select("settings,vat_pct,default_profit_pct").eq("organization_id",cloudOrganization.id).maybeSingle();if(error)throw error;const s=data?.settings||{};
+    if(s.fixed_mod_pct!==undefined)costSettings.labor=Math.max(0,Number(s.fixed_mod_pct)||0);
+    if(s.fixed_cif_pct!==undefined)costSettings.indirect=Math.max(0,Number(s.fixed_cif_pct)||0);
+    if(s.margin_target_pct!==undefined)costSettings.profit=Math.max(0,Number(s.margin_target_pct)||0);else if(data?.default_profit_pct!==undefined)costSettings.profit=Math.max(0,Number(data.default_profit_pct)||0);
+    if(data?.vat_pct!==undefined)costSettings.vat=Math.max(0,Number(data.vat_pct)||0);costSettings.profitMethod="margin";
+    if(s.fixed_recipe_sale_prices&&typeof s.fixed_recipe_sale_prices==="object"){kucheV163SalePriceMap={...kucheV163SalePriceMap,...s.fixed_recipe_sale_prices};kucheV163SavePriceMap();}
+    (recipes||[]).forEach(r=>{const p=Number(kucheV163SalePriceMap[kucheV163RecipeKey(r)]);if(p>0){r.fixedSalePriceGross=p;r.salePriceGross=p;r.priceLocked=true;}});saveRecipes();localStorage.setItem("kucheCostSettings",JSON.stringify(costSettings));loadCostSettingsFields();loadSettingsForm();kucheV163LockRecipeFinancialInputs();renderRecipes();
+  }catch(e){console.warn("Lectura de precio fijo cloud",e.message);}
+};
+
+const _kucheV163ShowPage=showPage;
+showPage=function(pageId,button){_kucheV163ShowPage(pageId,button);if(pageId==="recipes"){kucheV163InstallPricingUI();kucheV163LockRecipeFinancialInputs();renderRecipes();}if(pageId==="settings")kucheV163ApplyFinancialLabels();};
+
+setTimeout(()=>{
+  kucheV163InstallPricingUI();kucheV163ApplyFinancialLabels();kucheV163MigratePrices();
+  if(document.querySelector("#recipes.page.active")){kucheV163LockRecipeFinancialInputs();renderRecipes();}
+},1250);
+</script>
+
 </body>
 </html>
