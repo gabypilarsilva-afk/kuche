@@ -1339,7 +1339,7 @@ COMPRAS / MERMAS / VENTAS / IA
 </div>
 
 <div class="field">
-<label>Unidad de compra / stock</label>
+<label>Formato de compra / stock</label>
 <select id="unit" onchange="syncInventoryBaseUnitSuggestion()">
 <option value="">Seleccionar</option>
 <option>kg</option>
@@ -1347,8 +1347,15 @@ COMPRAS / MERMAS / VENTAS / IA
 <option>L</option>
 <option>ml</option>
 <option>unidad</option>
+<option>bolsa</option>
 <option>caja</option>
 <option>paquete</option>
+<option>botella</option>
+<option>frasco</option>
+<option>lata</option>
+<option>bandeja</option>
+<option>saco</option>
+<option>bidón</option>
 </select>
 </div>
 
@@ -1369,26 +1376,27 @@ COMPRAS / MERMAS / VENTAS / IA
 </div>
 
 <div class="field">
-<label>Stock mínimo</label>
+<label>Stock mínimo (en formatos de compra)</label>
 <input id="minimum" type="number" step="0.01">
+<div class="inline-note">Ej.: si compras bolsas, escribe cuántas bolsas quieres mantener como mínimo.</div>
 </div>
 
 <div class="field">
-<label>Costo promedio neto / unidad · automático</label>
+<label>Precio pagado por el formato de compra</label>
 <input id="cost" type="number" value="0" disabled>
-<div class="inline-note">KÜCHE recalcula el costo promedio ponderado neto con cada compra.</div>
+<div class="inline-note">Ej.: $1.850 por una bolsa de comino de 100 g. Por defecto el valor incluye IVA.</div>
 </div>
 
 <div class="field">
-<label>Unidad base para recetas</label>
+<label>Unidad del contenido / recetas</label>
 <select id="productBaseUnit">
 <option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="L">L</option><option value="unidad">unidad</option><option value="porción">porción</option>
 </select>
 </div>
 <div class="field">
-<label>Equivalencia por unidad de compra</label>
+<label>Cantidad que trae el formato</label>
 <input id="productBasePerPurchase" type="number" min="0.0001" step="0.0001" value="1">
-<div class="inline-note">Ej.: 1 tomate = 180 g; 1 caja = 24 unidades.</div>
+<div class="inline-note">Ej.: una bolsa de comino trae 100 g; una caja puede traer 24 unidades.</div>
 </div>
 <div class="field">
 <label>Rendimiento útil %</label>
@@ -18965,9 +18973,9 @@ function kucheV171CountPageHTML(mode){
 function kucheV171InstallPages(){
   const content=document.querySelector(".content");if(!content)return;
   if(!document.getElementById("ingredients"))content.insertAdjacentHTML("beforeend",`<section id="ingredients" class="page">
-    <div class="page-header"><div><h1>Materia prima</h1><p>Catálogo único de materias primas, con su unidad, precio de referencia y stock disponible.</p></div><button class="primary-button admin-only" onclick="kucheV171OpenNewCatalogItem('ingredient')">+ Nueva materia prima</button></div>
+    <div class="page-header"><div><h1>Materia prima</h1><p>Registra el formato que compras, cuánto contiene, su precio con IVA y la unidad que utilizarás en las recetas.</p></div><button class="primary-button admin-only" onclick="kucheV171OpenNewCatalogItem('ingredient')">+ Nueva materia prima</button></div>
     <div class="toolbar"><div class="search-box"><input id="v17IngredientSearch" placeholder="Buscar cebolla, azúcar…" oninput="kucheV171RenderIngredients()"></div></div>
-    <div class="table-card"><div class="table-wrapper"><table><thead><tr><th>Materia prima</th><th>Categoría</th><th>Unidad</th><th>Precio con IVA</th><th>Precio neto</th><th>Stock</th><th class="admin-only">Acciones</th></tr></thead><tbody id="v17IngredientsBody"></tbody></table></div></div>
+    <div class="table-card"><div class="table-wrapper"><table><thead><tr><th>Materia prima</th><th>Categoría</th><th>Formato de compra</th><th>Contenido</th><th>Precio del formato</th><th>Costo por unidad base</th><th>Stock</th><th class="admin-only">Acciones</th></tr></thead><tbody id="v17IngredientsBody"></tbody></table></div></div>
   </section>`+kucheV171CountPageHTML("daily")+kucheV171CountPageHTML("weekly"));
   const inventoryPage=document.getElementById("inventory");if(inventoryPage){inventoryPage.classList.add("admin-only");const h=inventoryPage.querySelector("h1");if(h)h.textContent="Inventario general";const p=inventoryPage.querySelector(".page-header p");if(p)p.textContent="Vista administrativa consolidada de ingredientes, preparaciones y suministros de todas las áreas.";}
   const reconciliationPage=document.getElementById("reconciliation");if(reconciliationPage){const h=reconciliationPage.querySelector("h1");if(h)h.textContent="Consolidación de stock";const p=reconciliationPage.querySelector(".page-header p");if(p)p.textContent="Compara y consolida el stock teórico de KÜCHE con los conteos físicos registrados.";}
@@ -19008,7 +19016,7 @@ function kucheV171RebuildInventoryNavigation(){
 function kucheV171RenderIngredients(){
   const body=document.getElementById("v17IngredientsBody");if(!body)return;
   const q=(document.getElementById("v17IngredientSearch")?.value||"").trim().toLowerCase(),list=inventory.filter(p=>kucheV17NormalizeProduct(p).inventoryClass==="ingredient"&&String(p.name||"").toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name,"es"));
-  body.innerHTML=list.length?list.map(p=>`<tr><td><strong>${escapeHTML(p.name)}</strong></td><td>${escapeHTML(p.category||"—")}</td><td>${escapeHTML(p.unit||"—")}</td><td><strong>$${formatMoney(p.costGross||0)}</strong></td><td>$${formatMoney(p.costNet??p.cost??0)}</td><td>${formatNumber(p.quantity)} ${escapeHTML(p.unit||"")}</td><td class="admin-only"><div class="kuche-v172-row-actions"><button class="secondary-button" onclick="kucheV171OpenEditCatalogItem('${ops2EscapeAttr(p.id)}')">Editar</button><button class="danger-button" onclick="kucheV172DeleteRawMaterial('${ops2EscapeAttr(p.id)}')">Eliminar</button></div></td></tr>`).join(""):'<tr><td colspan="7"><div class="empty-state"><strong>No hay materias primas</strong><span>Agrega cebolla, azúcar y las demás materias primas que utilizan tus recetas.</span></div></td></tr>';
+  body.innerHTML=list.length?list.map(p=>{if(typeof opsFinalNormalizeProduct==="function")opsFinalNormalizeProduct(p);const useful=typeof opsFinalUsefulBasePerPurchase==="function"?Math.max(.0001,opsFinalUsefulBasePerPurchase(p)):Math.max(.0001,Number(p.basePerPurchase||1)),grossBase=Number(p.costGross||0)/useful,netBase=Number(p.costNet??p.cost??0)/useful;return `<tr><td><strong>${escapeHTML(p.name)}</strong></td><td>${escapeHTML(p.category||"—")}</td><td><strong>${escapeHTML(p.unit||"—")}</strong></td><td>${formatNumber(p.basePerPurchase||1)} ${escapeHTML(p.baseUnit||p.unit||"")}</td><td><strong>$${formatMoney(p.costGross||0)}</strong><div class="category">$${formatMoney(p.costNet??p.cost??0)} neto</div></td><td><strong>$${formatMoney(grossBase)} / ${escapeHTML(p.baseUnit||p.unit||"")} con IVA</strong><div class="category">$${formatMoney(netBase)} neto útil</div></td><td>${formatNumber(p.quantity)} ${escapeHTML(p.unit||"")}</td><td class="admin-only"><div class="kuche-v172-row-actions"><button class="secondary-button" onclick="kucheV171OpenEditCatalogItem('${ops2EscapeAttr(p.id)}')">Editar</button><button class="danger-button" onclick="kucheV172DeleteRawMaterial('${ops2EscapeAttr(p.id)}')">Eliminar</button></div></td></tr>`;}).join(""):'<tr><td colspan="8"><div class="empty-state"><strong>No hay materias primas</strong><span>Agrega cebolla, azúcar y las demás materias primas que utilizan tus recetas.</span></div></td></tr>';
   applyAccessMode();
 }
 
@@ -19338,6 +19346,95 @@ hydrateCloudBasicSettings=async function(){
 
 kucheV172MigrateExistingExtras();kucheV172ApplyExtrasToRecipes();kucheV172InstallGlobalExtrasUI();kucheV172SimplifyRecipeUI();kucheV172ClarifyNoCharge();
 setTimeout(()=>{kucheV171RebuildInventoryNavigation();kucheV172InstallGlobalExtrasUI();kucheV172PopulateExtraProducts();kucheV172RenderGlobalExtras();kucheV172SimplifyRecipeUI();kucheV172ClarifyNoCharge();},2400);
+</script>
+
+<style id="kuche-v173-style">
+.kuche-v173-format-preview{grid-column:1/-1;padding:13px 15px;border:1px solid rgba(38,93,80,.22);border-radius:12px;background:linear-gradient(135deg,rgba(38,93,80,.08),rgba(241,184,74,.08));font-size:12px;line-height:1.55;color:var(--green-dark,#173f35)}
+.kuche-v173-format-preview strong{font-weight:800}
+.kuche-v173-format-preview .kuche-v173-example{margin-top:5px;color:var(--muted,#6f756f);font-size:11px}
+</style>
+
+<script id="kuche-v173-purchase-format-script">
+/* =====================================================
+   KÜCHE V1.7.3 · FORMATO REAL DE COMPRA
+   Ejemplo: 1 bolsa de comino contiene 100 g y cuesta
+   $1.850 con IVA. KÜCHE calcula el costo por gramo.
+===================================================== */
+const KUCHE_V173_VERSION="1.7.3";
+const KUCHE_V173_FORMAT_OPTIONS=["bolsa","caja","paquete","botella","frasco","lata","bandeja","saco","bidón"];
+
+function kucheV173NormalizePurchaseFormat(product){
+  if(!product)return product;if(typeof opsFinalNormalizeProduct==="function")opsFinalNormalizeProduct(product);
+  product.purchaseFormat=product.unit||product.purchaseFormat||"unidad";
+  product.packageContentQty=Math.max(.0001,Number(product.basePerPurchase??product.packageContentQty??1)||1);
+  product.packageContentUnit=product.baseUnit||product.packageContentUnit||product.unit||"unidad";
+  product.packagePriceNet=Number(product.costNet??product.cost??product.packagePriceNet??0)||0;
+  product.packagePriceGross=Number(product.costGross??product.packagePriceGross??0)||product.packagePriceNet*(1+Number(product.vatPct??costSettings?.vat??19)/100);
+  return product;
+}
+
+function kucheV173InstallPurchaseFormatUI(){
+  const form=document.getElementById("inventoryForm"),grid=form?.querySelector(".form-grid"),format=document.getElementById("unit"),base=document.getElementById("productBaseUnit"),content=document.getElementById("productBasePerPurchase"),price=document.getElementById("cost");if(!grid||!format||!base||!content||!price)return;
+  KUCHE_V173_FORMAT_OPTIONS.forEach(value=>{if(![...format.options].some(o=>o.value===value))format.insertAdjacentHTML("beforeend",`<option value="${value}">${value}</option>`);});
+  const formatLabel=format.closest(".field")?.querySelector("label");if(formatLabel)formatLabel.textContent="Formato de compra / stock";
+  const baseLabel=base.closest(".field")?.querySelector("label");if(baseLabel)baseLabel.textContent="Unidad del contenido / recetas";
+  const contentField=content.closest(".field"),contentLabel=contentField?.querySelector("label");if(contentLabel)contentLabel.textContent="Cantidad que trae el formato";
+  const contentNote=contentField?.querySelector(".inline-note");if(contentNote)contentNote.textContent="Ej.: una bolsa de comino trae 100 g; una caja puede traer 24 unidades.";
+  const priceField=price.closest(".field"),priceLabel=priceField?.querySelector("label");if(priceLabel)priceLabel.textContent="Precio pagado por el formato de compra";
+  const priceNote=priceField?.querySelector(".inline-note");if(priceNote)priceNote.textContent="Escribe lo que pagaste por una bolsa, caja, botella, kilo u otro formato. Por defecto se considera con IVA.";
+  price.placeholder="Ej. 1850";content.placeholder="Ej. 100";
+  const minimum=document.getElementById("minimum"),minimumField=minimum?.closest(".field"),minimumLabel=minimumField?.querySelector("label");if(minimumLabel)minimumLabel.textContent="Stock mínimo (en formatos de compra)";
+  let minimumNote=minimumField?.querySelector(".inline-note");if(minimumNote&&!minimumNote.id)minimumNote.id="kucheV173MinimumNote";
+  if(!document.getElementById("kucheV173PurchaseFormatPreview")){
+    const preview=document.createElement("div");preview.id="kucheV173PurchaseFormatPreview";preview.className="kuche-v173-format-preview";contentField.insertAdjacentElement("afterend",preview);
+  }
+  [format,base,content,price,document.getElementById("productYieldPct")].filter(Boolean).forEach(input=>{
+    if(input.dataset.kucheV173Wired)return;input.dataset.kucheV173Wired="1";input.addEventListener("input",kucheV173UpdatePurchaseFormatPreview);input.addEventListener("change",kucheV173UpdatePurchaseFormatPreview);
+  });
+  const vat=document.getElementById("inventoryPriceWithoutVat");if(vat&&!vat.dataset.kucheV173Wired){vat.dataset.kucheV173Wired="1";vat.addEventListener("change",kucheV173UpdatePurchaseFormatPreview);}
+  kucheV173UpdatePurchaseFormatPreview();
+}
+
+function kucheV173UpdatePurchaseFormatPreview(){
+  const preview=document.getElementById("kucheV173PurchaseFormatPreview"),format=document.getElementById("unit")?.value,content=Math.max(0,Number(document.getElementById("productBasePerPurchase")?.value)||0),base=document.getElementById("productBaseUnit")?.value||"unidad",yieldPct=Math.max(1,Math.min(100,Number(document.getElementById("productYieldPct")?.value)||100)),kind=document.getElementById("inventoryItemKind")?.value||"ingredient";if(!preview)return;
+  preview.style.display=kind==="prepared"?"none":"";
+  if(kind==="prepared")return;
+  const note=document.getElementById("kucheV173MinimumNote");if(note)note.textContent=format?`El stock y el mínimo se cuentan en ${format}. Ej.: mínimo 2 significa mantener al menos 2 ${format}.`:"El stock mínimo se contará en el formato que selecciones.";
+  const calculation=typeof kucheV165InventoryPriceCalculation==="function"?kucheV165InventoryPriceCalculation():(()=>{const gross=Math.max(0,Number(document.getElementById("cost")?.value)||0),vat=Number(costSettings?.vat??19);return {gross,net:gross/(1+vat/100),vatPct:vat};})();
+  if(!format||content<=0){preview.innerHTML='<strong>¿Cómo se registra?</strong> Elige el formato comprado, cuánto contiene y su precio.<div class="kuche-v173-example">Ejemplo: bolsa · 100 g · $1.850 con IVA.</div>';return;}
+  const useful=Math.max(.0001,content*(yieldPct/100)),grossBase=Number(calculation.gross||0)/useful,netBase=Number(calculation.net||0)/useful,priceText=Number(calculation.gross||0)>0?` cuesta <strong>$${formatMoney(calculation.gross)}</strong> con IVA`:"";
+  preview.innerHTML=`<strong>1 ${escapeHTML(format)}</strong> contiene <strong>${formatNumber(content)} ${escapeHTML(base)}</strong>${priceText}. Costo calculado: <strong>$${formatMoney(grossBase)} por ${escapeHTML(base)} con IVA</strong> · $${formatMoney(netBase)} neto útil.${yieldPct<100?`<div class="kuche-v173-example">Rendimiento útil ${formatNumber(yieldPct)}%: se costean ${formatNumber(useful)} ${escapeHTML(base)} aprovechables por ${escapeHTML(format)}.</div>`:""}`;
+}
+
+const _kucheV173InstallVatControl=kucheV165InstallInventoryVatControl;
+kucheV165InstallInventoryVatControl=function(){_kucheV173InstallVatControl();kucheV173InstallPurchaseFormatUI();};
+
+const _kucheV173UpdateKindUI=kucheV17UpdateKindUI;
+kucheV17UpdateKindUI=function(){const out=_kucheV173UpdateKindUI();kucheV173InstallPurchaseFormatUI();kucheV173UpdatePurchaseFormatPreview();return out;};
+
+const _kucheV173NewProduct=newProduct;
+newProduct=function(){const out=_kucheV173NewProduct();kucheV173InstallPurchaseFormatUI();const content=document.getElementById("productBasePerPurchase");if(content)content.value="1";kucheV173UpdatePurchaseFormatPreview();return out;};
+const _kucheV173EditProduct=editProduct;
+editProduct=function(id){const out=_kucheV173EditProduct(id),product=inventory.find(p=>String(p.id)===String(id));if(product)kucheV173NormalizePurchaseFormat(product);kucheV173InstallPurchaseFormatUI();kucheV173UpdatePurchaseFormatPreview();return out;};
+
+const _kucheV173SaveProduct=saveProduct;
+saveProduct=async function(){
+  kucheV173InstallPurchaseFormatUI();const itemClass=document.getElementById("inventoryItemKind")?.value||"ingredient",format=document.getElementById("unit")?.value,content=Number(document.getElementById("productBasePerPurchase")?.value),base=document.getElementById("productBaseUnit")?.value,idBefore=editingId,nameBefore=document.getElementById("productName")?.value.trim();
+  if(itemClass!=="prepared"&&(!format||!base||!Number.isFinite(content)||content<=0)){alert("Completa el formato de compra, la cantidad que contiene y la unidad que utilizarás en las recetas.");return;}
+  await _kucheV173SaveProduct();if(document.getElementById("inventoryForm")?.classList.contains("open"))return;
+  const product=idBefore!==null?inventory.find(p=>String(p.id)===String(idBefore)):inventory.find(p=>String(p.name||"").trim().toLowerCase()===String(nameBefore||"").toLowerCase());if(!product)return;
+  kucheV173NormalizePurchaseFormat(product);product.purchaseFormat=product.unit;product.packageContentQty=Number(product.basePerPurchase||1);product.packageContentUnit=product.baseUnit;product.packagePriceNet=Number(product.costNet??product.cost??0);product.packagePriceGross=Number(product.costGross||0);saveInventory();
+  if(typeof kucheV171RenderIngredients==="function")kucheV171RenderIngredients();
+};
+
+const _kucheV173AddPurchaseLine=addPurchaseLine;
+addPurchaseLine=function(){const out=_kucheV173AddPurchaseLine();const row=[...document.querySelectorAll("#purchaseLines .purchase-line")].at(-1),label=row?.querySelector(".purchaseCost")?.closest(".field")?.querySelector("label");if(label)label.textContent="Precio por formato $";return out;};
+
+const _kucheV173ShowPage=showPage;
+showPage=function(pageId,button){const out=_kucheV173ShowPage(pageId,button);if(pageId==="inventory"){kucheV173InstallPurchaseFormatUI();kucheV173UpdatePurchaseFormatPreview();}if(pageId==="ingredients")kucheV171RenderIngredients();return out;};
+
+inventory.forEach(kucheV173NormalizePurchaseFormat);saveInventory();kucheV173InstallPurchaseFormatUI();kucheV173UpdatePurchaseFormatPreview();kucheV171RenderIngredients();
+setTimeout(()=>{kucheV173InstallPurchaseFormatUI();kucheV173UpdatePurchaseFormatPreview();kucheV171RenderIngredients();},2600);
 </script>
 
 </body>
