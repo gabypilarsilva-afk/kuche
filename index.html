@@ -1134,9 +1134,8 @@ COMPRAS / MERMAS / VENTAS / IA
 <button class="nav-item" onclick="showPage('shifts',this)"><span>Turnos y planificación</span></button>
 <button class="nav-item" onclick="showPage('onboarding',this)"><span>Onboarding</span></button>
 
-<div class="nav-title">2 · Proveedores e inventario</div>
+<div class="nav-title">2 · Materia prima, inventarios y compras</div>
 <button class="nav-item" onclick="showPage('suppliers',this)"><span>Proveedores</span></button>
-<button class="nav-item" onclick="showPage('inventory',this)"><span>Inventario general</span></button>
 <button class="nav-item" onclick="showPage('inventoryareas',this)"><span>Inventario por áreas</span></button>
 <button class="nav-item" onclick="showPage('purchases',this)"><span>Compras</span></button>
 <button class="nav-item admin-sensitive" onclick="showPage('smartpurchases',this)"><span>Compras inteligentes</span></button>
@@ -18861,7 +18860,7 @@ renderAreaCountForm=function(){
   const box=document.getElementById("areaCountLines"),sel=document.getElementById("areaCountArea"),mode=document.getElementById("areaCountType")?.value||"daily";if(!box||!sel)return;
   const help=document.getElementById("kucheV17CountHelp");if(help)help.innerHTML=mode==="daily"?"Cuenta solo lo que ya está preparado y listo para vender, por ejemplo las <b>porciones de cebolla caramelizada</b>.":"Cuenta las materias primas disponibles antes de producir, por ejemplo los <b>kilos o unidades de cebolla</b> que quedan.";
   const area=sel.value,kind=mode==="daily"?"prepared":"raw",products=inventory.filter(p=>kucheV17NormalizeProduct(p).inventoryKind===kind&&(Number(p.areaStocks?.[area]||0)>0||inferInventoryArea(p)===area));
-  box.innerHTML=products.length?products.map(p=>`<div class="count-line"><div><strong>${escapeHTML(p.name)}</strong><div class="role-note">Teórico: ${formatNumber(Number(p.areaStocks?.[area]||0))} ${escapeHTML(p.unit)}</div></div><div>${escapeHTML(p.unit)}</div><input class="area-count-input" data-product="${ops2EscapeAttr(p.id)}" type="number" min="0" step="0.01" value="${Number(p.areaStocks?.[area]||0)}"></div>`).join(""):`<div class="empty-state"><strong>No hay ${mode==="daily"?"preparaciones":"materias primas"} asignadas a esta área</strong><span>${mode==="daily"?"Crea una receta de Preparación base o vincula un producto preparado.":"Registra las materias primas desde Inventario general."}</span></div>`;
+  box.innerHTML=products.length?products.map(p=>`<div class="count-line"><div><strong>${escapeHTML(p.name)}</strong><div class="role-note">Teórico: ${formatNumber(Number(p.areaStocks?.[area]||0))} ${escapeHTML(p.unit)}</div></div><div>${escapeHTML(p.unit)}</div><input class="area-count-input" data-product="${ops2EscapeAttr(p.id)}" type="number" min="0" step="0.01" value="${Number(p.areaStocks?.[area]||0)}"></div>`).join(""):`<div class="empty-state"><strong>No hay ${mode==="daily"?"preparaciones":"materias primas"} asignadas a esta área</strong><span>${mode==="daily"?"Crea una receta de Preparación base o vincula un producto preparado.":"Registra las materias primas desde Materia prima."}</span></div>`;
 };
 
 function kucheV17AdjustBatchesToTotal(recipeId,targetTotal){
@@ -18950,7 +18949,7 @@ setTimeout(()=>{kucheV17InstallFlowGuides();kucheV17InstallInventoryKindFields()
 /* =====================================================
    KÜCHE V1.7.1 · ORDEN OPERATIVO DEL INVENTARIO
    Proveedores → Ingredientes → Recetas → Diario → Semanal
-   → General (admin) → Compras → Abastecimiento → Stock
+   → Compras → Abastecimiento → Stock
    → Vencimientos y elaboraciones.
 ===================================================== */
 const KUCHE_V171_VERSION="1.7.1";
@@ -18973,11 +18972,12 @@ function kucheV171CountPageHTML(mode){
 function kucheV171InstallPages(){
   const content=document.querySelector(".content");if(!content)return;
   if(!document.getElementById("ingredients"))content.insertAdjacentHTML("beforeend",`<section id="ingredients" class="page">
-    <div class="page-header"><div><h1>Materia prima</h1><p>Registra el formato que compras, cuánto contiene, su precio con IVA y la unidad que utilizarás en las recetas.</p></div><button class="primary-button admin-only" onclick="kucheV171OpenNewCatalogItem('ingredient')">+ Nueva materia prima</button></div>
-    <div class="toolbar"><div class="search-box"><input id="v17IngredientSearch" placeholder="Buscar cebolla, azúcar…" oninput="kucheV171RenderIngredients()"></div></div>
-    <div class="table-card"><div class="table-wrapper"><table><thead><tr><th>Materia prima</th><th>Categoría</th><th>Formato de compra</th><th>Contenido</th><th>Precio del formato</th><th>Costo por unidad base</th><th>Stock</th><th class="admin-only">Acciones</th></tr></thead><tbody id="v17IngredientsBody"></tbody></table></div></div>
+    <div class="page-header"><div><h1>Materia prima</h1><p>Registra aquí las materias primas y suministros que compras. Las preparaciones elaboradas se crean desde Recetas y Producción.</p></div><button class="primary-button admin-only" onclick="kucheV171OpenNewCatalogItem('ingredient')">+ Registrar producto</button></div>
+    <div id="kucheV174MaterialFormHost"></div>
+    <div class="toolbar"><div class="search-box"><input id="v17IngredientSearch" placeholder="Buscar materia prima o suministro…" oninput="kucheV171RenderIngredients()"></div></div>
+    <div class="table-card"><div class="table-wrapper"><table><thead><tr><th>Producto</th><th>Categoría</th><th>Tipo</th><th>Proveedor frecuente</th><th>Formato de compra</th><th>Contenido</th><th>Precio del formato</th><th>Costo por unidad base</th><th>Stock</th><th class="admin-only">Acciones</th></tr></thead><tbody id="v17IngredientsBody"></tbody></table></div></div>
   </section>`+kucheV171CountPageHTML("daily")+kucheV171CountPageHTML("weekly"));
-  const inventoryPage=document.getElementById("inventory");if(inventoryPage){inventoryPage.classList.add("admin-only");const h=inventoryPage.querySelector("h1");if(h)h.textContent="Inventario general";const p=inventoryPage.querySelector(".page-header p");if(p)p.textContent="Vista administrativa consolidada de ingredientes, preparaciones y suministros de todas las áreas.";}
+  const inventoryPage=document.getElementById("inventory");if(inventoryPage){inventoryPage.classList.add("admin-only");const h=inventoryPage.querySelector("h1");if(h)h.textContent="Catálogo técnico";const p=inventoryPage.querySelector(".page-header p");if(p)p.textContent="Contenedor interno del catálogo de materias primas, preparaciones y suministros.";}
   const reconciliationPage=document.getElementById("reconciliation");if(reconciliationPage){const h=reconciliationPage.querySelector("h1");if(h)h.textContent="Consolidación de stock";const p=reconciliationPage.querySelector(".page-header p");if(p)p.textContent="Compara y consolida el stock teórico de KÜCHE con los conteos físicos registrados.";}
   const supplyPage=document.getElementById("supplyplanner");if(supplyPage){const h=supplyPage.querySelector("h1");if(h)h.textContent="Abastecimientos y controles";}
   const trace=document.getElementById("traceability");if(trace&&!document.getElementById("kucheV171ProductionTrace")){
@@ -18993,8 +18993,8 @@ function kucheV171NavButton(page,label,extraClass=""){
 
 function kucheV171RebuildInventoryNavigation(){
   const nav=document.querySelector(".nav");if(!nav)return;
-  const title=[...nav.querySelectorAll(".nav-title")].find(x=>x.textContent.includes("Proveedores e inventario")||x.textContent.includes("Ingredientes, inventarios"));if(!title)return;
-  title.textContent="2 · Ingredientes, inventarios y compras";
+  const title=[...nav.querySelectorAll(".nav-title")].find(x=>x.textContent.includes("Proveedores e inventario")||x.textContent.includes("Ingredientes, inventarios")||x.textContent.includes("Materia prima, inventarios"));if(!title)return;
+  title.textContent="2 · Materia prima, inventarios y compras";
   const pages=new Set(["suppliers","ingredients","recipes","dailyinventory","weeklyinventory","inventory","inventoryareas","purchases","smartpurchases","supplyplanner","reconciliation","traceability"]);
   [...nav.querySelectorAll(".nav-item")].forEach(b=>{const m=(b.getAttribute("onclick")||"").match(/showPage\('([^']+)'/);if(m&&pages.has(m[1]))b.remove();});
   const items=[
@@ -19003,7 +19003,6 @@ function kucheV171RebuildInventoryNavigation(){
     ["recipes","Recetas","admin-only"],
     ["dailyinventory","Inventario diario",""],
     ["weeklyinventory","Inventario semanal",""],
-    ["inventory","Inventario general","admin-only"],
     ["purchases","Compras",""],
     ["smartpurchases","Compras inteligentes",""],
     ["supplyplanner","Abastecimientos y controles",""],
@@ -19015,15 +19014,15 @@ function kucheV171RebuildInventoryNavigation(){
 
 function kucheV171RenderIngredients(){
   const body=document.getElementById("v17IngredientsBody");if(!body)return;
-  const q=(document.getElementById("v17IngredientSearch")?.value||"").trim().toLowerCase(),list=inventory.filter(p=>kucheV17NormalizeProduct(p).inventoryClass==="ingredient"&&String(p.name||"").toLowerCase().includes(q)).sort((a,b)=>a.name.localeCompare(b.name,"es"));
-  body.innerHTML=list.length?list.map(p=>{if(typeof opsFinalNormalizeProduct==="function")opsFinalNormalizeProduct(p);const useful=typeof opsFinalUsefulBasePerPurchase==="function"?Math.max(.0001,opsFinalUsefulBasePerPurchase(p)):Math.max(.0001,Number(p.basePerPurchase||1)),grossBase=Number(p.costGross||0)/useful,netBase=Number(p.costNet??p.cost??0)/useful;return `<tr><td><strong>${escapeHTML(p.name)}</strong></td><td>${escapeHTML(p.category||"—")}</td><td><strong>${escapeHTML(p.unit||"—")}</strong></td><td>${formatNumber(p.basePerPurchase||1)} ${escapeHTML(p.baseUnit||p.unit||"")}</td><td><strong>$${formatMoney(p.costGross||0)}</strong><div class="category">$${formatMoney(p.costNet??p.cost??0)} neto</div></td><td><strong>$${formatMoney(grossBase)} / ${escapeHTML(p.baseUnit||p.unit||"")} con IVA</strong><div class="category">$${formatMoney(netBase)} neto útil</div></td><td>${formatNumber(p.quantity)} ${escapeHTML(p.unit||"")}</td><td class="admin-only"><div class="kuche-v172-row-actions"><button class="secondary-button" onclick="kucheV171OpenEditCatalogItem('${ops2EscapeAttr(p.id)}')">Editar</button><button class="danger-button" onclick="kucheV172DeleteRawMaterial('${ops2EscapeAttr(p.id)}')">Eliminar</button></div></td></tr>`;}).join(""):'<tr><td colspan="8"><div class="empty-state"><strong>No hay materias primas</strong><span>Agrega cebolla, azúcar y las demás materias primas que utilizan tus recetas.</span></div></td></tr>';
+  const q=(document.getElementById("v17IngredientSearch")?.value||"").trim().toLowerCase(),list=inventory.filter(p=>{kucheV17NormalizeProduct(p);return p.inventoryKind!=="prepared"&&["ingredient","supply"].includes(p.inventoryClass)&&String(p.name||"").toLowerCase().includes(q);}).sort((a,b)=>a.name.localeCompare(b.name,"es"));
+  body.innerHTML=list.length?list.map(p=>{if(typeof opsFinalNormalizeProduct==="function")opsFinalNormalizeProduct(p);const useful=typeof opsFinalUsefulBasePerPurchase==="function"?Math.max(.0001,opsFinalUsefulBasePerPurchase(p)):Math.max(.0001,Number(p.basePerPurchase||1)),grossBase=Number(p.costGross||0)/useful,netBase=Number(p.costNet??p.cost??0)/useful,type=p.inventoryClass==="supply"?"Suministro":"Materia prima",preferred=typeof kucheV174PreferredSupplier==="function"?kucheV174PreferredSupplier(p):suppliers.find(s=>String(s.id)===String(p.preferredSupplierId));return `<tr><td><strong>${escapeHTML(p.name)}</strong></td><td>${escapeHTML(p.category||"—")}</td><td><span class="kuche-v174-type-badge ${p.inventoryClass==='supply'?'supply':''}">${type}</span></td><td>${preferred?`<strong>${escapeHTML(preferred.name)}</strong>`:'<span class="category">Sin asignar</span>'}</td><td><strong>${escapeHTML(p.unit||"—")}</strong></td><td>${formatNumber(p.basePerPurchase||1)} ${escapeHTML(p.baseUnit||p.unit||"")}</td><td><strong>$${formatMoney(p.costGross||0)}</strong><div class="category">$${formatMoney(p.costNet??p.cost??0)} neto</div></td><td><strong>$${formatMoney(grossBase)} / ${escapeHTML(p.baseUnit||p.unit||"")} con IVA</strong><div class="category">$${formatMoney(netBase)} neto útil</div></td><td>${formatNumber(p.quantity)} ${escapeHTML(p.unit||"")}</td><td class="admin-only"><div class="kuche-v172-row-actions"><button class="secondary-button" onclick="kucheV171OpenEditCatalogItem('${ops2EscapeAttr(p.id)}')">Editar</button><button class="danger-button" onclick="kucheV172DeleteRawMaterial('${ops2EscapeAttr(p.id)}')">Eliminar</button></div></td></tr>`;}).join(""):'<tr><td colspan="10"><div class="empty-state"><strong>No hay materias primas ni suministros</strong><span>Registra los productos que compras para cocina, aseo, embalaje o caja.</span></div></td></tr>';
   applyAccessMode();
 }
 
 function kucheV171OpenNewCatalogItem(itemClass="ingredient"){
-  const b=[...document.querySelectorAll(".nav-item")].find(x=>(x.getAttribute("onclick")||"").includes("'inventory'"));showPage("inventory",b||null);newProduct();if(document.getElementById("inventoryItemKind")){inventoryItemKind.value=itemClass;kucheV17UpdateKindUI();}
+  const b=[...document.querySelectorAll(".nav-item")].find(x=>(x.getAttribute("onclick")||"").includes("'ingredients'"));showPage("ingredients",b||null);if(typeof kucheV174PlaceMaterialForm==="function")kucheV174PlaceMaterialForm();newProduct();if(document.getElementById("inventoryItemKind")){inventoryItemKind.value=itemClass==="supply"?"supply":"ingredient";kucheV17UpdateKindUI();}if(typeof kucheV174PrepareMaterialForm==="function")kucheV174PrepareMaterialForm();
 }
-function kucheV171OpenEditCatalogItem(id){const b=[...document.querySelectorAll(".nav-item")].find(x=>(x.getAttribute("onclick")||"").includes("'inventory'")),p=inventory.find(x=>String(x.id)===String(id));showPage("inventory",b||null);if(p)editProduct(p.id);}
+function kucheV171OpenEditCatalogItem(id){const b=[...document.querySelectorAll(".nav-item")].find(x=>(x.getAttribute("onclick")||"").includes("'ingredients'")),p=inventory.find(x=>String(x.id)===String(id));showPage("ingredients",b||null);if(typeof kucheV174PlaceMaterialForm==="function")kucheV174PlaceMaterialForm();if(p)editProduct(p.id);if(typeof kucheV174PrepareMaterialForm==="function")kucheV174PrepareMaterialForm();}
 function kucheV171OpenProduction(){const b=[...document.querySelectorAll(".nav-item")].find(x=>(x.getAttribute("onclick")||"").includes("'preparations'"));showPage("preparations",b||null);openPreparationBatchForm();}
 
 function kucheV171CountPrefix(mode){return mode==="daily"?"v17Daily":"v17Weekly";}
@@ -19031,7 +19030,7 @@ function kucheV171AllowedAreas(){const all=currentSession?.role!=="worker"?inven
 function kucheV171RenderCountPage(mode){
   const prefix=kucheV171CountPrefix(mode),areaSelect=document.getElementById(prefix+"Area"),lines=document.getElementById(prefix+"Lines"),summary=document.getElementById(prefix+"Summary"),history=document.getElementById(prefix+"History");if(!areaSelect||!lines)return;
   normalizeAreaStocks();const current=areaSelect.value,areas=kucheV171AllowedAreas();areaSelect.innerHTML=areas.map(a=>`<option value="${a.key}">${escapeHTML(a.name)}</option>`).join("");if(areas.some(a=>a.key===current))areaSelect.value=current;const area=areaSelect.value,kind=mode==="daily"?"prepared":"raw",items=inventory.filter(p=>kucheV17NormalizeProduct(p).inventoryKind===kind&&(Number(p.areaStocks?.[area]||0)>0||inferInventoryArea(p)===area)).sort((a,b)=>a.name.localeCompare(b.name,"es"));
-  lines.innerHTML=items.length?items.map(p=>`<div class="count-line"><div><strong>${escapeHTML(p.name)}</strong><div class="role-note">${p.inventoryClass==="supply"?"Suministro":"Teórico"}: ${formatNumber(Number(p.areaStocks?.[area]||0))} ${escapeHTML(p.unit)}</div></div><div>${escapeHTML(p.unit)}</div><input class="${prefix}Input" data-product="${ops2EscapeAttr(p.id)}" type="number" min="0" step="0.01" value="${Number(p.areaStocks?.[area]||0)}"></div>`).join(""):`<div class="empty-state"><strong>No hay ${mode==="daily"?"preparaciones listas":"materias primas o suministros"} en esta área</strong><span>${mode==="daily"?"Registra una producción para que aparezca aquí.":"Clasifica los productos desde Inventario general."}</span></div>`;
+  lines.innerHTML=items.length?items.map(p=>`<div class="count-line"><div><strong>${escapeHTML(p.name)}</strong><div class="role-note">${p.inventoryClass==="supply"?"Suministro":"Teórico"}: ${formatNumber(Number(p.areaStocks?.[area]||0))} ${escapeHTML(p.unit)}</div></div><div>${escapeHTML(p.unit)}</div><input class="${prefix}Input" data-product="${ops2EscapeAttr(p.id)}" type="number" min="0" step="0.01" value="${Number(p.areaStocks?.[area]||0)}"></div>`).join(""):`<div class="empty-state"><strong>No hay ${mode==="daily"?"preparaciones listas":"materias primas o suministros"} en esta área</strong><span>${mode==="daily"?"Registra una producción para que aparezca aquí.":"Registra los productos desde Materia prima."}</span></div>`;
   const low=items.filter(p=>Number(p.quantity)<=Number(p.minimum)).length,last=inventoryAreaCounts.filter(x=>(x.frequency||x.type)===mode).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt))[0];if(summary)summary.innerHTML=`<div class="integral-stat"><span>Productos del conteo</span><strong>${items.length}</strong></div><div class="integral-stat"><span>Stock crítico</span><strong>${low}</strong></div><div class="integral-stat"><span>Área</span><strong style="font-size:18px">${escapeHTML(areaName(area))}</strong></div><div class="integral-stat"><span>Último conteo</span><strong style="font-size:16px">${last?new Date(last.createdAt).toLocaleDateString("es-CL"):"Sin registro"}</strong></div>`;
   const rows=inventoryAreaCounts.filter(x=>(x.frequency||x.type)===mode).slice(0,10);if(history)history.innerHTML=rows.map(x=>`<div class="mini-row"><span>${escapeHTML(areaName(x.area))} · ${escapeHTML(x.responsible||"")} · ${x.lines?.length||0} ítem(s)</span><strong>${new Date(x.createdAt).toLocaleString("es-CL")}</strong></div>`).join("")||'<div class="category">Sin conteos registrados.</div>';
 }
@@ -19435,6 +19434,181 @@ showPage=function(pageId,button){const out=_kucheV173ShowPage(pageId,button);if(
 
 inventory.forEach(kucheV173NormalizePurchaseFormat);saveInventory();kucheV173InstallPurchaseFormatUI();kucheV173UpdatePurchaseFormatPreview();kucheV171RenderIngredients();
 setTimeout(()=>{kucheV173InstallPurchaseFormatUI();kucheV173UpdatePurchaseFormatPreview();kucheV171RenderIngredients();},2600);
+</script>
+
+<style id="kuche-v174-style">
+#inventory.kuche-v174-retired{display:none!important}
+#inventoryForm.kuche-v174-material-form{margin-top:2px}
+#inventoryForm.kuche-v174-material-form .form-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+#inventoryForm.kuche-v174-material-form .kuche-v174-span-2{grid-column:span 2}
+#inventoryForm.kuche-v174-material-form .kuche-v174-hidden{display:none!important}
+.kuche-v174-type-badge{display:inline-flex;padding:5px 8px;border-radius:999px;background:#eef5f2;color:#265d50;font-size:10px;font-weight:750;white-space:nowrap}
+.kuche-v174-type-badge.supply{background:#fff3d8;color:#7a5312}
+.kuche-v174-supplier-compare{margin-top:7px;padding:8px 9px;border-radius:8px;background:#f4f6f4;color:var(--muted,#6f756f);font-size:10px;line-height:1.45}
+.kuche-v174-supplier-compare.good{background:#eaf6ee;color:#276040}
+.kuche-v174-supplier-compare.warn{background:#fff3dd;color:#80551b}
+.kuche-v174-supplier-compare strong{font-weight:800}
+@media(max-width:1100px){#inventoryForm.kuche-v174-material-form .form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:750px){#inventoryForm.kuche-v174-material-form .form-grid{grid-template-columns:1fr}#inventoryForm.kuche-v174-material-form .kuche-v174-span-2{grid-column:auto}}
+</style>
+
+<script id="kuche-v174-material-page-script">
+/* =====================================================
+   KÜCHE V1.7.4 · MATERIA PRIMA COMO CATÁLOGO PRINCIPAL
+   - Inventario general deja de ser una sección visible.
+   - El formulario completo vive dentro de Materia prima.
+   - Materias primas y suministros alimentan el semanal.
+   - Las preparaciones continúan en Recetas y Producción.
+   - Proveedor frecuente y comparación de precios al comprar.
+===================================================== */
+const KUCHE_V174_VERSION="1.7.4";
+
+function kucheV174PreferredTerm(product){
+  if(!product||typeof v15SupplierTerms==="undefined")return null;
+  return (v15SupplierTerms||[]).find(term=>term.active!==false&&term.preferred&&(String(term.inventoryLocalId)===String(product.id)||String(term.inventoryItemId)===String(product.cloudId)));
+}
+function kucheV174PreferredSupplier(product){
+  if(!product)return null;const term=kucheV174PreferredTerm(product),localId=term?.supplierLocalId??product.preferredSupplierId,cloudId=term?.supplierId??product.preferredSupplierCloudId;
+  return suppliers.find(s=>String(s.id)===String(localId)||String(s.cloudId)===String(cloudId))||null;
+}
+function kucheV174HydratePreferredSuppliers(){
+  inventory.forEach(product=>{const supplier=kucheV174PreferredSupplier(product);if(supplier){product.preferredSupplierId=supplier.id;product.preferredSupplierCloudId=supplier.cloudId||null;product.preferredSupplierName=supplier.name;}});saveInventory();
+}
+
+function kucheV174InstallPreferredSupplierField(){
+  const grid=document.querySelector("#inventoryForm .form-grid"),formatField=document.getElementById("unit")?.closest(".field");if(!grid||!formatField)return;
+  if(!document.getElementById("inventoryPreferredSupplierField")){
+    const field=document.createElement("div");field.className="field";field.id="inventoryPreferredSupplierField";field.innerHTML='<label>Proveedor frecuente</label><select id="inventoryPreferredSupplier"></select><div class="inline-note">En Compras podrás elegir otro proveedor y comparar su precio.</div>';formatField.insertAdjacentElement("afterend",field);
+  }
+  kucheV174PopulatePreferredSupplier();
+}
+function kucheV174PopulatePreferredSupplier(selected=null){
+  const select=document.getElementById("inventoryPreferredSupplier");if(!select)return;const current=selected===null?select.value:String(selected||"");
+  select.innerHTML='<option value="">Sin proveedor frecuente</option>'+suppliers.filter(s=>s.status!=="inactivo").sort((a,b)=>String(a.name).localeCompare(String(b.name),"es")).map(s=>`<option value="${ops2EscapeAttr(s.id)}">${escapeHTML(s.name)}</option>`).join("");
+  if([...select.options].some(o=>String(o.value)===current))select.value=current;
+}
+
+function kucheV174ConfigureProductType(){
+  const select=document.getElementById("inventoryItemKind");if(!select)return;const current=select.value;
+  select.innerHTML='<option value="ingredient">Materia prima alimentaria</option><option value="supply">Suministro · aseo, embalaje o caja</option>';
+  select.value=current==="supply"?"supply":"ingredient";
+  if(!select.dataset.kucheV174){select.dataset.kucheV174="1";select.addEventListener("change",()=>{kucheV174UpdateMaterialFormTitle();kucheV173UpdatePurchaseFormatPreview();});}
+  const label=select.closest(".field")?.querySelector("label");if(label)label.textContent="Tipo de producto";
+}
+
+function kucheV174Field(id){return document.getElementById(id)?.closest(".field")||null;}
+function kucheV174PrepareMaterialForm(){
+  const form=document.getElementById("inventoryForm"),grid=form?.querySelector(".form-grid");if(!form||!grid)return;
+  kucheV17InstallInventoryKindFields();kucheV173InstallPurchaseFormatUI();kucheV174InstallPreferredSupplierField();kucheV174ConfigureProductType();
+  form.classList.add("kuche-v174-material-form");
+  const ordered=[kucheV174Field("productName"),kucheV174Field("category"),document.getElementById("inventoryItemKindField"),kucheV174Field("unit"),document.getElementById("inventoryPreferredSupplierField"),kucheV174Field("productArea"),kucheV174Field("minimum"),kucheV174Field("productBasePerPurchase"),kucheV174Field("cost"),kucheV174Field("productBaseUnit"),kucheV174Field("productYieldPct"),kucheV174Field("productConsumptionMode"),kucheV174Field("productBulkAllowed")].filter(Boolean);
+  ordered.forEach(field=>grid.appendChild(field));
+  [kucheV174Field("quantity"),kucheV174Field("productShelfLifeDays"),document.getElementById("inventorySourceRecipeField")].filter(Boolean).forEach(field=>field.classList.add("kuche-v174-hidden"));
+  [kucheV174Field("cost"),kucheV174Field("productBaseUnit")].filter(Boolean).forEach(field=>field.classList.add("kuche-v174-span-2"));
+  const areaLabel=kucheV174Field("productArea")?.querySelector("label");if(areaLabel)areaLabel.textContent="Área";
+  const preview=document.getElementById("kucheV173PurchaseFormatPreview");if(preview)grid.appendChild(preview);
+  const conversions=form.querySelector(".inventory-conversion-box");if(conversions)conversions.classList.add("kuche-v174-hidden");
+  kucheV174UpdateMaterialFormTitle();kucheV173UpdatePurchaseFormatPreview();
+}
+function kucheV174UpdateMaterialFormTitle(){
+  const supply=document.getElementById("inventoryItemKind")?.value==="supply",title=document.getElementById("formTitle"),button=document.getElementById("saveButton");
+  if(title)title.textContent=editingId!==null?(supply?"Editar suministro":"Editar materia prima"):(supply?"Registrar nuevo suministro":"Registrar nueva materia prima");
+  if(button)button.textContent=supply?"Guardar suministro":"Guardar materia prima";
+}
+function kucheV174PlaceMaterialForm(){
+  const host=document.getElementById("kucheV174MaterialFormHost"),form=document.getElementById("inventoryForm");if(!host||!form)return;host.appendChild(form);kucheV174PrepareMaterialForm();
+}
+function kucheV174RemoveInventoryNavigation(){
+  document.querySelectorAll('.nav-item[onclick*="\'inventory\'"]').forEach(button=>{const call=button.getAttribute("onclick")||"";if(/showPage\('inventory'/.test(call))button.remove();});
+  const retired=document.getElementById("inventory");if(retired){retired.classList.add("kuche-v174-retired");retired.classList.remove("active");retired.setAttribute("aria-hidden","true");}
+}
+
+function kucheV174NetFromGross(product,priceGross){
+  const vat=Math.max(0,Number(product?.vatPct??costSettings?.vat??19)||0);return Math.max(0,Number(priceGross)||0)/(1+vat/100);
+}
+function kucheV174LocalSupplierTerm(product,supplier,priceGross,preferred){
+  if(!product||!supplier||typeof v15SupplierTerms==="undefined")return null;
+  if(preferred)(v15SupplierTerms||[]).forEach(term=>{if(String(term.inventoryLocalId)===String(product.id)||String(term.inventoryItemId)===String(product.cloudId))term.preferred=false;});
+  let term=(v15SupplierTerms||[]).find(t=>(String(t.inventoryLocalId)===String(product.id)||String(t.inventoryItemId)===String(product.cloudId))&&(String(t.supplierLocalId)===String(supplier.id)||String(t.supplierId)===String(supplier.cloudId)));
+  if(!term){term={id:typeof v15UUID==="function"?v15UUID():String(Date.now()+Math.random()),inventoryLocalId:product.id,supplierLocalId:supplier.id,inventoryItemId:product.cloudId||null,supplierId:supplier.cloudId||null,minimumPacks:0,active:true};v15SupplierTerms.push(term);}
+  Object.assign(term,{inventoryLocalId:product.id,supplierLocalId:supplier.id,inventoryItemId:product.cloudId||term.inventoryItemId||null,supplierId:supplier.cloudId||term.supplierId||null,purchaseFormat:product.unit||"",packStockQty:1,currentPrice:kucheV174NetFromGross(product,priceGross),preferred:!!preferred,active:true,priceUpdatedAt:new Date().toISOString()});
+  if(typeof v15SaveLocal==="function")v15SaveLocal();return term;
+}
+async function kucheV174SyncSupplierTermCloud(product,supplier,priceGross,preferred,clearOthers=false){
+  if(!kucheCloud||!cloudOrganization||!product||!supplier)return;
+  try{
+    const sid=await ops3EnsureCloudSupplier(supplier),iid=await ops3EnsureCloudInventoryItem(product,{allowInitialMigration:false});if(!sid||!iid)return;
+    if(clearOthers)await kucheCloud.from("supplier_item_terms").update({preferred:false}).eq("organization_id",cloudOrganization.id).eq("inventory_item_id",iid);
+    const {data,error}=await kucheCloud.from("supplier_item_terms").upsert({organization_id:cloudOrganization.id,supplier_id:sid,inventory_item_id:iid,purchase_format:product.unit||null,pack_stock_qty:1,current_price:kucheV174NetFromGross(product,priceGross),minimum_packs:0,preferred:!!preferred,active:true,price_updated_at:new Date().toISOString()},{onConflict:"organization_id,supplier_id,inventory_item_id"}).select().single();if(error)throw error;
+    const term=kucheV174LocalSupplierTerm(product,supplier,priceGross,preferred);if(term&&data){term.id=data.id;term.supplierId=sid;term.inventoryItemId=iid;if(typeof v15SaveLocal==="function")v15SaveLocal();}
+  }catch(e){console.warn("Proveedor frecuente",e.message);}
+}
+async function kucheV174SavePreferredSupplier(product,supplierId){
+  if(!product)return;const supplier=suppliers.find(s=>String(s.id)===String(supplierId));
+  product.preferredSupplierId=supplier?.id||null;product.preferredSupplierCloudId=supplier?.cloudId||null;product.preferredSupplierName=supplier?.name||"";
+  if(typeof v15SupplierTerms!=="undefined")(v15SupplierTerms||[]).forEach(term=>{if(String(term.inventoryLocalId)===String(product.id)||String(term.inventoryItemId)===String(product.cloudId))term.preferred=!!supplier&&(String(term.supplierLocalId)===String(supplier.id)||String(term.supplierId)===String(supplier.cloudId));});
+  if(supplier){kucheV174LocalSupplierTerm(product,supplier,Number(product.costGross||0),true);await kucheV174SyncSupplierTermCloud(product,supplier,Number(product.costGross||0),true,true);}
+  else if(kucheCloud&&cloudOrganization){try{const iid=await ops3EnsureCloudInventoryItem(product,{allowInitialMigration:false});if(iid)await kucheCloud.from("supplier_item_terms").update({preferred:false}).eq("organization_id",cloudOrganization.id).eq("inventory_item_id",iid);}catch(e){console.warn("Quitar proveedor frecuente",e.message);}}
+  if(typeof v15SaveLocal==="function")v15SaveLocal();saveInventory();
+}
+
+function kucheV174LastSupplierGross(product,supplier){
+  if(!product||!supplier)return 0;
+  const purchaseRows=(purchases||[]).filter(p=>p.status!=="anulada"&&(String(p.supplierId)===String(supplier.id)||String(p.supplierName||"").toLowerCase()===String(supplier.name||"").toLowerCase())).sort((a,b)=>String(b.date||b.createdAt||"").localeCompare(String(a.date||a.createdAt||"")));
+  for(const purchase of purchaseRows){const line=(purchase.lines||[]).find(l=>String(l.productId)===String(product.id)||String(l.productName||"").toLowerCase()===String(product.name||"").toLowerCase());if(line){const gross=Number(line.unitCostGross);if(Number.isFinite(gross)&&gross>0)return gross;const net=Number(line.unitCostNet??line.unitCost);if(Number.isFinite(net)&&net>0)return net*(1+Number(line.vatPct??product.vatPct??costSettings.vat??19)/100);}}
+  const term=typeof v15SupplierTermFor==="function"?v15SupplierTermFor(product,supplier.id):null;if(term&&Number(term.currentPrice)>0){const net=Number(term.currentPrice)/Math.max(.0001,Number(term.packStockQty||1)),vat=Math.max(0,Number(product.vatPct??costSettings.vat??19)||0);return net*(1+vat/100);}
+  const cached=typeof kucheV16SupplierPriceCache!=="undefined"?kucheV16SupplierPriceCache[kucheV16Key(supplier.id,product.id)]:null;if(cached&&Number(cached.net)>0)return Number(cached.net)*(1+Number(product.vatPct??costSettings.vat??19)/100);
+  return String(product.preferredSupplierId)===String(supplier.id)?Number(product.costGross||0):0;
+}
+function kucheV174CurrentPurchaseGross(row){
+  const input=Math.max(0,Number(row?.querySelector(".purchaseCost")?.value)||0),vat=Math.max(0,Number(document.getElementById("purchaseVatRate")?.value??costSettings.vat??19)||0),mode=document.getElementById("purchasePriceMode")?.value||"net";return mode==="gross"?input:input*(1+vat/100);
+}
+function kucheV174UpdateSupplierComparison(row){
+  if(!row)return;const field=row.querySelector(".purchaseCost")?.closest(".field");if(!field)return;let box=field.querySelector(".kuche-v174-supplier-compare");if(!box){box=document.createElement("div");box.className="kuche-v174-supplier-compare";field.appendChild(box);}
+  const product=inventory.find(p=>String(p.id)===String(row.querySelector(".purchaseProduct")?.value)),selected=suppliers.find(s=>String(s.id)===String(document.getElementById("purchaseSupplier")?.value));if(!product){box.className="kuche-v174-supplier-compare";box.textContent="Selecciona un producto para comparar proveedores.";return;}
+  const preferred=kucheV174PreferredSupplier(product);if(!preferred){box.className="kuche-v174-supplier-compare";box.innerHTML="Este producto no tiene proveedor frecuente asignado en <strong>Materia prima</strong>.";return;}
+  const preferredGross=kucheV174LastSupplierGross(product,preferred),currentGross=kucheV174CurrentPurchaseGross(row);if(!selected){box.className="kuche-v174-supplier-compare";box.innerHTML=`Proveedor frecuente: <strong>${escapeHTML(preferred.name)}</strong>${preferredGross>0?` · $${formatMoney(preferredGross)} con IVA`:""}. Selecciona el proveedor de esta compra.`;return;}
+  if(currentGross<=0||preferredGross<=0){box.className="kuche-v174-supplier-compare";box.innerHTML=`Frecuente: <strong>${escapeHTML(preferred.name)}</strong>${preferredGross>0?` · $${formatMoney(preferredGross)}`:" · sin precio previo"}. Compra actual: <strong>${escapeHTML(selected.name)}</strong>. Ingresa el precio para comparar.`;return;}
+  const difference=currentGross-preferredGross,pct=Math.abs(difference)/preferredGross*100,same=String(selected.id)===String(preferred.id);box.className="kuche-v174-supplier-compare "+(difference<-.005?"good":difference>.005?"warn":"");
+  if(same)box.innerHTML=`Proveedor frecuente: <strong>${escapeHTML(preferred.name)}</strong> · anterior $${formatMoney(preferredGross)} · actual $${formatMoney(currentGross)} ${Math.abs(difference)<.005?"· sin cambio":difference<0?`· bajó ${pct.toFixed(1)}%`:`· subió ${pct.toFixed(1)}%`}.`;
+  else box.innerHTML=`Frecuente: <strong>${escapeHTML(preferred.name)}</strong> $${formatMoney(preferredGross)} · Compra actual: <strong>${escapeHTML(selected.name)}</strong> $${formatMoney(currentGross)}. <strong>${escapeHTML(selected.name)} es ${difference<0?"más barato":"más caro"} por $${formatMoney(Math.abs(difference))} (${pct.toFixed(1)}%).</strong>`;
+}
+
+const _kucheV174PriceHint=kucheV16UpdatePriceHint;
+kucheV16UpdatePriceHint=function(row,baselineNet){_kucheV174PriceHint(row,baselineNet);kucheV174UpdateSupplierComparison(row);};
+
+const _kucheV174NewProduct=newProduct;
+newProduct=function(){const out=_kucheV174NewProduct();kucheV174PlaceMaterialForm();kucheV174ConfigureProductType();kucheV174PopulatePreferredSupplier("");kucheV174UpdateMaterialFormTitle();document.getElementById("inventoryForm")?.scrollIntoView({behavior:"smooth",block:"start"});return out;};
+const _kucheV174EditProduct=editProduct;
+editProduct=function(id){const out=_kucheV174EditProduct(id),product=inventory.find(p=>String(p.id)===String(id)),supplier=kucheV174PreferredSupplier(product);kucheV174PlaceMaterialForm();kucheV174ConfigureProductType();kucheV174PopulatePreferredSupplier(supplier?.id||"");kucheV174UpdateMaterialFormTitle();document.getElementById("inventoryForm")?.scrollIntoView({behavior:"smooth",block:"start"});return out;};
+
+const _kucheV174SaveProduct=saveProduct;
+saveProduct=async function(){
+  const idBefore=editingId,nameBefore=document.getElementById("productName")?.value.trim(),supplierId=document.getElementById("inventoryPreferredSupplier")?.value||"";await _kucheV174SaveProduct();if(document.getElementById("inventoryForm")?.classList.contains("open"))return;
+  const product=idBefore!==null?inventory.find(p=>String(p.id)===String(idBefore)):inventory.find(p=>String(p.name||"").trim().toLowerCase()===String(nameBefore||"").toLowerCase());if(!product)return;await kucheV174SavePreferredSupplier(product,supplierId);kucheV171RenderIngredients();
+};
+
+const _kucheV174SavePurchase=savePurchase;
+savePurchase=async function(){
+  const supplier=suppliers.find(s=>String(s.id)===String(document.getElementById("purchaseSupplier")?.value)),lines=typeof getPurchaseLines==="function"?getPurchaseLines():[],before=(purchases||[]).length;await _kucheV174SavePurchase();if(!supplier||(purchases||[]).length<=before)return;
+  for(const line of lines){const product=inventory.find(p=>String(p.id)===String(line.productId));if(!product)continue;const preferred=kucheV174PreferredSupplier(product),isPreferred=preferred&&String(preferred.id)===String(supplier.id);kucheV174LocalSupplierTerm(product,supplier,Number(line.unitCostGross||0),!!isPreferred);await kucheV174SyncSupplierTermCloud(product,supplier,Number(line.unitCostGross||0),!!isPreferred,false);}
+  if(typeof v15RenderPriceComparison==="function")v15RenderPriceComparison();kucheV171RenderIngredients();
+};
+
+const _kucheV174QuickPages=ops2QuickPages;
+ops2QuickPages=function(){return (_kucheV174QuickPages()||[]).filter(item=>item?.[0]!=="inventory");};
+const _kucheV174ShowPage=showPage;
+showPage=function(pageId,button){
+  if(pageId==="inventory"){pageId="ingredients";button=[...document.querySelectorAll(".nav-item")].find(b=>(b.getAttribute("onclick")||"").includes("'ingredients'"))||button;}
+  const out=_kucheV174ShowPage(pageId,button);if(pageId==="ingredients"){kucheV174PlaceMaterialForm();kucheV174PopulatePreferredSupplier();kucheV171RenderIngredients();}kucheV174RemoveInventoryNavigation();return out;
+};
+
+const _kucheV174HandleCloudSession=handleCloudSession;
+handleCloudSession=async function(session){await _kucheV174HandleCloudSession(session);kucheV174HydratePreferredSuppliers();kucheV174PopulatePreferredSupplier();kucheV171RenderIngredients();};
+
+kucheV174HydratePreferredSuppliers();kucheV174PlaceMaterialForm();kucheV174RemoveInventoryNavigation();kucheV174ConfigureProductType();kucheV174PopulatePreferredSupplier();kucheV171RenderIngredients();
+if(document.querySelector("#inventory.page.active")){const b=[...document.querySelectorAll(".nav-item")].find(x=>(x.getAttribute("onclick")||"").includes("'ingredients'"));showPage("ingredients",b||null);}
+setTimeout(()=>{kucheV171RebuildInventoryNavigation();kucheV174RemoveInventoryNavigation();kucheV174PlaceMaterialForm();kucheV174HydratePreferredSuppliers();kucheV174PopulatePreferredSupplier();kucheV171RenderIngredients();},2800);
 </script>
 
 </body>
