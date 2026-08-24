@@ -15064,7 +15064,7 @@ const _opsFinalEditProduct=editProduct;
 editProduct=function(id){_opsFinalEditProduct(id);const p=inventory.find(x=>String(x.id)===String(id));if(!p)return;opsFinalNormalizeProduct(p);productBaseUnit.value=p.baseUnit;productBasePerPurchase.value=p.basePerPurchase;productYieldPct.value=p.yieldPct;productConsumptionMode.value=p.consumptionMode;productShelfLifeDays.value=p.shelfLifeDays;productBulkAllowed.value=p.bulkAllowed?"yes":"no";productConversions.innerHTML="";(p.conversions||[]).forEach(addInventoryConversionRow);};
 async function opsFinalSyncInventoryMetaCloud(p){
  if(!kucheCloud||!cloudOrganization||!p)return;const cloudId=await ops3EnsureCloudInventoryItem(p,{allowInitialMigration:false});if(!cloudId)return;
- try{const {error}=await kucheCloud.from("inventory_items").update({base_unit:p.baseUnit,base_units_per_purchase:Number(p.basePerPurchase),yield_pct:Number(p.yieldPct),consumption_mode:p.consumptionMode,unit_conversions:p.conversions||[],vat_pct:Number(p.vatPct||costSettings.vat||19),unit_cost_net:Number(p.costNet||p.cost||0),unit_cost_gross:Number(p.costGross||0),shelf_life_days:Number(p.shelfLifeDays||0),bulk_purchase_allowed:!!p.bulkAllowed}).eq("id",cloudId);if(error)throw error;}catch(e){console.warn("Metadata inventario",e.message);}
+ try{const {error}=await kucheCloud.from("inventory_items").update({name:p.name,category:p.category||null,unit:p.unit,minimum:Number(p.minimum||0),base_unit:p.baseUnit,base_units_per_purchase:Number(p.basePerPurchase),yield_pct:Number(p.yieldPct),consumption_mode:p.consumptionMode,unit_conversions:p.conversions||[],vat_pct:Number(p.vatPct||costSettings.vat||19),unit_cost_net:Number(p.costNet||p.cost||0),unit_cost_gross:Number(p.costGross||0),shelf_life_days:Number(p.shelfLifeDays||0),bulk_purchase_allowed:!!p.bulkAllowed}).eq("id",cloudId).eq("organization_id",cloudOrganization.id);if(error)throw error;}catch(e){console.warn("Metadata inventario",e.message);}
 }
 saveProduct=async function(){
  const target=editingId!==null?inventory.find(x=>String(x.id)===String(editingId)):null;const name=productName.value.trim(),cat=category.value,u=unit.value,min=Number(minimum.value);
@@ -18578,6 +18578,84 @@ showPage=function(pageId,button){
   if(pageId==="inventory")kucheV165InstallInventoryVatControl();
 };
 setTimeout(kucheV165InstallInventoryVatControl,1550);
+
+/* =====================================================
+   KÜCHE V1.6.6 · EDICIÓN PERSISTENTE DEL INVENTARIO
+   - Sincroniza nombre, categoría, unidad y mínimo antes de cerrar.
+   - Evita que una recarga de nube restaure los datos anteriores.
+===================================================== */
+const KUCHE_V166_VERSION="1.6.6";
+
+async function kucheV166ResolveInventoryCloudId(product,oldName){
+  if(!product||!kucheCloud||!cloudOrganization)return null;
+  if(typeof rtIsUUID==="function"&&rtIsUUID(product.cloudId))return product.cloudId;
+  if(typeof rtIsUUID==="function"&&rtIsUUID(product.id)){product.cloudId=product.id;saveInventory();return product.id;}
+  try{
+    const {data,error}=await kucheCloud.from("inventory_items").select("id").eq("organization_id",cloudOrganization.id).eq("name",oldName).eq("active",true).limit(1);
+    if(error)throw error;
+    if(data?.length){product.cloudId=data[0].id;saveInventory();return data[0].id;}
+  }catch(e){console.warn("Resolver insumo cloud",e.message);}
+  return null;
+}
+
+async function kucheV166UpdateInventoryIdentityCloud(cloudId,data){
+  if(!cloudId||!kucheCloud||!cloudOrganization)return {ok:true};
+  try{
+    const {error}=await kucheCloud.from("inventory_items").update({
+      name:data.name,
+      category:data.category||null,
+      unit:data.unit,
+      minimum:Number(data.minimum||0)
+    }).eq("id",cloudId).eq("organization_id",cloudOrganization.id);
+    if(error)throw error;
+    return {ok:true};
+  }catch(e){return {ok:false,error:e};}
+}
+
+const _kucheV166SaveProduct=saveProduct;
+saveProduct=async function(){
+  const target=editingId!==null?inventory.find(x=>String(x.id)===String(editingId)):null;
+  const desired={
+    name:(document.getElementById("productName")?.value||"").trim(),
+    category:document.getElementById("category")?.value||"",
+    unit:document.getElementById("unit")?.value||"",
+    minimum:Number(document.getElementById("minimum")?.value)
+  };
+  if(!desired.name||!desired.category||!desired.unit||!Number.isFinite(desired.minimum)){alert("Completa nombre, categoría, unidad y stock mínimo.");return;}
+  const duplicate=inventory.find(x=>x!==target&&String(x.name||"").trim().toLowerCase()===desired.name.toLowerCase());
+  if(duplicate){alert(`Ya existe un insumo llamado “${desired.name}”. Usa otro nombre para evitar duplicados.`);return;}
+
+  let resolvedCloudId=null;
+  if(target&&kucheCloud&&cloudOrganization){
+    const oldName=target.name;
+    resolvedCloudId=await kucheV166ResolveInventoryCloudId(target,oldName);
+    if(resolvedCloudId){
+      const result=await kucheV166UpdateInventoryIdentityCloud(resolvedCloudId,desired);
+      if(!result.ok){alert("No se pudo guardar el nuevo nombre en KÜCHE Cloud. El formulario seguirá abierto para que puedas intentarlo nuevamente. Detalle: "+result.error.message);return;}
+    }
+  }
+
+  await _kucheV166SaveProduct();
+  if(document.getElementById("inventoryForm")?.classList.contains("open"))return;
+
+  const saved=target||inventory.find(x=>String(x.name||"").trim().toLowerCase()===desired.name.toLowerCase());
+  if(!saved)return;
+  Object.assign(saved,desired);
+  saveInventory();
+
+  if(kucheCloud&&cloudOrganization){
+    const cloudId=resolvedCloudId||await kucheV166ResolveInventoryCloudId(saved,desired.name)||await ops3EnsureCloudInventoryItem(saved,{allowInitialMigration:false});
+    if(cloudId){
+      const result=await kucheV166UpdateInventoryIdentityCloud(cloudId,desired);
+      if(!result.ok){alert("El insumo se guardó en este dispositivo, pero no se pudo confirmar el cambio de nombre en KÜCHE Cloud. Detalle: "+result.error.message);}
+    }
+  }
+
+  Object.assign(saved,desired);saveInventory();renderInventory();loadMovementProducts();renderRecipes();
+  if(typeof renderInventoryAreas==="function")renderInventoryAreas();
+  if(typeof v15PopulateSelectors==="function")v15PopulateSelectors();
+  updateDashboard();
+};
 </script>
 
 </body>
