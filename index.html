@@ -7887,7 +7887,7 @@ if(editingStaffId!==null){
 
 const worker=
 staff.find(item=>
-item.id===editingStaffId
+String(item.id)===String(editingStaffId)
 );
 
 
@@ -7971,7 +7971,7 @@ await inviteWorkerToCloud(savedWorker);
 function editStaffMember(id){
 
 const worker=
-staff.find(item=>item.id===id);
+staff.find(item=>String(item.id)===String(id));
 
 if(!worker){
 return;
@@ -8014,7 +8014,7 @@ staffPanel.classList.add("open");
 function toggleStaffStatus(id){
 
 const worker=
-staff.find(item=>item.id===id);
+staff.find(item=>String(item.id)===String(id));
 
 if(!worker){
 return;
@@ -8043,7 +8043,7 @@ updateStaffStats();
 function deleteStaffMember(id){
 
 const worker=
-staff.find(item=>item.id===id);
+staff.find(item=>String(item.id)===String(id));
 
 if(!worker){
 return;
@@ -8056,7 +8056,7 @@ return;
 
 
 staff=
-staff.filter(item=>item.id!==id);
+staff.filter(item=>String(item.id)!==String(id));
 
 saveStaff();
 
@@ -8168,12 +8168,12 @@ worker.status==="activo"
 <div class="staff-card-footer">
 
 <button class="secondary-button"
-onclick="editStaffMember(${worker.id})">
+onclick="editStaffMember(decodeURIComponent('${encodeURIComponent(String(worker.id))}'))">
 Editar
 </button>
 
 <button class="secondary-button"
-onclick="toggleStaffStatus(${worker.id})">
+onclick="toggleStaffStatus(decodeURIComponent('${encodeURIComponent(String(worker.id))}'))">
 
 ${
 worker.status==="activo"
@@ -8184,7 +8184,7 @@ worker.status==="activo"
 </button>
 
 <button class="danger-button"
-onclick="deleteStaffMember(${worker.id})">
+onclick="deleteStaffMember(decodeURIComponent('${encodeURIComponent(String(worker.id))}'))">
 Eliminar
 </button>
 
@@ -19713,6 +19713,56 @@ function v18RenderAll(){v18RenderExecutive();v18RenderFinance();v18RenderReceivi
 Object.assign(window,{v18RenderAll,v18RenderExecutive,v18RenderFinance,v18OpenExpense,v18SaveExpense,v18DeleteExpense,v18OpenReceiving,v18SaveReceiving,v18DeleteReceiving,v18OpenCustomer,v18SaveCustomer,v18DeleteCustomer,v18OpenDelivery,v18SaveDelivery,v18NextDelivery,v18DeleteDelivery,v18ToggleConnector,v18ClearAudit,v18ExportBackup});
 function v18Boot(){v18InjectNavigation();v18InjectPages();const old=window.showPage;if(typeof old==="function"&&!old.__v18){const wrapped=function(pageId,button){const out=old(pageId,button);v18RenderPage(pageId);return out};wrapped.__v18=true;window.showPage=wrapped}v18RenderAll();const label=document.getElementById("systemVersionLabel");if(label)label.textContent="KÜCHE "+V18_VERSION}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(v18Boot,50));else setTimeout(v18Boot,50);setTimeout(v18Boot,3000);
+})();
+</script>
+
+<script id="kuche-v18-staff-id-fix">
+(function(){
+"use strict";
+function staffCloudId(worker){
+ const candidate=worker?.cloudStaffId||worker?.id;
+ return typeof window.rtIsUUID==="function"&&rtIsUUID(candidate)?candidate:null;
+}
+function refreshStaffViews(){
+ saveStaff();renderStaff();loadStaffOptions();loadAttendanceStaff();updateStaffStats();updateLaborStats();updateDashboard();
+ if(typeof renderBirthdayNotice==="function")renderBirthdayNotice();
+}
+window.toggleStaffStatus=async function(id){
+ const worker=staff.find(item=>String(item.id)===String(id));
+ if(!worker)return;
+ const previous=worker.status||"activo",next=previous==="activo"?"inactivo":"activo",cloudId=staffCloudId(worker);
+ if(kucheCloud&&cloudOrganization&&cloudId){
+  try{
+   const {error}=await kucheCloud.from("staff").update({status:next}).eq("organization_id",cloudOrganization.id).eq("id",cloudId);
+   if(error)throw error;
+  }catch(error){
+   console.error("Estado de personal",error);
+   alert("No se pudo cambiar el estado en la nube. Revisa la conexión e inténtalo nuevamente.");
+   return;
+  }
+ }
+ worker.status=next;refreshStaffViews();
+};
+window.deleteStaffMember=async function(id){
+ const worker=staff.find(item=>String(item.id)===String(id));
+ if(!worker)return;
+ if(String(worker.id)===String(cloudStaffRecord?.id)||String(worker.authUserId||"")===String(cloudAuthSession?.user?.id||"__none__")){
+  alert("No puedes eliminar la ficha vinculada a tu propia sesión. Puedes desactivarla desde otra cuenta administradora.");return;
+ }
+ if(!confirm('¿Eliminar a "'+worker.name+'"? Esta acción quitará su ficha del personal.'))return;
+ const cloudId=staffCloudId(worker);
+ if(kucheCloud&&cloudOrganization&&cloudId){
+  try{
+   const {error}=await kucheCloud.from("staff").delete().eq("organization_id",cloudOrganization.id).eq("id",cloudId);
+   if(error)throw error;
+  }catch(error){
+   console.error("Eliminar personal",error);
+   alert("No se pudo eliminar la ficha en la nube porque puede tener registros relacionados. Puedes desactivarla para conservar el historial.");
+   return;
+  }
+ }
+ staff=staff.filter(item=>String(item.id)!==String(id));refreshStaffViews();
+};
 })();
 </script>
 
