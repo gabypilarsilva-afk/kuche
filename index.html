@@ -18975,7 +18975,7 @@ function kucheV171InstallPages(){
     <div class="page-header"><div><h1>Materia prima</h1><p>Registra aquí las materias primas y suministros que compras. Las preparaciones elaboradas se crean desde Recetas y Producción.</p></div><button class="primary-button admin-only" onclick="kucheV171OpenNewCatalogItem('ingredient')">+ Registrar producto</button></div>
     <div id="kucheV174MaterialFormHost"></div>
     <div class="toolbar"><div class="search-box"><input id="v17IngredientSearch" placeholder="Buscar materia prima o suministro…" oninput="kucheV171RenderIngredients()"></div></div>
-    <div class="table-card"><div class="table-wrapper"><table><thead><tr><th>Producto</th><th>Categoría</th><th>Tipo</th><th>Proveedor frecuente</th><th>Formato de compra</th><th>Contenido</th><th>Precio del formato</th><th>Costo por unidad base</th><th>Stock</th><th class="admin-only">Acciones</th></tr></thead><tbody id="v17IngredientsBody"></tbody></table></div></div>
+    <div class="table-card"><div class="table-wrapper"><table><thead><tr><th>Producto</th><th>Categoría</th><th>Inventario responsable</th><th>Tipo</th><th>Proveedor frecuente</th><th>Formato de compra</th><th>Contenido</th><th>Precio del formato</th><th>Costo por unidad base</th><th>Stock</th><th class="admin-only">Acciones</th></tr></thead><tbody id="v17IngredientsBody"></tbody></table></div></div>
   </section>`+kucheV171CountPageHTML("daily")+kucheV171CountPageHTML("weekly"));
   const inventoryPage=document.getElementById("inventory");if(inventoryPage){inventoryPage.classList.add("admin-only");const h=inventoryPage.querySelector("h1");if(h)h.textContent="Catálogo técnico";const p=inventoryPage.querySelector(".page-header p");if(p)p.textContent="Contenedor interno del catálogo de materias primas, preparaciones y suministros.";}
   const reconciliationPage=document.getElementById("reconciliation");if(reconciliationPage){const h=reconciliationPage.querySelector("h1");if(h)h.textContent="Consolidación de stock";const p=reconciliationPage.querySelector(".page-header p");if(p)p.textContent="Compara y consolida el stock teórico de KÜCHE con los conteos físicos registrados.";}
@@ -19015,7 +19015,7 @@ function kucheV171RebuildInventoryNavigation(){
 function kucheV171RenderIngredients(){
   const body=document.getElementById("v17IngredientsBody");if(!body)return;
   const q=(document.getElementById("v17IngredientSearch")?.value||"").trim().toLowerCase(),list=inventory.filter(p=>{kucheV17NormalizeProduct(p);return p.inventoryKind!=="prepared"&&["ingredient","supply"].includes(p.inventoryClass)&&String(p.name||"").toLowerCase().includes(q);}).sort((a,b)=>a.name.localeCompare(b.name,"es"));
-  body.innerHTML=list.length?list.map(p=>{if(typeof opsFinalNormalizeProduct==="function")opsFinalNormalizeProduct(p);const useful=typeof opsFinalUsefulBasePerPurchase==="function"?Math.max(.0001,opsFinalUsefulBasePerPurchase(p)):Math.max(.0001,Number(p.basePerPurchase||1)),grossBase=Number(p.costGross||0)/useful,netBase=Number(p.costNet??p.cost??0)/useful,type=p.inventoryClass==="supply"?"Suministro":"Materia prima",preferred=typeof kucheV174PreferredSupplier==="function"?kucheV174PreferredSupplier(p):suppliers.find(s=>String(s.id)===String(p.preferredSupplierId));return `<tr><td><strong>${escapeHTML(p.name)}</strong></td><td>${escapeHTML(p.category||"—")}</td><td><span class="kuche-v174-type-badge ${p.inventoryClass==='supply'?'supply':''}">${type}</span></td><td>${preferred?`<strong>${escapeHTML(preferred.name)}</strong>`:'<span class="category">Sin asignar</span>'}</td><td><strong>${escapeHTML(p.unit||"—")}</strong></td><td>${formatNumber(p.basePerPurchase||1)} ${escapeHTML(p.baseUnit||p.unit||"")}</td><td><strong>$${formatMoney(p.costGross||0)}</strong><div class="category">$${formatMoney(p.costNet??p.cost??0)} neto</div></td><td><strong>$${formatMoney(grossBase)} / ${escapeHTML(p.baseUnit||p.unit||"")} con IVA</strong><div class="category">$${formatMoney(netBase)} neto útil</div></td><td>${formatNumber(p.quantity)} ${escapeHTML(p.unit||"")}</td><td class="admin-only"><div class="kuche-v172-row-actions"><button class="secondary-button" onclick="kucheV171OpenEditCatalogItem('${ops2EscapeAttr(p.id)}')">Editar</button><button class="danger-button" onclick="kucheV172DeleteRawMaterial('${ops2EscapeAttr(p.id)}')">Eliminar</button></div></td></tr>`;}).join(""):'<tr><td colspan="10"><div class="empty-state"><strong>No hay materias primas ni suministros</strong><span>Registra los productos que compras para cocina, aseo, embalaje o caja.</span></div></td></tr>';
+  body.innerHTML=list.length?list.map(p=>{if(typeof opsFinalNormalizeProduct==="function")opsFinalNormalizeProduct(p);const useful=typeof opsFinalUsefulBasePerPurchase==="function"?Math.max(.0001,opsFinalUsefulBasePerPurchase(p)):Math.max(.0001,Number(p.basePerPurchase||1)),grossBase=Number(p.costGross||0)/useful,netBase=Number(p.costNet??p.cost??0)/useful,type=p.inventoryClass==="supply"?"Suministro":"Materia prima",preferred=typeof kucheV174PreferredSupplier==="function"?kucheV174PreferredSupplier(p):suppliers.find(s=>String(s.id)===String(p.preferredSupplierId));return `<tr><td><strong>${escapeHTML(p.name)}</strong></td><td>${escapeHTML(p.category||"—")}</td><td><span class="badge badge-blue">${escapeHTML(areaName(p.primaryArea||inferInventoryArea(p)))}</span></td><td><span class="kuche-v174-type-badge ${p.inventoryClass==='supply'?'supply':''}">${type}</span></td><td>${preferred?`<strong>${escapeHTML(preferred.name)}</strong>`:'<span class="category">Sin asignar</span>'}</td><td><strong>${escapeHTML(p.unit||"—")}</strong></td><td>${formatNumber(p.basePerPurchase||1)} ${escapeHTML(p.baseUnit||p.unit||"")}</td><td><strong>$${formatMoney(p.costGross||0)}</strong><div class="category">$${formatMoney(p.costNet??p.cost??0)} neto</div></td><td><strong>$${formatMoney(grossBase)} / ${escapeHTML(p.baseUnit||p.unit||"")} con IVA</strong><div class="category">$${formatMoney(netBase)} neto útil</div></td><td>${formatNumber(p.quantity)} ${escapeHTML(p.unit||"")}</td><td class="admin-only"><div class="kuche-v172-row-actions"><button class="secondary-button" onclick="kucheV171OpenEditCatalogItem('${ops2EscapeAttr(p.id)}')">Editar</button><button class="danger-button" onclick="kucheV172DeleteRawMaterial('${ops2EscapeAttr(p.id)}')">Eliminar</button></div></td></tr>`;}).join(""):'<tr><td colspan="11"><div class="empty-state"><strong>No hay materias primas ni suministros</strong><span>Registra los productos que compras para cocina, aseo, embalaje o caja.</span></div></td></tr>';
   applyAccessMode();
 }
 
@@ -19763,6 +19763,79 @@ window.deleteStaffMember=async function(id){
  }
  staff=staff.filter(item=>String(item.id)!==String(id));refreshStaffViews();
 };
+})();
+</script>
+
+<script id="kuche-v18-material-categories-areas">
+(function(){
+"use strict";
+const MATERIAL_CATEGORIES=[
+ "Proteínas","Carnes rojas","Aves","Pescados y mariscos","Charcutería","Lácteos","Huevos",
+ "Frutas","Verduras y hortalizas","Panadería","Pastelería y postres","Harinas y repostería",
+ "Abarrotes","Condimentos y especias","Salsas y aderezos","Aceites y grasas","Congelados",
+ "Bebestibles sin alcohol","Café e infusiones","Alcohol","Cervezas","Vinos","Licores",
+ "Envases y embalajes","Insumos de aseo","Insumos de salón","Insumos de caja","Otros"
+];
+const MATERIAL_AREAS=[
+ {key:"cocina",name:"Cocina"},{key:"panaderia",name:"Panadería"},{key:"postres",name:"Pastelería y postres"},
+ {key:"barra",name:"Barra"},{key:"bebestibles",name:"Bebestibles sin alcohol"},{key:"alcohol",name:"Alcohol y cava"},
+ {key:"salon",name:"Salón"},{key:"bodega",name:"Bodega seca"},{key:"aseo",name:"Aseo"},
+ {key:"embalaje",name:"Envases y embalajes"},{key:"caja",name:"Caja"}
+];
+const DEFAULT_ROLE_AREAS=[
+ ["cocina","cocina"],["cocina","panaderia"],["cocina","postres"],
+ ["bar","barra"],["bar","bebestibles"],["bar","alcohol"],
+ ["garzon","salon"],["garzon","bebestibles"],["cajero","caja"]
+];
+function categoryArea(category){
+ const c=String(category||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+ if(c.includes("panader"))return "panaderia";
+ if(c.includes("pasteler")||c.includes("postre")||c.includes("reposter"))return "postres";
+ if(c.includes("cerveza")||c.includes("vino")||c.includes("licor")||c==="alcohol")return "alcohol";
+ if(c.includes("bebestible")||c.includes("cafe")||c.includes("infusion"))return "bebestibles";
+ if(c.includes("aseo"))return "aseo";
+ if(c.includes("envase")||c.includes("embalaje"))return "embalaje";
+ if(c.includes("salon"))return "salon";
+ if(c.includes("caja"))return "caja";
+ return "cocina";
+}
+function ensureMaterialAreas(){
+ MATERIAL_AREAS.forEach(area=>{const current=inventoryAreas.find(x=>x.key===area.key);if(current)current.name=area.name;else inventoryAreas.push({...area});});
+ DEFAULT_ROLE_AREAS.forEach(([role,area])=>{if(!inventoryAreaAssignments.some(x=>x.role===role&&x.area===area))inventoryAreaAssignments.push({role,area});});
+ saveIntegralData();
+}
+function replaceOptions(select,items,current){
+ if(!select)return;const value=current??select.value;select.innerHTML=items.map(x=>typeof x==="string"?`<option value="${escapeHTML(x)}">${x?escapeHTML(x):"Seleccionar categoría"}</option>`:`<option value="${escapeHTML(x.key)}">${escapeHTML(x.name)}</option>`).join("");
+ if([...select.options].some(o=>o.value===value))select.value=value;
+}
+function installMaterialSelectors(){
+ ensureMaterialAreas();
+ replaceOptions(document.getElementById("category"),["",...MATERIAL_CATEGORIES]);
+ replaceOptions(document.getElementById("quickPurchaseItemCategory"),["",...MATERIAL_CATEGORIES]);
+ replaceOptions(document.getElementById("productArea"),MATERIAL_AREAS);
+ replaceOptions(document.getElementById("quickPurchaseItemArea"),MATERIAL_AREAS);
+ const label=document.getElementById("productArea")?.closest(".field")?.querySelector("label");if(label)label.textContent="Inventario responsable";
+ const quickLabel=document.getElementById("quickPurchaseItemArea")?.closest(".field")?.querySelector("label");if(quickLabel)quickLabel.textContent="Inventario responsable";
+ const areaField=document.getElementById("productArea")?.closest(".field");if(areaField&&!areaField.querySelector(".material-area-help")){const help=document.createElement("div");help.className="inline-note material-area-help";help.textContent="Este producto aparecerá en el inventario del equipo asignado a esta área.";areaField.appendChild(help);}
+ const category=document.getElementById("category");if(category&&!category.dataset.areaLinked){category.dataset.areaLinked="true";category.addEventListener("change",()=>{const area=document.getElementById("productArea");if(area)area.value=categoryArea(category.value);});}
+ const quick=document.getElementById("quickPurchaseItemCategory");if(quick&&!quick.dataset.areaLinked){quick.dataset.areaLinked="true";quick.addEventListener("change",()=>{const area=document.getElementById("quickPurchaseItemArea");if(area)area.value=categoryArea(quick.value);});}
+}
+const previousInferInventoryArea=inferInventoryArea;
+inferInventoryArea=function(product){return product?.primaryArea||categoryArea(product?.category)||previousInferInventoryArea(product);};
+const previousAssignedAreasForRole=assignedAreasForRole;
+assignedAreasForRole=function(role){ensureMaterialAreas();return previousAssignedAreasForRole(role);};
+const previousRenderInventoryAreas=renderInventoryAreas;
+renderInventoryAreas=function(){ensureMaterialAreas();installMaterialSelectors();return previousRenderInventoryAreas();};
+const previousNewProductV18=newProduct;
+newProduct=function(){const out=previousNewProductV18();installMaterialSelectors();const area=document.getElementById("productArea");if(area)area.value=categoryArea(document.getElementById("category")?.value);return out;};
+const previousEditProductV18=editProduct;
+editProduct=function(id){const out=previousEditProductV18(id);installMaterialSelectors();const p=inventory.find(x=>String(x.id)===String(id)),area=document.getElementById("productArea");if(p&&area)area.value=p.primaryArea||categoryArea(p.category);return out;};
+const previousShowPageV18Material=showPage;
+showPage=function(pageId,button){const out=previousShowPageV18Material(pageId,button);if(["ingredients","dailyinventory","weeklyinventory","inventoryareas","purchases"].includes(pageId)){installMaterialSelectors();if(pageId==="ingredients")kucheV171RenderIngredients();if(pageId==="dailyinventory")kucheV171RenderCountPage("daily");if(pageId==="weeklyinventory")kucheV171RenderCountPage("weekly");}return out;};
+const previousHandleCloudSessionV18Material=handleCloudSession;
+handleCloudSession=async function(session){await previousHandleCloudSessionV18Material(session);ensureMaterialAreas();installMaterialSelectors();renderInventoryAreas();kucheV171RenderCountPage("daily");kucheV171RenderCountPage("weekly");};
+ensureMaterialAreas();installMaterialSelectors();renderAreaSelectors();kucheV171RenderIngredients();kucheV171RenderCountPage("daily");kucheV171RenderCountPage("weekly");
+setTimeout(()=>{ensureMaterialAreas();installMaterialSelectors();renderAreaSelectors();kucheV171RenderIngredients();},2800);
 })();
 </script>
 
