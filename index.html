@@ -20110,5 +20110,36 @@ v183EnsurePreparedCatalog();v183InstallBaseSaleFields();v183InstallWeeklyGuide()
 })();
 </script>
 
+<style id="kuche-v18-base-extra-catalog-style">
+.kuche-v184-auto-extra{display:inline-block;margin-left:7px;padding:3px 7px;border-radius:999px;background:#e8eefb;color:#304f87;font-size:9px;font-weight:800;vertical-align:middle}
+.kuche-v184-extra-help{margin:0 0 11px;padding:10px 12px;border-radius:9px;background:#eef6f0;color:#24594b;font-size:11px;line-height:1.45}
+</style>
+
+<script id="kuche-v18-base-extra-catalog-script">
+(function(){
+"use strict";
+function v184Norm(v){return String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase();}
+function v184IsBase(r){return (r?.recipeType||"sale")==="mise"||v184Norm(r?.category)==="preparacion base";}
+function v184BaseSettings(){try{return JSON.parse(localStorage.getItem("kucheV183BaseRecipeSales")||"{}")||{};}catch(e){return {};}}
+function v184Config(r){const settings=v184BaseSettings(),saved=settings[String(r?.id||"")]||settings[String(r?.name||"").toLowerCase()]||{};return {sellAsExtra:r?.sellAsExtra??saved.sellAsExtra??false,price:Number(r?.baseExtraPriceGross??saved.extraPriceGross??0)};}
+function v184PreparedProduct(r){return typeof kucheV17PreparedProduct==="function"?kucheV17PreparedProduct(r.id):inventory.find(p=>String(p.sourceRecipeId)===String(r.id));}
+function v184SyncBaseExtras(){
+ const automatic=[];(recipes||[]).filter(v184IsBase).forEach(r=>{const cfg=v184Config(r);if(!cfg.sellAsExtra||cfg.price<=0)return;const p=v184PreparedProduct(r)||(typeof kucheV17EnsurePreparedProduct==="function"?kucheV17EnsurePreparedProduct(r,{useBatchStock:true}):null);if(!p)return;automatic.push({id:"base-extra-"+r.id,label:"Extra "+r.name,productId:p.id,productName:p.name,quantity:1,unit:r.outputUnit||p.unit||"porción",price:cfg.price,prepMinutesDelta:0,active:true,baseRecipeExtra:true,sourceRecipeId:r.id});});
+ const manual=(kucheV172GlobalExtras||[]).filter(e=>!String(e.id||"").startsWith("base-extra-"));kucheV172GlobalExtras=[...manual,...automatic];localStorage.setItem(KUCHE_V172_GLOBAL_EXTRAS_KEY,JSON.stringify(kucheV172GlobalExtras));if(typeof kucheV172ApplyExtrasToRecipes==="function")kucheV172ApplyExtrasToRecipes();return automatic;
+}
+kucheV172PopulateExtraProducts=function(selected=""){const select=document.getElementById("kucheV172ExtraProduct");if(!select)return;const current=String(selected||select.value||""),products=inventory.filter(p=>{if(p.active===false)return false;if(typeof kucheV17NormalizeProduct==="function")kucheV17NormalizeProduct(p);return ["ingredient","prepared"].includes(p.inventoryClass);}).sort((a,b)=>String(a.name).localeCompare(String(b.name),"es"));select.innerHTML='<option value="">Seleccionar materia prima o receta base</option>'+products.map(p=>`<option value="${ops2EscapeAttr(p.id)}">${escapeHTML(p.name)} · ${p.inventoryKind==="prepared"?"receta base":escapeHTML(p.unit||"")}</option>`).join("");if([...select.options].some(o=>String(o.value)===current))select.value=current;kucheV172RefreshExtraUnit();const label=select.closest(".field")?.querySelector("label");if(label)label.textContent="Materia prima o receta base que descuenta";};
+const v184PreviousExtrasForRecipe=kucheV172ExtrasForRecipe;
+kucheV172ExtrasForRecipe=function(recipe){v184SyncBaseExtras();return v184PreviousExtrasForRecipe(recipe).map(e=>{const p=inventory.find(x=>String(x.id)===String(e.productId));if(String(e.id||"").startsWith("base-extra-")||p?.inventoryKind==="prepared"){const sourceId=e.sourceRecipeId||p?.sourceRecipeId||String(e.id||"").replace(/^base-extra-/,"");return {...e,baseRecipeExtra:true,sourceRecipeId:sourceId};}return e;});};
+const v184PreviousRenderExtras=kucheV172RenderGlobalExtras;
+kucheV172RenderGlobalExtras=function(){v184SyncBaseExtras();v184PreviousRenderExtras();const box=document.getElementById("kucheV172GlobalExtraList");if(!box)return;[...box.children].forEach((row,i)=>{const e=kucheV172GlobalExtras[i];if(!e||!String(e.id||"").startsWith("base-extra-"))return;const strong=row.querySelector("strong");if(strong&&!strong.querySelector(".kuche-v184-auto-extra")){const badge=document.createElement("span");badge.className="kuche-v184-auto-extra";badge.textContent="RECETA BASE";strong.appendChild(badge);}const actions=row.querySelector(".kuche-v172-row-actions");if(actions)actions.innerHTML=`<button type="button" class="secondary-button" onclick="editRecipe('${ops2EscapeAttr(e.sourceRecipeId||String(e.id).replace(/^base-extra-/,''))}')">Editar receta y precio</button>`;});};
+function v184InstallHelp(){const panel=document.getElementById("kucheV172GlobalExtrasPanel"),form=document.getElementById("kucheV172ExtraForm");if(!panel||!form||document.getElementById("kucheV184ExtraHelp"))return;const help=document.createElement("div");help.id="kucheV184ExtraHelp";help.className="kuche-v184-extra-help";help.innerHTML="Las recetas base marcadas como <strong>Vender como extra</strong> aparecen aquí automáticamente. También puedes crear un extra manual y seleccionar una receta base preparada.";form.before(help);}
+const v184PreviousSaveRecipe=saveRecipe;
+saveRecipe=async function(){await v184PreviousSaveRecipe();v184SyncBaseExtras();kucheV172RenderGlobalExtras();kucheV172PopulateExtraProducts();if(typeof kucheV172SyncGlobalExtrasToCloud==="function")await kucheV172SyncGlobalExtrasToCloud();if(typeof renderPOS==="function")renderPOS();};
+const v184PreviousShowPage=showPage;
+showPage=function(pageId,button){const out=v184PreviousShowPage(pageId,button);if(pageId==="recipes"){v184SyncBaseExtras();v184InstallHelp();kucheV172RenderGlobalExtras();kucheV172PopulateExtraProducts();}return out;};
+v184SyncBaseExtras();v184InstallHelp();kucheV172RenderGlobalExtras();kucheV172PopulateExtraProducts();
+})();
+</script>
+
 </body>
 </html>
