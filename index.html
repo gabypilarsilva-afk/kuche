@@ -19921,5 +19921,68 @@ installRecipeWorkspace();document.getElementById("recipeType")?.addEventListener
 })();
 </script>
 
+<style id="kuche-v18-recipe-search-base-style">
+.kuche-v18-search-field{position:relative}
+.kuche-v18-search-field .recipeIngredientSelect,.kuche-v18-search-field .recipeBaseSelect{display:none!important}
+.kuche-v18-search-input{width:100%;padding-right:36px!important;background:#fff!important}
+.kuche-v18-search-hint{display:block;margin-top:4px;color:#6e7772;font-size:10px;line-height:1.35}
+.kuche-v18-base-box{margin:0 18px 16px!important;border:1px solid #cbdccf!important;box-shadow:0 5px 16px rgba(23,63,53,.05)}
+.kuche-v18-base-box .recipe-ingredients-header{background:#e9f3ec!important}
+.kuche-v18-base-intro{padding:10px 14px;color:#526159;font-size:11px;line-height:1.45;border-bottom:1px solid #d8e3da;background:#f8fbf9}
+.kuche-v18-base-empty{padding:12px 14px;border-radius:9px;background:#fff6e7;color:#74551c;font-size:12px;line-height:1.45}
+#recipeBaseComponents{display:grid;gap:9px;padding:12px 14px}
+#recipeBaseComponents .recipe-base-row{display:grid;grid-template-columns:minmax(220px,2fr) minmax(130px,.8fr) minmax(110px,.7fr) minmax(120px,.8fr) auto;gap:9px;align-items:end;padding:11px;border:1px solid #e0e8e2;border-radius:10px;background:#fff}
+#recipeBaseComponents .recipe-base-row .field{margin:0;min-width:0}
+#recipeBaseComponents .kuche-v18-base-cost input{font-weight:800;color:#173f35;background:#f2f6f3}
+@media(max-width:760px){#recipeBaseComponents .recipe-base-row{grid-template-columns:1fr 1fr}#recipeBaseComponents .recipe-base-row .kuche-v18-base-search{grid-column:1/-1}#recipeBaseComponents .recipe-base-row>.danger-button{grid-column:1/-1}}
+</style>
+
+<script id="kuche-v18-recipe-search-base-script">
+(function(){
+"use strict";
+let recipeSearchSequence=0;
+function normalizeText(value){return String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase();}
+function isBaseRecipe(recipe){return (recipe?.recipeType||"sale")==="mise"||normalizeText(recipe?.category)==="preparacion base";}
+function migrateExistingBaseRecipes(){let changed=false;(recipes||[]).forEach(r=>{if(normalizeText(r.category)==="preparacion base"&&r.recipeType!=="mise"){r.recipeType="mise";changed=true;}});if(changed)saveRecipes();return changed;}
+function baseRecipesForSelect(excludedId=null){return (recipes||[]).filter(r=>isBaseRecipe(r)&&String(r.id)!==String(excludedId)).sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"es"));}
+function installSearchForSelect(select,{placeholder,hint,items,onSelected,className=""}){
+ if(!select||select.dataset.searchInstalled)return null;select.dataset.searchInstalled="true";const field=select.closest(".field");if(!field)return null;field.classList.add("kuche-v18-search-field",className);const listId="kucheRecipeSearchList"+(++recipeSearchSequence),input=document.createElement("input"),list=document.createElement("datalist"),help=document.createElement("span");input.type="search";input.className="kuche-v18-search-input";input.setAttribute("list",listId);input.placeholder=placeholder;input.autocomplete="off";list.id=listId;help.className="kuche-v18-search-hint";help.textContent=hint;const values=items();list.innerHTML=values.map(x=>`<option value="${ops2EscapeAttr(x.name)}"></option>`).join("");select.before(input);field.appendChild(list);field.appendChild(help);
+ const syncFromSelect=()=>{const item=values.find(x=>String(x.id)===String(select.value));if(item)input.value=item.name;};
+ const choose=()=>{const value=normalizeText(input.value),currentItems=items(),exact=currentItems.find(x=>normalizeText(x.name)===value);if(exact){select.value=String(exact.id);select.dispatchEvent(new Event("change",{bubbles:true}));onSelected?.(exact);}else if(select.value){select.value="";select.dispatchEvent(new Event("change",{bubbles:true}));}};
+ input.addEventListener("input",choose);input.addEventListener("change",choose);select.addEventListener("change",syncFromSelect);syncFromSelect();return input;
+}
+function ingredientItemsFromSelect(select){return [...select.options].filter(o=>o.value).map(o=>{const p=inventory.find(x=>String(x.id)===String(o.value));return p?{id:p.id,name:p.name}:null;}).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name,"es"));}
+function installIngredientSearches(){document.querySelectorAll("#recipeIngredients .recipe-row").forEach(row=>{const select=row.querySelector(".recipeIngredientSelect");installSearchForSelect(select,{placeholder:"Escribe el nombre del ingrediente…",hint:"Comienza a escribir y selecciona el producto sugerido.",items:()=>ingredientItemsFromSelect(select),className:"kuche-v18-ingredient-search"});});}
+function recipeMaterialTotals(recipe,visited=new Set()){
+ if(!recipe)return {net:0,gross:0};const key=String(recipe.id||recipe.name);if(visited.has(key))return {net:0,gross:0};const next=new Set(visited);next.add(key);let net=0,gross=0;
+ (recipe.ingredients||[]).forEach(i=>{const p=inventory.find(x=>String(x.id)===String(i.productId));if(!p)return;const unit=i.recipeUnit||i.unit||p.baseUnit||p.unit,qty=Number(i.quantity||0);net+=typeof opsFinalIngredientNetCost==="function"?opsFinalIngredientNetCost(p,qty,unit):qty*Number(p.costNet??p.cost??0);gross+=typeof opsFinalIngredientGrossCost==="function"?opsFinalIngredientGrossCost(p,qty,unit):qty*Number(p.costGross??p.cost??0);});
+ (recipe.baseComponents||[]).forEach(c=>{const base=recipes.find(x=>String(x.id)===String(c.recipeId));if(!base)return;const total=recipeMaterialTotals(base,next),factor=Number(c.quantity||0)/Math.max(.0001,Number(base.yield)||1);net+=total.net*factor;gross+=total.gross*factor;});return {net,gross};
+}
+function baseComponentDraftTotals(){let net=0,gross=0;document.querySelectorAll("#recipeBaseComponents .recipe-base-row").forEach(row=>{const base=recipes.find(x=>String(x.id)===String(row.querySelector(".recipeBaseSelect")?.value)),qty=Number(row.querySelector(".recipeBaseQty")?.value)||0,cost=row.querySelector(".kuche-v18-base-cost input");if(!base||qty<=0){if(cost)cost.value="$0";return;}const total=recipeMaterialTotals(base),factor=qty/Math.max(.0001,Number(base.yield)||1),lineNet=total.net*factor;net+=lineNet;gross+=total.gross*factor;if(cost)cost.value="$"+formatMoney(lineNet);});return {net,gross};}
+function installBaseRow(row,existing=null){if(!row||row.dataset.searchReady)return;row.dataset.searchReady="true";migrateExistingBaseRecipes();const select=row.querySelector(".recipeBaseSelect"),qty=row.querySelector(".recipeBaseQty"),unit=row.querySelector(".recipeBaseUnit"),old=select?.value||existing?.recipeId||"",bases=baseRecipesForSelect(editingRecipeId);if(select){select.innerHTML='<option value="">Seleccionar receta base</option>'+bases.map(r=>`<option value="${ops2EscapeAttr(r.id)}">${escapeHTML(r.name)}</option>`).join("");if(bases.some(r=>String(r.id)===String(old)))select.value=String(old);}
+ const costField=document.createElement("div");costField.className="field kuche-v18-base-cost";costField.innerHTML='<label>Costo utilizado</label><input type="text" disabled value="$0">';row.querySelector(".danger-button")?.before(costField);const selectField=select?.closest(".field");selectField?.classList.add("kuche-v18-base-search");const label=selectField?.querySelector("label");if(label)label.textContent="Buscar receta base";
+ installSearchForSelect(select,{placeholder:"Escribe el nombre de la receta base…",hint:"Solo aparecen las recetas guardadas en Recetas base.",items:()=>baseRecipesForSelect(editingRecipeId).map(r=>({id:r.id,name:r.name})),onSelected:r=>{if(unit&&!unit.value)unit.value=r.outputUnit||"porción";calculateRecipe();},className:"kuche-v18-base-search"});
+ [select,qty,unit].filter(Boolean).forEach(el=>el.addEventListener("input",calculateRecipe));const remove=row.querySelector(".danger-button");if(remove){const previous=remove.onclick;remove.onclick=()=>{if(typeof previous==="function")previous();calculateRecipe();};}calculateRecipe();}
+function installBaseRecipeSection(){migrateExistingBaseRecipes();const form=document.getElementById("recipeForm"),ingredients=form?.querySelector(":scope>.recipe-ingredients-box"),components=document.getElementById("recipeBaseComponents"),box=components?.closest(".recipe-ingredients-box");if(!form||!ingredients||!box)return;box.classList.add("kuche-v18-base-box");if(box.parentElement!==form)ingredients.after(box);else if(ingredients.nextElementSibling!==box)ingredients.after(box);const header=box.querySelector(".recipe-ingredients-header"),strong=header?.querySelector("strong");if(strong)strong.textContent="Recetas base utilizadas";const button=header?.querySelector("button");if(button)button.textContent="+ Agregar receta base";if(!box.querySelector(".kuche-v18-base-intro")){const intro=document.createElement("div");intro.className="kuche-v18-base-intro";intro.textContent="Ejemplo: agrega aquí la hamburguesa casera, una salsa, una masa o cualquier preparación creada en la pestaña Recetas base.";header?.after(intro);}box.style.display=document.getElementById("recipeType")?.value==="mise"?"none":"";components.querySelectorAll(".recipe-base-row").forEach(installBaseRow);}
+const previousAddIngredientSearch=addRecipeIngredient;
+addRecipeIngredient=function(existing=null){const out=previousAddIngredientSearch(existing);installIngredientSearches();return out;};
+const previousAddBaseSearch=addRecipeBaseComponent;
+addRecipeBaseComponent=function(existing=null){migrateExistingBaseRecipes();const bases=baseRecipesForSelect(editingRecipeId);if(!bases.length){alert("Aún no hay recetas base disponibles. Primero guarda una receta desde la pestaña Recetas base.");return;}const out=previousAddBaseSearch(existing),row=[...document.querySelectorAll("#recipeBaseComponents .recipe-base-row")].at(-1);installBaseRow(row,existing);return out;};
+const previousGetCurrentRecipeCalculationBase=getCurrentRecipeCalculation;
+getCurrentRecipeCalculation=function(){const current=previousGetCurrentRecipeCalculationBase(),extra=baseComponentDraftTotals(),rawCost=Number(current.rawCost||0)+extra.net,rawGross=Number(current.rawGross||0)+extra.gross;if(!extra.net&&!extra.gross)return current;const yieldValue=Math.max(.01,Number(document.getElementById("recipeYield")?.value)||1),saleGrossPerPortion=Math.max(0,Number(document.getElementById("recipeFixedSalePriceGross")?.value)||0);if(typeof kucheV163CalcFinancials==="function"){const c=kucheV163CalcFinancials({rawCost,rawGross,yieldValue,saleGrossPerPortion});return {...current,...c,rawCost,rawGross,purchaseVat:rawGross-rawCost,yieldValue};}return {...current,rawCost,rawGross,purchaseVat:rawGross-rawCost};};
+const previousCalculateSavedRecipeBase=calculateSavedRecipe;
+calculateSavedRecipe=function(recipe){const previous=previousCalculateSavedRecipeBase(recipe),total=recipeMaterialTotals(recipe),hadBase=(recipe?.baseComponents||[]).length>0;if(!hadBase||typeof kucheV163CalcFinancials!=="function")return previous;const yieldValue=Math.max(.01,Number(recipe.yield)||1),saleGrossPerPortion=Math.max(0,Number(previous.finalPerPortion??recipe.fixedSalePriceGross??recipe.salePriceGross)||0),c=kucheV163CalcFinancials({rawCost:total.net,rawGross:total.gross,yieldValue,saleGrossPerPortion});return {...previous,...c,rawCost:total.net,rawGross:total.gross,purchaseVat:total.gross-total.net,yieldValue};};
+const previousNewRecipeSearch=newRecipe;
+newRecipe=function(){const out=previousNewRecipeSearch();installBaseRecipeSection();installIngredientSearches();return out;};
+const previousEditRecipeSearch=editRecipe;
+editRecipe=function(id){const out=previousEditRecipeSearch(id);installBaseRecipeSection();installIngredientSearches();document.querySelectorAll("#recipeBaseComponents .recipe-base-row").forEach(installBaseRow);calculateRecipe();return out;};
+const previousRenderRecipesSearch=renderRecipes;
+renderRecipes=function(){migrateExistingBaseRecipes();const out=previousRenderRecipesSearch();installBaseRecipeSection();installIngredientSearches();return out;};
+const previousShowPageRecipeSearch=showPage;
+showPage=function(pageId,button){const out=previousShowPageRecipeSearch(pageId,button);if(pageId==="recipes"){installBaseRecipeSection();installIngredientSearches();renderRecipes();}return out;};
+document.getElementById("recipeType")?.addEventListener("change",installBaseRecipeSection);migrateExistingBaseRecipes();installBaseRecipeSection();installIngredientSearches();renderRecipes();
+})();
+</script>
+
 </body>
 </html>
