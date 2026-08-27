@@ -18859,7 +18859,7 @@ renderAreaCountForm=function(){
   kucheV17InstallAreaCountMode();normalizeAreaStocks();
   const box=document.getElementById("areaCountLines"),sel=document.getElementById("areaCountArea"),mode=document.getElementById("areaCountType")?.value||"daily";if(!box||!sel)return;
   const help=document.getElementById("kucheV17CountHelp");if(help)help.innerHTML=mode==="daily"?"Cuenta solo lo que ya está preparado y listo para vender, por ejemplo las <b>porciones de cebolla caramelizada</b>.":"Cuenta las materias primas disponibles antes de producir, por ejemplo los <b>kilos o unidades de cebolla</b> que quedan.";
-  const area=sel.value,kind=mode==="daily"?"prepared":"raw",products=inventory.filter(p=>kucheV17NormalizeProduct(p).inventoryKind===kind&&(Number(p.areaStocks?.[area]||0)>0||inferInventoryArea(p)===area));
+  const area=sel.value,kind=mode==="daily"?"prepared":"raw",products=inventory.filter(p=>(typeof v186InventoryInCount==="function"?v186InventoryInCount(p,mode,area):kucheV17NormalizeProduct(p).inventoryKind===kind&&(Number(p.areaStocks?.[area]||0)>0||inferInventoryArea(p)===area)));
   box.innerHTML=products.length?products.map(p=>`<div class="count-line"><div><strong>${escapeHTML(p.name)}</strong><div class="role-note">Teórico: ${formatNumber(Number(p.areaStocks?.[area]||0))} ${escapeHTML(p.unit)}</div></div><div>${escapeHTML(p.unit)}</div><input class="area-count-input" data-product="${ops2EscapeAttr(p.id)}" type="number" min="0" step="0.01" value="${Number(p.areaStocks?.[area]||0)}"></div>`).join(""):`<div class="empty-state"><strong>No hay ${mode==="daily"?"preparaciones":"materias primas"} asignadas a esta área</strong><span>${mode==="daily"?"Crea una receta de Preparación base o vincula un producto preparado.":"Registra las materias primas desde Materia prima."}</span></div>`;
 };
 
@@ -19029,8 +19029,8 @@ function kucheV171CountPrefix(mode){return mode==="daily"?"v17Daily":"v17Weekly"
 function kucheV171AllowedAreas(){const all=currentSession?.role!=="worker"?inventoryAreas:inventoryAreas.filter(a=>assignedAreasForRole().includes(a.key));return all;}
 function kucheV171RenderCountPage(mode){
   const prefix=kucheV171CountPrefix(mode),areaSelect=document.getElementById(prefix+"Area"),lines=document.getElementById(prefix+"Lines"),summary=document.getElementById(prefix+"Summary"),history=document.getElementById(prefix+"History");if(!areaSelect||!lines)return;
-  normalizeAreaStocks();const current=areaSelect.value,areas=kucheV171AllowedAreas();areaSelect.innerHTML=areas.map(a=>`<option value="${a.key}">${escapeHTML(a.name)}</option>`).join("");if(areas.some(a=>a.key===current))areaSelect.value=current;const area=areaSelect.value,kind=mode==="daily"?"prepared":"raw",items=inventory.filter(p=>kucheV17NormalizeProduct(p).inventoryKind===kind&&(Number(p.areaStocks?.[area]||0)>0||inferInventoryArea(p)===area)).sort((a,b)=>a.name.localeCompare(b.name,"es"));
-  lines.innerHTML=items.length?items.map(p=>`<div class="count-line"><div><strong>${escapeHTML(p.name)}</strong><div class="role-note">${p.inventoryClass==="supply"?"Suministro":"Teórico"}: ${formatNumber(Number(p.areaStocks?.[area]||0))} ${escapeHTML(p.unit)}</div></div><div>${escapeHTML(p.unit)}</div><input class="${prefix}Input" data-product="${ops2EscapeAttr(p.id)}" type="number" min="0" step="0.01" value="${Number(p.areaStocks?.[area]||0)}"></div>`).join(""):`<div class="empty-state"><strong>No hay ${mode==="daily"?"preparaciones listas":"materias primas o suministros"} en esta área</strong><span>${mode==="daily"?"Registra una producción para que aparezca aquí.":"Registra los productos desde Materia prima."}</span></div>`;
+  normalizeAreaStocks();const current=areaSelect.value,areas=kucheV171AllowedAreas();areaSelect.innerHTML=areas.map(a=>`<option value="${a.key}">${escapeHTML(a.name)}</option>`).join("");if(areas.some(a=>a.key===current))areaSelect.value=current;const area=areaSelect.value,kind=mode==="daily"?"prepared":"raw",items=inventory.filter(p=>(typeof v186InventoryInCount==="function"?v186InventoryInCount(p,mode,area):kucheV17NormalizeProduct(p).inventoryKind===kind&&(Number(p.areaStocks?.[area]||0)>0||inferInventoryArea(p)===area))).sort((a,b)=>a.name.localeCompare(b.name,"es"));
+  lines.innerHTML=items.length?items.map(p=>`<div class="count-line"><div><strong>${escapeHTML(p.name)}</strong><div class="role-note">${p.inventoryClass==="supply"?"Suministro":"Teórico"}: ${formatNumber(Number(p.areaStocks?.[area]||0))} ${escapeHTML(p.unit)}</div></div><div>${escapeHTML(p.unit)}</div><input class="${prefix}Input" data-product="${ops2EscapeAttr(p.id)}" type="number" min="0" step="0.01" value="${Number(p.areaStocks?.[area]||0)}"></div>`).join(""):`<div class="empty-state"><strong>No hay ${mode==="daily"?"materias primas o preparaciones":"productos seleccionados para conteo semanal"} en esta área</strong><span>${mode==="daily"?"Registra los productos y asigna su inventario responsable en Materia prima.":"En Materia prima, edita el producto y marca Incluir también en inventario semanal."}</span></div>`;
   const low=items.filter(p=>Number(p.quantity)<=Number(p.minimum)).length,last=inventoryAreaCounts.filter(x=>(x.frequency||x.type)===mode).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt))[0];if(summary)summary.innerHTML=`<div class="integral-stat"><span>Productos del conteo</span><strong>${items.length}</strong></div><div class="integral-stat"><span>Stock crítico</span><strong>${low}</strong></div><div class="integral-stat"><span>Área</span><strong style="font-size:18px">${escapeHTML(areaName(area))}</strong></div><div class="integral-stat"><span>Último conteo</span><strong style="font-size:16px">${last?new Date(last.createdAt).toLocaleDateString("es-CL"):"Sin registro"}</strong></div>`;
   const rows=inventoryAreaCounts.filter(x=>(x.frequency||x.type)===mode).slice(0,10);if(history)history.innerHTML=rows.map(x=>`<div class="mini-row"><span>${escapeHTML(areaName(x.area))} · ${escapeHTML(x.responsible||"")} · ${x.lines?.length||0} ítem(s)</span><strong>${new Date(x.createdAt).toLocaleString("es-CL")}</strong></div>`).join("")||'<div class="category">Sin conteos registrados.</div>';
 }
@@ -20171,12 +20171,13 @@ function v185DefaultId(r,formats=v185Formats(r)){const saved=v185Store[v185Key(r
 function v185ToBase(qty,from,to){qty=Number(qty)||0;if(from===to)return qty;const mass={g:1,kg:1000},volume={ml:1,L:1000};if(mass[from]&&mass[to])return qty*mass[from]/mass[to];if(volume[from]&&volume[to])return qty*volume[from]/volume[to];return NaN;}
 function v185BaseQty(r,f){return v185ToBase(f?.quantity,f?.unit,r?.outputUnit||"porción");}
 function v185SaveConfig(r,formats,defaultId){if(!r)return;r.portionFormats=formats;r.defaultPortionFormatId=defaultId||formats[0]?.id||"";const data={formats,defaultId:r.defaultPortionFormatId};v185Store[v185Key(r)]=data;v185Store[String(r.name||"").toLowerCase()]=data;localStorage.setItem(V185_PORTION_KEY,JSON.stringify(v185Store));saveRecipes();const p=typeof kucheV17PreparedProduct==="function"?kucheV17PreparedProduct(r.id):inventory.find(x=>String(x.sourceRecipeId)===String(r.id));if(p){p.portionFormats=formats;p.defaultPortionFormatId=r.defaultPortionFormatId;saveInventory();}}
+window.v186SavePreparedFormats=function(id,formats){const r=recipes.find(x=>String(x.id)===String(id));if(!r)return;const defaultId=formats.some(f=>f.id===r.defaultPortionFormatId)?r.defaultPortionFormatId:formats[0]?.id||"";v185SaveConfig(r,formats,defaultId);v185ApplyExtraQuantity(r);};
 function v185InstallBox(){const grid=document.querySelector("#recipeForm>.recipe-main-grid");if(!grid)return;let box=document.getElementById("kucheV185PortionBox");if(!box){box=document.createElement("div");box.id="kucheV185PortionBox";box.className="kuche-v185-portion-box";box.innerHTML='<div class="kuche-v185-portion-head"><div><strong>Formatos para contar porciones</strong><div class="inline-note">Define cuánto equivale cada porción. Ej.: Porción pequeña = 3 unidades; Porción grande = 10 unidades; Hamburguesa = 100 g.</div></div><button type="button" class="secondary-button" onclick="kucheV185AddPortionFormat()">+ Agregar formato</button></div><div id="kucheV185PortionRows"></div>';const saleBox=document.getElementById("kucheV183BaseSaleBox");if(saleBox)saleBox.insertAdjacentElement("beforebegin",box);else grid.appendChild(box);}box.classList.toggle("visible",document.getElementById("recipeType")?.value==="mise");}
 function v185AddRow(existing=null,isDefault=false){v185InstallBox();const rows=document.getElementById("kucheV185PortionRows");if(!rows)return;const f=existing||{id:v185Id(),name:"",quantity:1,unit:document.getElementById("recipeOutputUnit")?.value||"porción"},row=document.createElement("div");row.className="kuche-v185-portion-row";row.dataset.id=f.id;row.innerHTML=`<div class="field"><label>Nombre del formato</label><input class="v185PortionName" placeholder="Ej. Porción de 3 aros" value="${escapeHTML(f.name||"")}"></div><div class="field"><label>Equivale a</label><input class="v185PortionQty" type="number" min="0.0001" step="0.0001" value="${Number(f.quantity)||1}"></div><div class="field"><label>Unidad</label><select class="v185PortionUnit">${v185UnitOptions(f.unit||"porción")}</select></div><label class="kuche-v185-default"><input class="v185PortionDefault" type="radio" name="v185PortionDefault" ${isDefault?"checked":""}> Porción de venta/extra</label><button type="button" class="danger-button">Eliminar</button>`;rows.appendChild(row);row.querySelector("button").onclick=()=>{row.remove();const first=rows.querySelector(".v185PortionDefault");if(first&&![...rows.querySelectorAll(".v185PortionDefault")].some(x=>x.checked))first.checked=true;};if(!rows.querySelector(".v185PortionDefault:checked"))row.querySelector(".v185PortionDefault").checked=true;}
 window.kucheV185AddPortionFormat=()=>v185AddRow();
 function v185Load(r=null){v185InstallBox();const rows=document.getElementById("kucheV185PortionRows");if(!rows)return;rows.innerHTML="";if(!r||!v185IsBase(r))return;const formats=v185Formats(r),def=v185DefaultId(r,formats);formats.forEach(f=>v185AddRow(f,String(f.id)===def));}
 function v185Collect(){const rows=[...document.querySelectorAll("#kucheV185PortionRows .kuche-v185-portion-row")],formats=[];let defaultId="";for(const row of rows){const name=row.querySelector(".v185PortionName")?.value.trim(),quantity=Number(row.querySelector(".v185PortionQty")?.value)||0,unit=row.querySelector(".v185PortionUnit")?.value||"porción",id=row.dataset.id||v185Id();if(!name||quantity<=0)return {error:"Completa el nombre y la equivalencia de cada formato de porción."};formats.push({id,name,quantity,unit});if(row.querySelector(".v185PortionDefault")?.checked)defaultId=id;}return {formats,defaultId:defaultId||formats[0]?.id||""};}
-function v185ApplyExtraQuantity(r){if(!r)return;const formats=v185Formats(r),def=formats.find(f=>String(f.id)===v185DefaultId(r,formats))||formats[0],qty=def?v185BaseQty(r,def):1;if(!Number.isFinite(qty)||qty<=0)return;(kucheV172GlobalExtras||[]).filter(e=>String(e.sourceRecipeId)===String(r.id)||String(e.id)===`base-extra-${r.id}`).forEach(e=>{e.quantity=qty;e.unit=r.outputUnit||"porción";e.portionFormatId=def.id;e.portionFormatName=def.name;});if(typeof KUCHE_V172_GLOBAL_EXTRAS_KEY!=="undefined")localStorage.setItem(KUCHE_V172_GLOBAL_EXTRAS_KEY,JSON.stringify(kucheV172GlobalExtras));}
+function v185ApplyExtraQuantity(r){if(!r)return;const formats=v185Formats(r),def=formats.find(f=>String(f.id)===v185DefaultId(r,formats))||formats[0],qty=def?v185BaseQty(r,def):1;if(!Number.isFinite(qty)||qty<=0)return;(kucheV172GlobalExtras||[]).filter(e=>String(e.sourceRecipeId)===String(r.id)||String(e.id)===`base-extra-${r.id}`).forEach(e=>{e.quantity=qty;e.unit=r.outputUnit||"porción";e.portionFormatId=def?.id||"";e.portionFormatName=def?.name||"Porción";});if(typeof KUCHE_V172_GLOBAL_EXTRAS_KEY!=="undefined")localStorage.setItem(KUCHE_V172_GLOBAL_EXTRAS_KEY,JSON.stringify(kucheV172GlobalExtras));}
 function v185FormatExtra(e){if(!e?.baseRecipeExtra&&!String(e?.id||"").startsWith("base-extra-"))return e;const sourceId=e.sourceRecipeId||String(e.id||"").replace(/^base-extra-/,""),r=recipes.find(x=>String(x.id)===String(sourceId));if(!r)return e;const formats=v185Formats(r),def=formats.find(f=>String(f.id)===v185DefaultId(r,formats))||formats[0],qty=def?v185BaseQty(r,def):Number(e.quantity||1);return Number.isFinite(qty)&&qty>0?{...e,quantity:qty,unit:r.outputUnit||e.unit||"porción",portionFormatId:def?.id||"",portionFormatName:def?.name||"Porción"}:e;}
 const v185PreviousNewRecipe=newRecipe;
 newRecipe=function(){const out=v185PreviousNewRecipe();v185InstallBox();v185Load();return out;};
@@ -20188,7 +20189,7 @@ function v185PreparedRecipe(p){return recipes.find(r=>String(r.id)===String(p?.s
 function v185BreakdownTotal(r,data){let total=Number(data?.loose)||0;for(const f of v185Formats(r)){const n=Number(data?.formats?.[f.id])||0,b=v185BaseQty(r,f);if(Number.isFinite(b))total+=n*b;}return total;}
 function v185UpdateDailyTotal(box){const hidden=box.closest(".count-line")?.querySelector(".v17DailyInput"),r=recipes.find(x=>String(x.id)===String(box.dataset.recipe));if(!hidden||!r)return;let total=Number(box.querySelector(".v185Loose")?.value)||0;box.querySelectorAll(".v185FormatCount").forEach(input=>{const f=v185Formats(r).find(x=>String(x.id)===String(input.dataset.format)),b=v185BaseQty(r,f);if(Number.isFinite(b))total+=(Number(input.value)||0)*b;});hidden.value=Math.max(0,total);const label=box.querySelector(".kuche-v185-total strong");if(label)label.textContent=`${formatNumber(total)} ${r.outputUnit||"porción"}`;}
 window.kucheV185UpdateDailyTotal=input=>v185UpdateDailyTotal(input.closest(".kuche-v185-daily-formats"));
-function v185EnhanceDaily(){const lines=document.getElementById("v17DailyLines"),area=document.getElementById("v17DailyArea")?.value;if(!lines||!area)return;lines.querySelectorAll(".v17DailyInput").forEach(hidden=>{const p=inventory.find(x=>String(x.id)===String(hidden.dataset.product)),r=v185PreparedRecipe(p),formats=r?v185Formats(r):[];if(!r||!formats.length||hidden.closest(".count-line")?.querySelector(".kuche-v185-daily-formats"))return;const stock=Number(p.areaStocks?.[area]||0),saved=p.portionCountBreakdown?.[area],savedTotal=saved?v185BreakdownTotal(r,saved):NaN,useSaved=Number.isFinite(savedTotal)&&Math.abs(savedTotal-stock)<.0001,data=useSaved?saved:{loose:stock,formats:{}},box=document.createElement("div");box.className="kuche-v185-daily-formats";box.dataset.recipe=r.id;box.innerHTML=`<strong>Separar por formatos de porción</strong><div class="inline-note">Cuenta cada formato; KÜCHE lo convertirá a ${escapeHTML(r.outputUnit||"porción")} para mantener una sola existencia.</div><div class="kuche-v185-format-grid">${formats.map(f=>`<label class="kuche-v185-format-input"><span>${escapeHTML(f.name)}<br><small>1 = ${formatNumber(f.quantity)} ${escapeHTML(f.unit)}</small></span><input class="v185FormatCount" data-format="${ops2EscapeAttr(f.id)}" type="number" min="0" step="1" value="${Number(data.formats?.[f.id])||0}" oninput="kucheV185UpdateDailyTotal(this)"></label>`).join("")}<label class="kuche-v185-format-input"><span>Sin porcionar<br><small>en ${escapeHTML(r.outputUnit||"porción")}</small></span><input class="v185Loose" type="number" min="0" step="0.01" value="${Number(data.loose)||0}" oninput="kucheV185UpdateDailyTotal(this)"></label></div><div class="kuche-v185-total">Total contado: <strong>${formatNumber(stock)} ${escapeHTML(r.outputUnit||"porción")}</strong></div>`;const row=hidden.closest(".count-line");row.appendChild(box);hidden.type="hidden";v185UpdateDailyTotal(box);});}
+function v185EnhanceDaily(){if(typeof window.v186EnhanceCount==="function"){window.v186EnhanceCount("daily");return;}const lines=document.getElementById("v17DailyLines"),area=document.getElementById("v17DailyArea")?.value;if(!lines||!area)return;lines.querySelectorAll(".v17DailyInput").forEach(hidden=>{const p=inventory.find(x=>String(x.id)===String(hidden.dataset.product)),r=v185PreparedRecipe(p),formats=r?v185Formats(r):[];if(!r||!formats.length||hidden.closest(".count-line")?.querySelector(".kuche-v185-daily-formats"))return;const stock=Number(p.areaStocks?.[area]||0),saved=p.portionCountBreakdown?.[area],savedTotal=saved?v185BreakdownTotal(r,saved):NaN,useSaved=Number.isFinite(savedTotal)&&Math.abs(savedTotal-stock)<.0001,data=useSaved?saved:{loose:stock,formats:{}},box=document.createElement("div");box.className="kuche-v185-daily-formats";box.dataset.recipe=r.id;box.innerHTML=`<strong>Separar por formatos de porción</strong><div class="inline-note">Cuenta cada formato; KÜCHE lo convertirá a ${escapeHTML(r.outputUnit||"porción")} para mantener una sola existencia.</div><div class="kuche-v185-format-grid">${formats.map(f=>`<label class="kuche-v185-format-input"><span>${escapeHTML(f.name)}<br><small>1 = ${formatNumber(f.quantity)} ${escapeHTML(f.unit)}</small></span><input class="v185FormatCount" data-format="${ops2EscapeAttr(f.id)}" type="number" min="0" step="1" value="${Number(data.formats?.[f.id])||0}" oninput="kucheV185UpdateDailyTotal(this)"></label>`).join("")}<label class="kuche-v185-format-input"><span>Sin porcionar<br><small>en ${escapeHTML(r.outputUnit||"porción")}</small></span><input class="v185Loose" type="number" min="0" step="0.01" value="${Number(data.loose)||0}" oninput="kucheV185UpdateDailyTotal(this)"></label></div><div class="kuche-v185-total">Total contado: <strong>${formatNumber(stock)} ${escapeHTML(r.outputUnit||"porción")}</strong></div>`;const row=hidden.closest(".count-line");row.appendChild(box);hidden.type="hidden";v185UpdateDailyTotal(box);});}
 const v185PreviousRenderCount=kucheV171RenderCountPage;
 kucheV171RenderCountPage=function(mode){const out=v185PreviousRenderCount(mode);if(mode==="daily")v185EnhanceDaily();return out;};
 const v185PreviousExtrasForRecipe=kucheV172ExtrasForRecipe;
@@ -20202,5 +20203,229 @@ document.getElementById("recipeType")?.addEventListener("change",()=>{v185Instal
 })();
 </script>
 
+<style id="kuche-v186-style">
+.v186-settings{grid-column:1/-1;border:1px solid #cbdace;background:#f7faf8;border-radius:12px;padding:16px;margin:12px 0}.v186-settings h3{margin-top:0}.v186-check{display:flex;align-items:center;gap:10px;margin:15px 0;font-weight:600}.v186-check input{width:20px;height:20px;flex:0 0 auto}.v186-format-row{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end;margin:10px 0}.v186-count-box{grid-column:1/-1;padding:12px;background:#f7faf8;border-radius:10px;margin-top:8px}.v186-total{display:block;margin-top:12px}.v186-free-grid{display:grid;grid-template-columns:2fr 2fr 1fr 1fr;gap:10px;margin:14px 0}[hidden]{display:none!important}@media(max-width:700px){.v186-format-row,.v186-free-grid{grid-template-columns:1fr 1fr}.v186-format-row .field:first-child{grid-column:1/-1}}
+</style>
+<script id="kuche-v186-script">
+/* KÜCHE V18.6 — porciones por materia prima, conteo diario y selección semanal. */
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const esc=v=>escapeHTML(String(v??''));
+const attr=v=>ops2EscapeAttr(String(v??''));
+const isAdmin=()=>!!currentSession&&(currentSession.role==='admin'||['admin','manager'].includes(currentSession.accessRole));
+const productById=id=>inventory.find(p=>String(p.id)===String(id));
+const uid=()=>`portion-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;
+const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
+const prepared=p=>p?.inventoryKind==='prepared';
+const unitKey=u=>({l:'L',litro:'L',litros:'L',un:'unidad',u:'unidad',unidades:'unidad',porciones:'porción'}[norm(u)]||u);
+function convert(qty,from,to){from=unitKey(from);to=unitKey(to);if(from===to)return qty;const units={g:['mass',1],kg:['mass',1000],ml:['volume',1],L:['volume',1000]};return units[from]&&units[to]&&units[from][0]===units[to][0]?qty*units[from][1]/units[to][1]:NaN;}
+function formatsFor(p){
+ if(Array.isArray(p?.portionFormats))return p.portionFormats;
+ if(prepared(p)){const r=recipes.find(r=>String(r.id)===String(p.sourceRecipeId));return r?.portionFormats||[];}
+ return (p?.conversions||[]).map((c,i)=>({id:c.id||`conversion-${i}-${norm(c.name)}`,name:c.name,quantity:Number(c.baseQty??c.base_qty),unit:p.baseUnit||p.unit}));
+}
+function countMode(p){return p?.inventoryCountMode||(formatsFor(p).length?'portions':'stock');}
+function formatStockQty(p,f){
+ const base=convert(Number(f.quantity),f.unit,p.baseUnit||p.unit);
+ if(!Number.isFinite(base)||base<=0)return NaN;
+ // Same conversion used by recipe consumption; purchase packs and yield stay consistent.
+ return opsFinalIngredientPurchaseQty(p,base,p.baseUnit||p.unit);
+}
+function inCount(p,mode,area){return p?.active!==false&&(mode==='daily'||p.weeklyInventoryEnabled===true)&&(Number(p.areaStocks?.[area]||0)>0||inferInventoryArea(p)===area);}
+window.v186InventoryInCount=inCount;
+window.v186CountMath={convert,formatStockQty,formatsFor,inCount};
+kucheV17ModeLabel=mode=>mode==='daily'?'Inventario diario':'Inventario semanal';
+let preparedEditingId=null;
+function unitOptions(value){return [...new Set(['g','kg','ml','L','unidad','porción',value].filter(Boolean))].map(u=>`<option value="${attr(u)}" ${u===value?'selected':''}>${esc(u)}</option>`).join('');}
+function panelHTML(prefix){return `<div class="v186-settings" id="${prefix}Settings"><h3>Porciones e inventario</h3><p class="inline-note">Todos los productos aparecen en el inventario diario de su área. El semanal es un control adicional de la misma existencia.</p><label class="v186-check"><input id="${prefix}Weekly" type="checkbox"> Incluir también en inventario semanal</label><div class="field"><label for="${prefix}Mode">Forma de conteo</label><select id="${prefix}Mode"><option value="stock">Cantidad directa en la unidad de stock</option><option value="base">Cantidad directa en la unidad base (g, kg, ml, L o unidades)</option><option value="portions">Porciones y cantidad sin porcionar</option></select></div><div id="${prefix}Formats"><div class="recipe-ingredients-header"><strong>¿A cuánto equivale una porción?</strong><button type="button" class="secondary-button" id="${prefix}Add">+ Agregar porción</button></div><p class="inline-note">Ej.: Lechuga para hamburguesa = 20 g; Lechuga para mechada = 30 g. Puedes registrar varios tamaños sin duplicar el producto.</p><div id="${prefix}Rows"></div></div></div>`;}
+function addRow(prefix,f={}){
+ const row=document.createElement('div');row.className='v186-format-row';row.dataset.id=f.id||uid();
+ row.innerHTML=`<div class="field"><label>Nombre de la porción</label><input class="v186-name" value="${attr(f.name||'')}" placeholder="Ej. Porción hamburguesa"></div><div class="field"><label>Equivale a</label><input class="v186-qty" type="number" min="0.000001" step="any" value="${Number(f.quantity)||1}"></div><div class="field"><label>Unidad</label><select class="v186-unit">${unitOptions(f.unit||$('productBaseUnit')?.value||'g')}</select></div><button type="button" class="danger-button">Eliminar</button>`;
+ row.querySelector('button').onclick=()=>row.remove();$(prefix+'Rows').appendChild(row);
+}
+function loadPanel(prefix,p){
+ $(prefix+'Weekly').checked=p?.weeklyInventoryEnabled===true;
+ $(prefix+'Mode').value=countMode(p);
+ $(prefix+'Rows').innerHTML='';formatsFor(p).forEach(f=>addRow(prefix,f));
+ const toggle=()=>{$(prefix+'Formats').hidden=$(prefix+'Mode').value!=='portions';};
+ $(prefix+'Mode').onchange=toggle;$(prefix+'Add').onclick=()=>addRow(prefix);toggle();
+}
+function collectPanel(prefix,p){
+ const mode=$(prefix+'Mode').value,formats=[],names=new Set();
+ for(const row of $(prefix+'Rows').children){
+  const name=row.querySelector('.v186-name').value.trim(),quantity=Number(row.querySelector('.v186-qty').value),unit=row.querySelector('.v186-unit').value;
+  if(!name||!Number.isFinite(quantity)||quantity<=0)throw Error('Completa el nombre y una equivalencia mayor que cero para cada porción.');
+  if(names.has(norm(name)))throw Error('Cada porción debe tener un nombre diferente.');names.add(norm(name));
+  if([p.unit,p.baseUnit].some(u=>norm(u)===norm(name)))throw Error('Usa un nombre para la porción distinto de la unidad de stock.');
+  const f={id:row.dataset.id,name,quantity,unit};
+  if(!Number.isFinite(formatStockQty(p,f)))throw Error(`No se puede convertir “${name}” de ${unit} a ${p.baseUnit||p.unit}. Revisa las unidades.`);
+  formats.push(f);
+ }
+ if(mode==='portions'&&!formats.length)throw Error('Agrega al menos una porción o elige cantidad directa.');
+ return {weeklyInventoryEnabled:$(prefix+'Weekly').checked,inventoryCountMode:mode,portionFormats:formats};
+}
+function ensureMaterialPanel(){
+ const grid=$('inventoryForm')?.querySelector('.form-grid');if(!grid)return;
+ if(!$('v186MaterialSettings'))grid.insertAdjacentHTML('beforeend',panelHTML('v186Material'));
+ grid.appendChild($('v186MaterialSettings'));
+}
+const oldPrepare=kucheV174PrepareMaterialForm;
+kucheV174PrepareMaterialForm=function(){const result=oldPrepare();ensureMaterialPanel();return result;};
+const oldNewProduct=newProduct;
+newProduct=function(){const out=oldNewProduct();ensureMaterialPanel();loadPanel('v186Material',null);return out;};
+const oldEditProduct=editProduct;
+editProduct=function(id){const p=productById(id);if(prepared(p))return openPreparedSettings(id);const out=oldEditProduct(id);ensureMaterialPanel();loadPanel('v186Material',p);return out;};
+function applySettings(p,settings){
+ Object.assign(p,settings);p.portionCountBreakdown={};
+ p.conversions=settings.portionFormats.map(f=>({id:f.id,name:f.name,baseQty:convert(f.quantity,f.unit,p.baseUnit||p.unit)}));
+ if(prepared(p)&&typeof window.v186SavePreparedFormats==='function')window.v186SavePreparedFormats(p.sourceRecipeId,settings.portionFormats);
+ saveInventory();
+}
+const oldSaveProduct=saveProduct;
+saveProduct=async function(){
+ if(!isAdmin()){alert('Solo el administrador puede configurar las materias primas.');return;}
+ ensureMaterialPanel();let settings;const id=editingId,name=$('productName').value.trim();
+ const draft={unit:$('unit').value,baseUnit:$('productBaseUnit').value,basePerPurchase:Number($('productBasePerPurchase').value),yieldPct:Number($('productYieldPct').value)};
+ try{settings=collectPanel('v186Material',draft);}catch(e){alert(e.message);return;}
+ $('productConversions').innerHTML='';settings.portionFormats.forEach(f=>addInventoryConversionRow({name:f.name,baseQty:convert(f.quantity,f.unit,draft.baseUnit)}));
+ await oldSaveProduct();if($('inventoryForm').classList.contains('open'))return;
+ const p=id!==null?productById(id):inventory.find(p=>p.name===name);if(!p)return;
+ applySettings(p,settings);await opsFinalSyncInventoryMetaCloud(p);await syncCountSettings(p);refresh();
+};
+function openPreparedSettings(id){
+ if(!isAdmin()){alert('Solo el administrador puede configurar las porciones.');return;}
+ const p=productById(id);if(!p)return;preparedEditingId=p.id;
+ let host=$('v186PreparedEditor');if(!host){host=document.createElement('div');host.id='v186PreparedEditor';host.className='integral-panel';$('ingredients').appendChild(host);}
+ host.innerHTML=`<h2>${esc(p.name)}</h2><p>Unidad de stock: ${esc(p.unit)}. El costo y la producción se mantienen vinculados a su receta base.</p>${panelHTML('v186Prepared')}<div class="form-actions"><button type="button" class="primary-button" id="v186PreparedSave">Guardar porciones e inventario</button><button type="button" class="secondary-button" id="v186PreparedCancel">Cancelar</button></div>`;
+ host.hidden=false;loadPanel('v186Prepared',p);$('v186PreparedSave').onclick=savePreparedSettings;$('v186PreparedCancel').onclick=()=>{host.hidden=true;preparedEditingId=null;};host.scrollIntoView({behavior:'smooth'});
+}
+window.v186OpenMaterialSettings=id=>prepared(productById(id))?openPreparedSettings(id):kucheV171OpenEditCatalogItem(id);
+async function savePreparedSettings(){
+ if(!isAdmin())return;const p=productById(preparedEditingId);if(!p)return;let settings;
+ try{settings=collectPanel('v186Prepared',p);}catch(e){alert(e.message);return;}
+ applySettings(p,settings);await opsFinalSyncInventoryMetaCloud(p);await syncCountSettings(p);$('v186PreparedEditor').hidden=true;preparedEditingId=null;refresh();
+}
+// Existing organization settings hold the new metadata; no new database columns are required.
+async function syncCountSettings(p){
+ if(!kucheCloud||!cloudOrganization)return true;
+ try{
+  const cloudId=await ops3EnsureCloudInventoryItem(p,{allowInitialMigration:false});if(!cloudId)throw Error('Producto pendiente de sincronizar.');
+  const {data,error}=await kucheCloud.from('organization_settings').select('settings').eq('organization_id',cloudOrganization.id).maybeSingle();if(error)throw error;
+  const counts={...(data?.settings?.inventory_count_settings_v186||{})};counts[cloudId]={weeklyInventoryEnabled:p.weeklyInventoryEnabled===true,inventoryCountMode:countMode(p),portionFormats:formatsFor(p)};
+  const settings={...(data?.settings||{}),inventory_count_settings_v186:counts};
+  const result=data?await kucheCloud.from('organization_settings').update({settings}).eq('organization_id',cloudOrganization.id):await kucheCloud.from('organization_settings').insert({organization_id:cloudOrganization.id,settings});if(result.error)throw result.error;return true;
+ }catch(e){console.warn('Configuración de conteo',e.message);alert('La configuración quedó guardada en este dispositivo, pero no se pudo sincronizar con los trabajadores. Revisa la conexión y vuelve a guardar.');return false;}
+}
+async function loadCountSettings(){
+ if(!kucheCloud||!cloudOrganization)return;
+ try{const {data,error}=await kucheCloud.from('organization_settings').select('settings').eq('organization_id',cloudOrganization.id).maybeSingle();if(error)throw error;
+  const counts=data?.settings?.inventory_count_settings_v186||{};
+  inventory.forEach(p=>{const config=counts[p.cloudId];if(!config)return;Object.assign(p,{weeklyInventoryEnabled:config.weeklyInventoryEnabled===true,inventoryCountMode:config.inventoryCountMode||'stock',portionFormats:Array.isArray(config.portionFormats)?config.portionFormats:[]});if(prepared(p)){const r=recipes.find(r=>String(r.id)===String(p.sourceRecipeId));if(r)r.portionFormats=p.portionFormats;}});saveInventory();saveRecipes();
+ }catch(e){console.warn('Lectura configuración de conteo',e.message);}
+}
+const oldCloudSession=handleCloudSession;
+handleCloudSession=async function(session){await oldCloudSession(session);await loadCountSettings();refresh();};
+const oldRefreshCloud=ops3RefreshInventoryFromCloud;
+ops3RefreshInventoryFromCloud=async function(){await oldRefreshCloud();await loadCountSettings();refresh();};
+const oldRenderMaterials=kucheV171RenderIngredients;
+kucheV171RenderIngredients=function(){
+ oldRenderMaterials();
+ // Resolve rows by the existing product action so filtering and sorting remain unchanged.
+ $('ingredients')?.querySelectorAll('tr').forEach(row=>{
+  const button=[...row.querySelectorAll('button')].find(b=>/kucheV171OpenEditCatalogItem|editRecipe\(/.test(b.getAttribute('onclick')||''));if(!button)return;
+  const call=button.getAttribute('onclick'),id=call.match(/\('([^']+)'\)/)?.[1];
+  const p=call.includes('editRecipe(')?inventory.find(p=>String(p.sourceRecipeId)===String(id)):productById(id);if(!p)return;
+  const badge=row.querySelector('.kuche-v183-inventory-badge');if(badge)badge.textContent=p.weeklyInventoryEnabled===true?'Diario + semanal':'Inventario diario';
+  const settings=document.createElement('button');settings.type='button';settings.className='secondary-button';settings.textContent='Porciones e inventario';settings.onclick=()=>window.v186OpenMaterialSettings(p.id);button.parentElement.appendChild(settings);
+  const note=document.createElement('div');note.className='category';note.textContent=countMode(p)==='portions'?formatsFor(p).map(f=>`${f.name}: ${formatNumber(f.quantity)} ${f.unit}`).join(' · '):`Conteo directo en ${countMode(p)==='base'?(p.baseUnit||p.unit):p.unit}`;row.children[0].appendChild(note);
+ });
+ const guide=$('kucheV183WeeklyGuide');if(guide)guide.innerHTML='<strong>Inventario diario:</strong> todas las materias primas y preparaciones de cada área. <strong>Inventario semanal:</strong> solo los productos que marques con “Incluir también en inventario semanal” al registrar o editar. Ambos actualizan la misma existencia.';
+};
+function breakdownTotal(p,data){let total=Number(data?.loose)||0;for(const f of formatsFor(p)){const q=formatStockQty(p,f);if(!Number.isFinite(q))return NaN;total+=Number(data?.formats?.[f.id]||0)*q;}return total;}
+function updateTotal(box){
+ const p=productById(box.dataset.product),hidden=box.closest('.count-line').querySelector('input[data-product]');if(!p||!hidden)return;
+ const data={loose:Number(box.querySelector('.v186-loose').value),formats:{}};let valid=Number.isFinite(data.loose)&&data.loose>=0;
+ box.querySelectorAll('.v186-count').forEach(input=>{const n=Number(input.value);if(!Number.isFinite(n)||n<0||!Number.isInteger(n))valid=false;data.formats[input.dataset.format]=n;});
+ const total=breakdownTotal(p,data);valid=valid&&Number.isFinite(total);hidden.value=valid?String(Math.round(total*1e10)/1e10):'';box.dataset.valid=String(valid);
+ box.querySelector('.v186-total').textContent=valid?`Total contado: ${formatNumber(total)} ${p.unit}`:'Revisa las cantidades y equivalencias.';return {data,valid};
+}
+function enhanceCount(mode){
+ const prefix=kucheV171CountPrefix(mode),lines=$(prefix+'Lines'),area=$(prefix+'Area')?.value;if(!lines||!area)return;
+ lines.querySelectorAll('.'+prefix+'Input').forEach(hidden=>{
+  const p=productById(hidden.dataset.product),row=hidden.closest('.count-line');
+  if(p&&countMode(p)==='base'&&!row.querySelector('.v186-direct')){
+   const factor=opsFinalIngredientPurchaseQty(p,1,p.baseUnit||p.unit),input=document.createElement('input');input.className='v186-direct';input.type='number';input.min='0';input.step='any';input.value=String(Number(hidden.value)/factor);row.children[1].textContent=p.baseUnit||p.unit;hidden.type='hidden';row.appendChild(input);input.oninput=()=>{hidden.value=input.value.trim()&&Number.isFinite(Number(input.value))&&Number(input.value)>=0?String(Number(input.value)*factor):'';};return;
+  }
+  if(!p||countMode(p)!=='portions'||!formatsFor(p).length||row.querySelector('.v186-count-box'))return;
+  const stock=Number(p.areaStocks?.[area]||0),saved=p.portionCountBreakdown?.[area],total=breakdownTotal(p,saved),data=saved&&Number.isFinite(total)&&Math.abs(total-stock)<1e-7?saved:{loose:stock,formats:{}};
+  const box=document.createElement('div');box.className='v186-count-box';box.dataset.product=p.id;
+  box.innerHTML=`<strong>Conteo por porciones</strong><div class="inline-note">Cuenta cada porción una sola vez. Agrega aparte lo que queda sin porcionar.</div><div class="kuche-v185-format-grid">${formatsFor(p).map(f=>`<label class="kuche-v185-format-input"><span>${esc(f.name)}<br><small>1 = ${formatNumber(f.quantity)} ${esc(f.unit)}</small></span><input class="v186-count" data-format="${attr(f.id)}" type="number" min="0" step="1" value="${Number(data.formats?.[f.id])||0}"></label>`).join('')}<label class="kuche-v185-format-input"><span>Sin porcionar<br><small>en ${esc(p.unit)}</small></span><input class="v186-loose" type="number" min="0" step="any" value="${Number(data.loose)||0}"></label></div><strong class="v186-total"></strong>`;
+  hidden.type='hidden';row.appendChild(box);box.querySelectorAll('input').forEach(i=>i.oninput=()=>updateTotal(box));updateTotal(box);
+ });
+}
+window.v186EnhanceCount=enhanceCount;
+const oldCountRender=kucheV171RenderCountPage;
+kucheV171RenderCountPage=function(mode){oldCountRender(mode);enhanceCount(mode);};
+const oldCountSave=kucheV171SaveCountPage;
+let savingCount=false;
+kucheV171SaveCountPage=async function(mode){
+ if(savingCount)return;const prefix=kucheV171CountPrefix(mode),area=$(prefix+'Area')?.value;
+ if(!kucheV171AllowedAreas().some(a=>a.key===area)){alert('No tienes permiso para contar esta área.');return;}
+ const inputs=[...$(prefix+'Lines').querySelectorAll('.'+prefix+'Input')],snapshots=[];
+ for(const box of $(prefix+'Lines').querySelectorAll('.v186-count-box')){const result=updateTotal(box);if(!result?.valid){alert('Revisa las porciones: deben ser cantidades enteras iguales o mayores que cero.');return;}snapshots.push({p:productById(box.dataset.product),data:result.data});}
+ if(inputs.some(i=>!i.value.trim()||!Number.isFinite(Number(i.value))||Number(i.value)<0||!inCount(productById(i.dataset.product),mode,area))){alert('Completa todas las cantidades con valores iguales o mayores que cero.');return;}
+ const previous=inventoryAreaCounts[0]?.id;savingCount=true;
+ try{await oldCountSave(mode);if(inventoryAreaCounts[0]?.id===previous)return;
+  snapshots.forEach(({p,data})=>{p.portionCountBreakdown=p.portionCountBreakdown||{};p.portionCountBreakdown[area]=data;const line=inventoryAreaCounts[0]?.lines?.find(l=>String(l.productId)===String(p.id));if(line)line.portionBreakdown={...data,definitions:formatsFor(p).map(f=>({...f}))};});saveInventory();saveIntegralData();kucheV171RenderCountPage(mode);
+ }finally{savingCount=false;}
+};
+// No-charge products reuse the existing extras pipeline (comanda, KDS and stock).
+// Only explicit admin selections are tagged; recipes are never auto-added to this list.
+const isFree=e=>e?.noChargeMaterial===true||String(e?.id||'').startsWith('free-material-');
+const oldNormalizeExtra=kucheV172NormalizeExtra;
+kucheV172NormalizeExtra=function(e){const linked=isFree(e)&&e.inventoryCloudId?inventory.find(p=>String(p.cloudId)===String(e.inventoryCloudId)):null;const out=oldNormalizeExtra(linked?{...e,productId:linked.id}:e);if(isFree(e)){out.noChargeMaterial=true;out.price=0;out.inventoryCloudId=linked?.cloudId||productById(out.productId)?.cloudId||e.inventoryCloudId||null;}return out;};
+const oldRenderExtras=kucheV172RenderGlobalExtras;
+kucheV172RenderGlobalExtras=function(){oldRenderExtras();const box=$('kucheV172GlobalExtraList');if(box)[...box.children].forEach((row,i)=>{if(isFree(kucheV172GlobalExtras[i]))row.remove();});v15RenderFreeRecipeConfig();};
+function eligibleFree(p){return p?.active!==false&&!prepared(p)&&kucheV17NormalizeProduct(p).inventoryClass==='ingredient';}
+let editingFreeId=null;
+function freeEditor(){
+ let form=$('v186FreeEditor');if(form)return form;form=document.createElement('div');form.id='v186FreeEditor';form.hidden=true;
+ form.innerHTML=`<div class="v186-free-grid"><div class="field"><label>Buscar materia prima</label><input id="v186FreeSearch" placeholder="Ej. Mayonesa comprada"><select id="v186FreeProduct"></select></div><div class="field"><label>Nombre en la comanda</label><input id="v186FreeLabel" placeholder="Ej. Mayonesa sin cobro"></div><div class="field"><label>Cantidad por entrega</label><input id="v186FreeQty" type="number" min="0.000001" step="any" value="1"></div><div class="field"><label>Unidad o porción</label><select id="v186FreeUnit"></select></div></div><p class="inline-note">Precio $0. El garzón lo selecciona al personalizar un producto de la comanda; se registra en cocina y descuenta materia prima.</p><div class="form-actions"><button type="button" class="primary-button" id="v186SaveFree">Guardar producto sin cobro</button><button type="button" class="secondary-button" id="v186CancelFree">Cancelar</button></div>`;
+ $('v15FreeRecipeList').before(form);$('v186FreeSearch').oninput=populateFree;$('v186FreeProduct').onchange=()=>{const p=productById($('v186FreeProduct').value);$('v186FreeUnit').innerHTML=p?opsFinalUnitOptions(p,p.baseUnit):'';if(!$('v186FreeLabel').value)$('v186FreeLabel').value=p?.name||'';};$('v186SaveFree').onclick=saveFree;$('v186CancelFree').onclick=()=>{form.hidden=true;editingFreeId=null;};return form;
+}
+function populateFree(){const sel=$('v186FreeProduct'),current=sel.value,q=norm($('v186FreeSearch').value);sel.innerHTML='<option value="">Seleccionar materia prima</option>'+inventory.filter(p=>eligibleFree(p)&&norm(p.name).includes(q)).sort((a,b)=>a.name.localeCompare(b.name,'es')).map(p=>`<option value="${attr(p.id)}">${esc(p.name)}</option>`).join('');sel.value=current;if(!sel.value)$('v186FreeUnit').innerHTML='';}
+function openFree(id=null){
+ if(!isAdmin()){alert('Solo el administrador puede configurar productos sin cobro.');return;}const form=freeEditor();editingFreeId=id;const e=kucheV172GlobalExtras.find(e=>String(e.id)===String(id));$('v186FreeSearch').value='';populateFree();$('v186FreeProduct').value=e?.productId||'';$('v186FreeLabel').value=e?.label||'';$('v186FreeQty').value=e?.quantity||1;const p=productById(e?.productId);$('v186FreeUnit').innerHTML=p?opsFinalUnitOptions(p,e.unit):'';form.hidden=false;
+}
+async function saveFree(){
+ if(!isAdmin())return;const p=productById($('v186FreeProduct').value),label=$('v186FreeLabel').value.trim(),quantity=Number($('v186FreeQty').value),unit=$('v186FreeUnit').value;
+ if(!eligibleFree(p)||!label||!Number.isFinite(quantity)||quantity<=0||!unit){alert('Selecciona una materia prima y completa el nombre y la cantidad por entrega.');return;}
+ if(kucheCloud&&cloudOrganization)await ops3EnsureCloudInventoryItem(p,{allowInitialMigration:false});
+ const entry={inventoryCloudId:p.cloudId||null,id:editingFreeId||'free-material-'+uid(),label,productId:p.id,productName:p.name,quantity,unit,price:0,prepMinutesDelta:0,active:true,noChargeMaterial:true};const index=kucheV172GlobalExtras.findIndex(e=>String(e.id)===String(entry.id));if(index<0)kucheV172GlobalExtras.push(entry);else kucheV172GlobalExtras[index]=entry;
+ await kucheV172PersistGlobalExtras(true);$('v186FreeEditor').hidden=true;editingFreeId=null;v15RenderFreeRecipeConfig();
+}
+v15RenderFreeRecipeConfig=function(){
+ const panel=$('v15FreeRecipeConfig'),box=$('v15FreeRecipeList');if(!panel||!box)return;
+ const title=panel.querySelector('h2');if(title)title.textContent='Productos sin cobro en comandas';const text=panel.querySelector('.page-header p');if(text)text.textContent='Solo aparecen las materias primas que el administrador agrega aquí, como salsas compradas listas para servir. No necesitas crear una receta.';
+ panel.querySelector('.kuche-v172-no-charge-guide')?.remove();
+ let add=$('v186AddFree');if(!add){add=document.createElement('button');add.id='v186AddFree';add.className='primary-button';add.type='button';add.textContent='+ Agregar producto sin cobro';box.before(add);}add.onclick=()=>openFree();add.hidden=!isAdmin();
+ const list=kucheV172GlobalExtras.filter(e=>isFree(e)&&e.active!==false);box.innerHTML='';
+ if(!list.length){box.innerHTML='<div class="category">No hay productos sin cobro configurados. El administrador puede agregarlos desde Materia prima.</div>';return;}
+ list.forEach(e=>{const row=document.createElement('div');row.className='v15-free-row';row.innerHTML=`<div><strong>${esc(e.label)}</strong><div class="category">${formatNumber(e.quantity)} ${esc(e.unit)} de ${esc(productById(e.productId)?.name||e.productName)} · $0</div></div>`;if(isAdmin()){const actions=document.createElement('div');actions.className='form-actions';const edit=document.createElement('button');edit.type='button';edit.className='secondary-button';edit.textContent='Editar';edit.onclick=()=>openFree(e.id);const remove=document.createElement('button');remove.type='button';remove.className='danger-button';remove.textContent='Eliminar';remove.onclick=async()=>{if(!isAdmin()||!confirm(`¿Quitar ${e.label} de los productos sin cobro?`))return;kucheV172GlobalExtras=kucheV172GlobalExtras.filter(x=>x.id!==e.id);await kucheV172PersistGlobalExtras(true);};actions.append(edit,remove);row.appendChild(actions);}box.appendChild(row);});
+};
+const oldClarify=kucheV172ClarifyNoCharge;
+kucheV172ClarifyNoCharge=function(){oldClarify();v15RenderFreeRecipeConfig();};
+function labels(){
+ for(const mode of ['daily','weekly']){const page=$(mode==='daily'?'dailyinventory':'weeklyinventory');if(!page)continue;const desc=page.querySelector('.page-header p'),note=page.querySelector('.kuche-v17-count-note');if(desc)desc.textContent=mode==='daily'?'Conteo diario de materias primas y preparaciones, según el área de cada trabajador.':'Control de los productos seleccionados por el administrador en Materia prima.';if(note)note.textContent=mode==='daily'?'Cuenta en la unidad configurada o separa por porciones. No vuelvas a sumar las mismas porciones como producto sin porcionar.':'Solo aparecen los productos marcados “Incluir también en inventario semanal”. Este conteo actualiza el mismo stock del inventario diario.';}
+ const help=$('kucheV17CountHelp');if(help)help.textContent='Diario: todos los productos del área. Semanal: solo los seleccionados por el administrador.';
+}
+function refresh(){kucheV172GlobalExtras=kucheV172GlobalExtras.map(e=>isFree(e)?kucheV172NormalizeExtra(e):e);labels();kucheV171RenderIngredients();kucheV171RenderCountPage('daily');kucheV171RenderCountPage('weekly');v15RenderFreeRecipeConfig();}
+const oldShowPage=showPage;
+showPage=function(id,button){const out=oldShowPage(id,button);labels();if(id==='ingredients')kucheV171RenderIngredients();if(id==='recipes')v15RenderFreeRecipeConfig();return out;};
+ensureMaterialPanel();loadPanel('v186Material',null);refresh();
+})();
+
+</script>
 </body>
 </html>
