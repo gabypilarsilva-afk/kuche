@@ -13095,6 +13095,22 @@ function saveReservationDataBaseOnly(){
 }
 
 /* ---------- COMANDA + ITEMS EN NUBE ---------- */
+function kucheMissingClosureColumn(error){
+ return error?.code==='PGRST204'&&/['"]closed_by_name['"] column of ['"]orders['"]/.test(String(error.message||''));
+}
+async function kucheUpsertOrderCompatible(payload){
+ const send=data=>kucheCloud.from("orders").upsert(data,{onConflict:"organization_id,source_local_id"}).select().single();
+ let result=await send(payload);
+ if(kucheMissingClosureColumn(result.error)&&Object.prototype.hasOwnProperty.call(payload,'closed_by_name')){
+  // Older schemas retain the same closure audit inside the existing JSON column.
+  const compatible={...payload,payment_payload:{...payload.payment_payload,kucheClosure:{...payload.payment_payload?.kucheClosure,closedByName:payload.closed_by_name||payload.payment_payload?.kucheClosure?.closedByName||null,closedAt:payload.closed_at||null}}};
+  delete compatible.closed_by_name;
+  result=await send(compatible);
+ }
+ if(result.error)throw result.error;
+ if(!result.data?.id||result.data.status!==payload.status)throw Error('La nube no confirmó el estado de la comanda. El registro seguirá pendiente.');
+ return result.data;
+}
 async function rtSyncCloudOrder(order){
  if(!kucheCloud||!cloudOrganization||!order||!rtCanManageOrders())return null;
  const table=rtTableForOrder(order);
@@ -13119,21 +13135,19 @@ async function rtSyncCloudOrder(order){
    customer_id:rtCloudCustomerId(order),
    payment_payload:{
      payments:order.payments||{},
+     paymentLines:order.paymentLines||[],
      tipMethod:order.tipMethod||null,
-     cashRegisterLocalId:order.cashRegisterId||null
+     cashRegisterLocalId:order.cashRegisterId||null,
+     kucheClosure:{closedByName:order.closedBy||null,closedAt:order.closedAt||order.cancelledAt||null}
    },
    payment_note:order.paymentNote||null,
    closed_by_name:order.closedBy||null,
    opened_at:order.openedAt||new Date().toISOString(),
-   closed_at:order.closedAt||null
+   closed_at:order.closedAt||order.cancelledAt||null
  };
  try{
-   const {data,error}=await kucheCloud
-     .from("orders")
-     .upsert(payload,{onConflict:"organization_id,source_local_id"})
-     .select()
-     .single();
-   if(error)throw error;
+   const data=await kucheUpsertOrderCompatible(payload);
+   order.lastSyncError=null;
    order.cloudId=data.id;
    return data;
  }catch(e){
@@ -13305,8 +13319,8 @@ function rtMapCloudOrder(row,itemsByOrder){
    tipShiftKey:row.tip_shift_key||null,
    tipShiftName:row.tip_shift_name_snapshot||null,
    customerId:row.customer_id||null,
-   closedBy:row.closed_by_name||null,
-   closedAt:row.closed_at||null
+   closedBy:row.closed_by_name||payment.kucheClosure?.closedByName||null,
+   closedAt:row.closed_at||payment.kucheClosure?.closedAt||null
  };
 }
 async function rtLoadOrdersFromCloud(){
@@ -13315,7 +13329,7 @@ async function rtLoadOrdersFromCloud(){
  try{
    const {data:ordersRows,error:ordersErr}=await kucheCloud
      .from("orders")
-     .select("id,source_local_id,dining_table_id,table_name_snapshot,opened_by_staff_id,opened_by_name,people,status,subtotal,discount,total,tip,production_status,production_sent_at,production_sent_by_name,tip_shift_key,tip_shift_name_snapshot,customer_id,payment_payload,payment_note,closed_by_name,opened_at,closed_at,discount_agreement_id,discount_code_snapshot,discount_name_snapshot,discount_type_snapshot,discount_value_snapshot")
+     .select("*")
      .eq("organization_id",cloudOrganization.id)
      .order("opened_at",{ascending:false})
      .limit(200);
@@ -14082,7 +14096,7 @@ rtLoadOrdersFromCloud=async function(){
  realtimePOSLoading=true;
  try{
    const {data:ordersRows,error:ordersErr}=await kucheCloud.from("orders")
-     .select("id,source_local_id,dining_table_id,table_name_snapshot,opened_by_staff_id,opened_by_name,people,status,subtotal,discount,total,tip,production_status,production_sent_at,production_sent_by_name,tip_shift_key,tip_shift_name_snapshot,customer_id,payment_payload,payment_note,closed_by_name,opened_at,closed_at,discount_agreement_id,discount_code_snapshot,discount_name_snapshot,discount_type_snapshot,discount_value_snapshot")
+     .select("*")
      .eq("organization_id",cloudOrganization.id).order("opened_at",{ascending:false}).limit(200);
    if(ordersErr)throw ordersErr;
    const orderIds=(ordersRows||[]).map(x=>x.id);
@@ -15807,10 +15821,21 @@ async function recordKucheOfflineLog(row,status="synced",message=null){
 }
 async function syncKucheOrderSnapshot(row){
  let order=posOrders.find(o=>String(o.id)===String(row.entity_id));
+ if(row.payload?.status==='cancelled'){
+  if(String(row.payload.id)!==String(row.entity_id))throw Error('La cancelación pendiente no coincide con la comanda.');
+  const pending=kucheOfflineClone(row.payload);if(!pending)throw Error('No se pudo leer la cancelación guardada.');
+  pending.cloudId=pending.cloudId||order?.cloudId||null;
+  pending.closedBy=pending.closedBy||row.user_name||null;
+  pending.closedAt=pending.closedAt||pending.cancelledAt||row.occurred_at||null;
+  const index=posOrders.findIndex(o=>String(o.id)===String(row.entity_id));
+  if(index>=0)posOrders[index]=pending;else posOrders.unshift(pending);
+  order=pending;
+ }
  if(!order&&row.payload){order=row.payload;posOrders.unshift(order);}
- if(!order)return true;
+ if(!order)throw Error('No se encontró la comanda pendiente; no se eliminará el registro.');
  const ok=await rtSyncCurrentOrderToCloud(order);
  if(!ok||!order.cloudId)throw new Error(order.lastSyncError||"No se pudo sincronizar la comanda.");
+ if(order.status==='cancelled')return true; // Never recreate kitchen production for a cancelled order.
  const batches={};
  (order.items||[]).filter(i=>!i.commercialOnly&&i.sentAt).forEach(i=>{
    const key=i.dispatchBatchKey||i.sentAt||"legacy";
@@ -16782,7 +16807,7 @@ async function loadCommercialCloudData(){if(!kucheCloud||!cloudOrganization)retu
 const _v14Handle=handleCloudSession;handleCloudSession=async session=>{await _v14Handle(session);if(currentSession?.cloud&&cloudOrganization)await loadCommercialCloudData();};
 
 const _v14Map=rtMapCloudOrder;rtMapCloudOrder=function(row,items){const o=_v14Map(row,items),p=row.payment_payload||{};o.paymentLines=Array.isArray(p.paymentLines)?p.paymentLines:[];o.discountAgreement=row.discount_agreement_id?{id:row.discount_agreement_id,name:row.discount_name_snapshot||"",code:row.discount_code_snapshot||"",discountType:row.discount_type_snapshot||"",discountValue:Number(row.discount_value_snapshot||0)}:null;return o;};
-const _v14SyncOrder=rtSyncCloudOrder;rtSyncCloudOrder=async function(o){const d=await _v14SyncOrder(o);if(d?.id&&kucheCloud)try{const a=o.discountAgreement;await kucheCloud.from("orders").update({payment_payload:{payments:o.payments||{},paymentLines:o.paymentLines||[],tipMethod:o.tipMethod||null,cashRegisterLocalId:o.cashRegisterId||null},discount_agreement_id:a&&rtIsUUID(a.id)?a.id:null,discount_code_snapshot:a?.code||null,discount_name_snapshot:a?.name||null,discount_type_snapshot:a?.discountType||null,discount_value_snapshot:a?Number(a.discountValue||0):null}).eq("id",d.id);}catch(e){console.warn(e.message);}return d;};
+const _v14SyncOrder=rtSyncCloudOrder;rtSyncCloudOrder=async function(o){const d=await _v14SyncOrder(o);if(d?.id&&kucheCloud)try{const a=o.discountAgreement;await kucheCloud.from("orders").update({payment_payload:{...d.payment_payload,payments:o.payments||{},paymentLines:o.paymentLines||[],tipMethod:o.tipMethod||null,cashRegisterLocalId:o.cashRegisterId||null,kucheClosure:{closedByName:o.closedBy||null,closedAt:o.closedAt||o.cancelledAt||null}},discount_agreement_id:a&&rtIsUUID(a.id)?a.id:null,discount_code_snapshot:a?.code||null,discount_name_snapshot:a?.name||null,discount_type_snapshot:a?.discountType||null,discount_value_snapshot:a?Number(a.discountValue||0):null}).eq("id",d.id);}catch(e){console.warn(e.message);}return d;};
 async function syncOrderPaymentsV14(o){if(!o?.cloudId)return;try{await kucheCloud.from("order_payments").delete().eq("order_id",o.cloudId);const rows=(o.paymentLines||[]).filter(x=>x.amount>0).map(x=>({organization_id:cloudOrganization.id,order_id:o.cloudId,payment_kind:"sale",method:x.code,payment_method_id:rtIsUUID(x.id)?x.id:null,method_name_snapshot:x.name,category_snapshot:x.category,amount:x.amount,commission_pct:x.commissionPct||0,commission_amount:x.amount*(x.commissionPct||0)/100,expected_net_amount:x.amount*(1-(x.commissionPct||0)/100),created_by_staff_id:cloudStaffRecord?.id||null}));if(rows.length){const {error}=await kucheCloud.from("order_payments").insert(rows);if(error)throw error;}if(o.discountAgreement?.id&&rtIsUUID(o.discountAgreement.id)){const ids=(o.paymentLines||[]).map(x=>x.id).filter(rtIsUUID);const {error}=await kucheCloud.rpc("register_discount_agreement_use",{p_organization_id:cloudOrganization.id,p_agreement_id:o.discountAgreement.id,p_order_id:o.cloudId,p_subtotal:getOrderSubtotal(o),p_discount_amount:o.discount,p_final_total:o.total,p_payment_method_ids:ids,p_applied_by_name:o.closedBy||currentSession?.name||"Usuario"});if(error)throw error;}}catch(e){console.warn("Pagos cloud",e.message);}}
 
 getCashSummary=function(reg){const orders=getRegisterOrders(reg),by={efectivo:0,debito:0,credito:0,transferencia:0},tips={efectivo:0,debito:0,credito:0,transferencia:0};orders.forEach(o=>{if(o.paymentLines?.length)o.paymentLines.forEach(l=>by[l.code]=(by[l.code]||0)+Number(l.amount||0));else Object.entries(o.payments||{}).forEach(([k,v])=>by[k]=(by[k]||0)+Number(v||0));if(o.tipMethod)tips[o.tipMethod]=(tips[o.tipMethod]||0)+Number(o.tip||0);});const moves=cashMovements.filter(m=>String(m.registerId)===String(reg.id)),entries=moves.filter(m=>m.type==="entrada").reduce((s,m)=>s+Number(m.amount||0),0),outputs=moves.filter(m=>["gasto","retiro","devolucion"].includes(m.type)).reduce((s,m)=>s+Number(m.amount||0),0),saleTotal=orders.reduce((s,o)=>s+Number(o.total||0),0),tipTotal=orders.reduce((s,o)=>s+Number(o.tip||0),0);const cashCodes=Object.keys(by).filter(k=>paymentMethodByCode(k)?.category==="cash"||k==="efectivo"),expectedCash=Number(reg.openingCash||0)+cashCodes.reduce((s,k)=>s+Number(by[k]||0)+Number(tips[k]||0),0)+entries-outputs;return{orders,by,tips,moves,entries,outputs,saleTotal,tipTotal,expectedCash};};
@@ -20278,6 +20303,7 @@ function collectPanel(prefix,p){
  }
  return {weeklyInventoryEnabled:$(prefix+'Weekly').checked,inventoryCountMode:mode,portionFormats:formats};
 }
+window.v186CollectMaterialSettings=p=>collectPanel('v186Material',p);
 function ensureMaterialPanel(){
  const grid=$('inventoryForm')?.querySelector('.form-grid');if(!grid)return;
  if(!$('v186MaterialSettings'))grid.insertAdjacentHTML('beforeend',panelHTML('v186Material'));
@@ -20318,7 +20344,7 @@ window.v186OpenMaterialSettings=id=>prepared(productById(id))?openPreparedSettin
 async function savePreparedSettings(){
  if(!isAdmin())return;const p=productById(preparedEditingId);if(!p)return;let settings;
  try{settings=collectPanel('v186Prepared',p);}catch(e){alert(e.message);return;}
- applySettings(p,settings);await opsFinalSyncInventoryMetaCloud(p);await syncCountSettings(p);$('v186PreparedEditor').hidden=true;preparedEditingId=null;refresh();
+ if(typeof window.kucheSavePreparedVerified==='function'){if(!await window.kucheSavePreparedVerified(p,settings))return;if(typeof window.v186SavePreparedFormats==='function')window.v186SavePreparedFormats(p.sourceRecipeId,settings.portionFormats);}else{applySettings(p,settings);await opsFinalSyncInventoryMetaCloud(p);await syncCountSettings(p);}$('v186PreparedEditor').hidden=true;preparedEditingId=null;refresh();
 }
 // Existing organization settings hold the new metadata; no new database columns are required.
 async function syncCountSettings(p){
@@ -20335,7 +20361,7 @@ async function loadCountSettings(){
  if(!kucheCloud||!cloudOrganization)return;
  try{const {data,error}=await kucheCloud.from('organization_settings').select('settings').eq('organization_id',cloudOrganization.id).maybeSingle();if(error)throw error;
   const counts=data?.settings?.inventory_count_settings_v186||{};
-  inventory.forEach(p=>{const config=counts[p.cloudId];if(!config)return;Object.assign(p,{weeklyInventoryEnabled:config.weeklyInventoryEnabled===true,inventoryCountMode:config.inventoryCountMode||'stock',portionFormats:Array.isArray(config.portionFormats)?config.portionFormats:[]});if(prepared(p)){const r=recipes.find(r=>String(r.id)===String(p.sourceRecipeId));if(r)r.portionFormats=p.portionFormats;}});saveInventory();saveRecipes();
+  inventory.forEach(p=>{const config=counts[p.cloudId];if(!config)return;Object.assign(p,{weeklyInventoryEnabled:config.weeklyInventoryEnabled===true,inventoryCountMode:config.inventoryCountMode||'stock',portionFormats:Array.isArray(config.portionFormats)?config.portionFormats:[]});if(config.primaryArea)p.primaryArea=config.primaryArea;if(prepared(p)){const r=recipes.find(r=>String(r.id)===String(p.sourceRecipeId));if(r)r.portionFormats=p.portionFormats;}});saveInventory();saveRecipes();
  }catch(e){console.warn('Lectura configuración de conteo',e.message);}
 }
 const oldCloudSession=handleCloudSession;
@@ -20718,13 +20744,145 @@ saveProduct=async function(){
  busy=true;savingSpec=d;
  try{
   update();changes.forEach(c=>{c.qty.value=c.newQty;c.unit.value=c.newUnit;});
-  await oldSave();
+  await (window.kucheSaveMaterialAtomic||oldSave)();
  }finally{
   if($('inventoryForm').classList.contains('open'))changes.forEach(c=>{c.qty.value=c.oldQty;c.unit.value=c.oldUnit;});
   savingSpec=undefined;busy=false;
  }
 };
 install();
+})();
+
+</script>
+
+<style id="kuche-verified-save-style">#recipeForm{scroll-margin-top:90px}#kucheMaterialSaveStatus{margin-top:14px;white-space:pre-line}</style>
+<script id="kuche-verified-material-save">
+(function(){
+'use strict';
+const $=id=>document.getElementById(id),clone=v=>JSON.parse(JSON.stringify(v));
+let writing=false,reading=null,reloadWanted=false,newDraftId=null,newCloudId=null;
+const refreshCloud=ops3RefreshInventoryFromCloud;
+ops3RefreshInventoryFromCloud=function(){
+ if(writing){reloadWanted=true;return Promise.resolve();}
+ if(reading)return reading;
+ reading=Promise.resolve().then(()=>refreshCloud()).finally(()=>{reading=null;});return reading;
+};
+function admin(){return currentSession?.role==='admin'||['admin','manager'].includes(currentSession?.accessRole);}
+function status(message,error=false){
+ let box=$('kucheMaterialSaveStatus');
+ if(!box){box=document.createElement('div');box.id='kucheMaterialSaveStatus';box.setAttribute('role','status');$('inventoryForm')?.appendChild(box);}
+ box.textContent=message;box.className='status-box '+(error?'warning':'');
+}
+function num(id,min=0){const el=$(id),n=Number(el?.value);if(!el||el.value===''||!Number.isFinite(n)||n<min)throw Error('Revisa el valor de '+(el?.closest('.field')?.querySelector('label')?.textContent||id)+'.');return n;}
+function draft(){
+ const target=editingId===null?(newCloudId?inventory.find(p=>p.cloudId===newCloudId)||null:null):inventory.find(p=>String(p.id)===String(editingId));
+ if(editingId!==null&&!target)throw Error('La materia prima ya no está disponible. Vuelve a abrirla desde el listado.');
+ if(!target&&!newDraftId)newDraftId=Date.now();
+ const p=clone(target||{id:newDraftId,cloudId:newCloudId,quantity:0,areaStocks:{}});
+ Object.assign(p,{name:$('productName').value.trim(),category:$('category').value,unit:$('unit').value,minimum:num('minimum'),baseUnit:$('productBaseUnit').value,basePerPurchase:num('productBasePerPurchase',.0001),yieldPct:num('productYieldPct',1),primaryArea:$('productArea').value,consumptionMode:$('productConsumptionMode').value,shelfLifeDays:Number($('productShelfLifeDays')?.value||0),bulkAllowed:$('productBulkAllowed').value!=='no'});
+ if(!p.name||!p.category||!p.unit||!p.baseUnit||!p.primaryArea||p.yieldPct>100)throw Error('Completa nombre, categoría, formato, área y rendimiento entre 1 y 100%.');
+ if(inventory.some(x=>x!==target&&x.name.trim().toLowerCase()===p.name.toLowerCase()))throw Error('Ya existe una materia prima con ese nombre.');
+ const kind=$('inventoryItemKind').value||'ingredient';
+ if(!['ingredient','supply'].includes(kind))throw Error('Edita las preparaciones desde su receta base.');
+ Object.assign(p,{inventoryClass:kind,inventoryKind:'raw',sourceRecipeId:null,countFrequency:'weekly'});
+ const locked=!!target&&kucheV16HasPurchaseHistory(target);
+ if(!locked){num('cost');const price=kucheV165InventoryPriceCalculation();Object.assign(p,{cost:price.net,costNet:price.net,costGross:price.gross,vatPct:price.vatPct});}
+ const settings=window.v186CollectMaterialSettings(p);Object.assign(p,settings);
+ const conversions=settings.portionFormats.map(f=>({id:f.id,name:f.name,baseQty:window.v186CountMath.convert(f.quantity,f.unit,p.baseUnit)}));
+ p.conversions=window.kuchePackMergeConversions(p,conversions);p.portionCountBreakdown={};
+ const supplierId=$('inventoryPreferredSupplier')?.value||'';
+ const supplier=suppliers.find(s=>String(s.id)===String(supplierId));
+ if(supplierId&&!supplier)throw Error('El proveedor seleccionado ya no está disponible.');
+ Object.assign(p,{preferredSupplierId:supplier?.id||null,preferredSupplierCloudId:supplier?.cloudId||null,preferredSupplierName:supplier?.name||''});
+ if(!target)p.areaStocks={[p.primaryArea]:0};
+ return {p,target,locked,supplier,settings};
+}
+function payload(p,locked){
+ const out={name:p.name,category:p.category||null,unit:p.unit,minimum:Number(p.minimum),base_unit:p.baseUnit,base_units_per_purchase:Number(p.basePerPurchase),yield_pct:Number(p.yieldPct),consumption_mode:p.consumptionMode,unit_conversions:p.conversions||[],shelf_life_days:Number(p.shelfLifeDays||0),bulk_purchase_allowed:!!p.bulkAllowed,item_kind:p.inventoryKind,inventory_class:p.inventoryClass,count_frequency:p.countFrequency,source_recipe_local_id:p.sourceRecipeId==null?null:String(p.sourceRecipeId)};
+ if(!locked)Object.assign(out,{unit_cost:Number(p.costNet??p.cost??0),unit_cost_net:Number(p.costNet??p.cost??0),unit_cost_gross:Number(p.costGross||0),vat_pct:Number(p.vatPct??19)});
+ return out;
+}
+function canonical(v){if(Array.isArray(v))return v.map(canonical);if(v&&typeof v==='object')return Object.fromEntries(Object.keys(v).sort().map(k=>[k,canonical(v[k])]));return v;}
+function matches(row,expected){return !!row&&Object.entries(expected).every(([k,v])=>typeof v==='number'?Number.isFinite(Number(row[k]))&&Math.abs(Number(row[k])-v)<.000001:JSON.stringify(canonical(row[k]))===JSON.stringify(canonical(v)));}
+async function checked(query){const r=await query;if(r.error)throw Error(r.error.message||'La nube rechazó el cambio.');if(!r.data)throw Error('La nube no confirmó ningún registro. Revisa los permisos de edición.');return r.data;}
+async function persist({p,target,locked,supplier,settings},org){
+ const expected=payload(p,locked);let id=p.cloudId;
+ if(!id&&target){const found=await checked(kucheCloud.from('inventory_items').select('id').eq('organization_id',org).eq('name',target.name).eq('active',true).single());id=found.id;}
+ if(!id){
+  id=crypto.randomUUID();p.cloudId=id;
+  await checked(kucheCloud.from('inventory_items').insert({...expected,id,organization_id:org,quantity:0,active:true}).select('id').single());
+  // A later settings failure must retry this same row, never insert a duplicate.
+  newCloudId=id;
+ }else{
+  p.cloudId=id;
+  const row=await checked(kucheCloud.from('inventory_items').update(expected).eq('id',id).eq('organization_id',org).eq('active',true).select('*').single());
+  if(!matches(row,expected))throw Error('La nube devolvió datos diferentes. Los cambios siguen en el formulario; vuelve a intentar.');
+ }
+ if(supplier){
+  const sid=supplier.cloudId||await ops3EnsureCloudSupplier(supplier);if(!sid)throw Error('No se pudo confirmar el proveedor seleccionado.');p.preferredSupplierCloudId=sid;
+ }
+ const result=await kucheCloud.from('organization_settings').select('settings').eq('organization_id',org).maybeSingle();if(result.error)throw Error(result.error.message);
+ const before=result.data?.settings||{};
+ const countConfig={weeklyInventoryEnabled:p.weeklyInventoryEnabled===true,inventoryCountMode:p.inventoryCountMode,portionFormats:p.portionFormats||[],primaryArea:p.primaryArea};
+ const next={...before,inventory_count_settings_v186:{...(before.inventory_count_settings_v186||{}),[id]:countConfig}};
+ let query=result.data?kucheCloud.from('organization_settings').update({settings:next}).eq('organization_id',org):kucheCloud.from('organization_settings').insert({organization_id:org,settings:next});
+ if(result.data?.settings)query=query.eq('settings',JSON.stringify(before));
+ const savedSettings=await checked(query.select('settings').single());
+ if(!matches(savedSettings.settings?.inventory_count_settings_v186?.[id],countConfig))throw Error('No se pudo confirmar la configuración del inventario. Vuelve a guardar.');
+ const supplierChanged=!target||String(p.preferredSupplierId||'')!==String(target.preferredSupplierId||'')||Number(p.costNet)!==Number(target.costNet);
+ if(supplierChanged){
+ const reset=await kucheCloud.from('supplier_item_terms').update({preferred:false}).eq('organization_id',org).eq('inventory_item_id',id);if(reset.error)throw Error(reset.error.message);
+ if(supplier){await checked(kucheCloud.from('supplier_item_terms').upsert({organization_id:org,supplier_id:p.preferredSupplierCloudId,inventory_item_id:id,purchase_format:p.unit,pack_stock_qty:1,current_price:Number(p.costNet??p.cost??0),minimum_packs:0,preferred:true,active:true,price_updated_at:new Date().toISOString()},{onConflict:'organization_id,supplier_id,inventory_item_id'}).select('id').single());}
+ }
+ const verified=await checked(kucheCloud.from('inventory_items').select('*').eq('organization_id',org).eq('id',id).single());
+ if(!matches(verified,expected))throw Error('La materia prima cambió durante el guardado. Revisa el formulario y vuelve a guardar.');
+ return verified;
+}
+function commit(data,verified){
+ const {p,supplier}=data;
+ let current=inventory.find(x=>String(x.id)===String(p.id)||p.cloudId&&x.cloudId===p.cloudId);
+ if(!current){current=p;inventory.push(current);}else{
+  const stock={quantity:current.quantity,areaStocks:current.areaStocks};Object.assign(current,p,stock);
+ }
+ // Never write stock when editing metadata; preserve live purchase/consumption totals.
+ if(verified&&Number.isFinite(Number(verified.quantity))){
+  const delta=Number(verified.quantity)-Number(current.quantity||0);current.areaStocks=current.areaStocks||{};
+  current.areaStocks[current.primaryArea]=Math.max(0,Number(current.areaStocks[current.primaryArea]||0)+delta);current.quantity=Number(verified.quantity);
+  if(data.locked){current.cost=current.costNet=Number(verified.unit_cost_net??verified.unit_cost??current.costNet);current.costGross=Number(verified.unit_cost_gross??current.costGross);}
+ }
+ kucheV173NormalizePurchaseFormat(current);
+ if(typeof v15SupplierTerms!=='undefined')v15SupplierTerms.forEach(t=>{if(String(t.inventoryLocalId)===String(current.id)||current.cloudId&&t.inventoryItemId===current.cloudId)t.preferred=!!supplier&&(String(t.supplierLocalId)===String(supplier.id)||t.supplierId===supplier.cloudId);});
+ if(supplier)kucheV174LocalSupplierTerm(current,supplier,Number(current.costGross||0),true);
+ saveInventory();if(typeof v15SaveLocal==='function')v15SaveLocal();return current;
+}
+async function guarded(makeData,onSuccess){
+ if(writing)return false;if(!admin()){alert('Solo el administrador puede editar materias primas.');return false;}
+ writing=true;const org=cloudOrganization?.id||null;const controls=[...($('inventoryForm')?.querySelectorAll('input,select,textarea,button')||[])].map(el=>({el,disabled:el.disabled}));
+ try{
+  // Finish old reads BEFORE constructing and sending the new snapshot.
+  if(reading)await reading;
+  const data=makeData();controls.forEach(x=>x.el.disabled=true);status('Guardando y comprobando los cambios…');
+  let verified=null;
+  if(kucheCloud&&org){if(!cloudAuthSession?.user||navigator.onLine===false)throw Error('No hay una conexión activa con la nube. Tus cambios siguen en el formulario.');verified=await persist(data,org);}
+  if((cloudOrganization?.id||null)!==org)throw Error('Cambió la empresa activa durante el guardado.');
+  commit(data,verified);onSuccess();status(org?'Cambios guardados y confirmados en la nube.':'Cambios guardados en este dispositivo.');
+  renderInventory();renderInventoryAreas();kucheV171RenderIngredients();renderRecipes();loadMovementProducts();updateDashboard();return true;
+ }catch(e){status('No se pudo confirmar el guardado: '+e.message+' Conservé lo que escribiste; revisa el motivo y vuelve a guardar.',true);alert('No se pudo confirmar el guardado. El formulario permanece abierto.\n'+e.message);return false;}
+ finally{controls.forEach(x=>x.el.disabled=x.disabled);writing=false;if(reloadWanted){reloadWanted=false;ops3RefreshInventoryFromCloud();}}
+}
+window.kucheSaveMaterialAtomic=()=>guarded(draft,()=>{newDraftId=null;newCloudId=null;$('inventoryForm').dataset.verifiedClosing='true';try{closeForm();}finally{delete $('inventoryForm').dataset.verifiedClosing;}});
+const oldNewMaterial=newProduct;newProduct=function(){if(writing)return;newDraftId=null;newCloudId=null;return oldNewMaterial();};
+const oldEditMaterial=editProduct;editProduct=function(id){if(writing)return;return oldEditMaterial(id);};
+const oldCloseMaterial=closeForm;closeForm=function(){if(writing&&document.getElementById('inventoryForm')?.dataset.verifiedClosing!=='true')return;return oldCloseMaterial();};
+window.kucheSavePreparedVerified=(p,settings)=>guarded(()=>({p:{...clone(p),...settings,conversions:(settings.portionFormats||[]).map(f=>({id:f.id,name:f.name,baseQty:window.v186CountMath.convert(f.quantity,f.unit,p.baseUnit||p.unit)}))},target:p,locked:true,supplier:suppliers.find(s=>String(s.id)===String(p.preferredSupplierId)),settings}),()=>{});
+window.kucheMaterialSaveMath={payload,matches,draft,persist,commit,guarded};
+window.addEventListener('storage',event=>{if(writing&&event.key==='kucheInventory'){event.stopImmediatePropagation();reloadWanted=true;}},{capture:true});
+// The header button calls this function directly, not newRecipe().
+const openRecipeKind=window.kucheV18NewRecipeKind;
+window.kucheV18NewRecipeKind=function(kind){
+ const result=openRecipeKind(kind);
+ requestAnimationFrame(()=>{const form=$('recipeForm');if(!form?.classList.contains('open'))return;form.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});$('recipeName')?.focus({preventScroll:true});});return result;
+};
 })();
 
 </script>
