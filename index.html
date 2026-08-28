@@ -13109,21 +13109,43 @@ function saveReservationDataBaseOnly(){
 }
 
 /* ---------- COMANDA + ITEMS EN NUBE ---------- */
-function kucheMissingClosureColumn(error){
- return error?.code==='PGRST204'&&/['"]closed_by_name['"] column of ['"]orders['"]/.test(String(error.message||''));
+function kucheOrderMetadataFields(){
+ // Descriptive data only. Status, monetary totals, IDs and timestamps remain required columns.
+ return ['opened_by_name','closed_by_name','production_sent_by_name','table_name_snapshot','tip_shift_name_snapshot','payment_note','people','tip_shift_key'];
+}
+function kucheMissingOrderMetadataColumn(error){
+ if(error?.code!=='PGRST204')return null;
+ const match=String(error.message||'').match(/Could not find the ['"]([^'"]+)['"] column of ['"]orders['"] in the schema cache/);
+ return match&&kucheOrderMetadataFields().includes(match[1])?match[1]:null;
+}
+function kucheReadOrderMetadata(row){
+ const out={...row},fields=row.payment_payload?.kucheOrderMetadata?.fields||{};
+ for(const key of kucheOrderMetadataFields())if(out[key]==null&&Object.prototype.hasOwnProperty.call(fields,key))out[key]=fields[key];
+ return out;
 }
 async function kucheUpsertOrderCompatible(payload){
  const send=data=>kucheCloud.from("orders").upsert(data,{onConflict:"organization_id,source_local_id"}).select().single();
- let result=await send(payload);
- if(kucheMissingClosureColumn(result.error)&&Object.prototype.hasOwnProperty.call(payload,'closed_by_name')){
-  // Older schemas retain the same closure audit inside the existing JSON column.
-  const compatible={...payload,payment_payload:{...payload.payment_payload,kucheClosure:{...payload.payment_payload?.kucheClosure,closedByName:payload.closed_by_name||payload.payment_payload?.kucheClosure?.closedByName||null,closedAt:payload.closed_at||null}}};
-  delete compatible.closed_by_name;
-  result=await send(compatible);
+ const compatible={...payload,payment_payload:{...payload.payment_payload}},fields={};
+ for(let attempt=0;attempt<=kucheOrderMetadataFields().length;attempt++){
+  const result=await send(compatible);
+  if(result.error){
+   const missing=kucheMissingOrderMetadataColumn(result.error);
+   if(!missing||!Object.prototype.hasOwnProperty.call(compatible,missing))throw result.error;
+   // Preserve each missing descriptive field in JSON; never discard authorization or accounting columns.
+   fields[missing]=compatible[missing];delete compatible[missing];
+   compatible.payment_payload={...compatible.payment_payload,kucheOrderMetadata:{version:1,fields:{...fields}}};
+   continue;
+  }
+  const row=result.data;
+  if(!row?.id||row.status!==payload.status||row.organization_id!==payload.organization_id||String(row.source_local_id)!==String(payload.source_local_id))throw Error('La nube no confirmó la identidad y el estado de la comanda. El registro seguirá pendiente.');
+  const restored=kucheReadOrderMetadata(row);
+  for(const [key,value] of Object.entries(fields)){
+   if(JSON.stringify(row.payment_payload?.kucheOrderMetadata?.fields?.[key])!==JSON.stringify(value))throw Error('La nube no confirmó el dato de la comanda: '+key+'. El registro seguirá pendiente.');
+  }
+  for(const key of ['subtotal','discount','total','tip'])if(key in payload&&(row[key]==null||!Number.isFinite(Number(row[key]))||Math.abs(Number(row[key])-Number(payload[key]))>.005001))throw Error('La nube no confirmó el importe de la comanda: '+key+'. El registro seguirá pendiente.');
+  return restored;
  }
- if(result.error)throw result.error;
- if(!result.data?.id||result.data.status!==payload.status)throw Error('La nube no confirmó el estado de la comanda. El registro seguirá pendiente.');
- return result.data;
+ throw Error('No se pudo confirmar la compatibilidad de la comanda. El registro seguirá pendiente.');
 }
 async function rtSyncCloudOrder(order){
  if(!kucheCloud||!cloudOrganization||!order||!rtCanManageOrders())return null;
@@ -13308,6 +13330,7 @@ function rtMapCloudItem(row){
  };
 }
 function rtMapCloudOrder(row,itemsByOrder){
+ row=kucheReadOrderMetadata(row);
  const table=diningTables.find(t=>String(t.cloudId)===String(row.dining_table_id));
  const payment=row.payment_payload||{};
  return {
@@ -15685,7 +15708,7 @@ setTimeout(()=>setStaffBirthDateParts(document.getElementById('staffBirthDate')?
 /* =====================================================
    KÜCHE CONTINUIDAD OPERATIVA + AYUDA + PROPIETARIOS
 ===================================================== */
-const KUCHE_APP_VERSION="1.4 · Continuidad y gestión comercial";
+const KUCHE_APP_VERSION="V18 · revisión 2026-08-28.2";
 const KUCHE_OFFLINE_AUTH_KEY="kucheOfflineAuthSnapshot";
 const KUCHE_DEVICE_ID_KEY="kucheDeviceId";
 const KUCHE_OFFLINE_DB="kucheOfflineOperations";
@@ -20844,7 +20867,21 @@ function payload(p,locked){
  return out;
 }
 function canonical(v){if(Array.isArray(v))return v.map(canonical);if(v&&typeof v==='object')return Object.fromEntries(Object.keys(v).sort().map(k=>[k,canonical(v[k])]));return v;}
-function matches(row,expected){return !!row&&Object.entries(expected).every(([k,v])=>typeof v==='number'?Number.isFinite(Number(row[k]))&&Math.abs(Number(row[k])-v)<.000001:JSON.stringify(canonical(row[k]))===JSON.stringify(canonical(v)));}
+function materialFieldMatches(key,actual,expected){
+ if(typeof expected==='number'){
+  if(actual==null||actual===''||!Number.isFinite(Number(actual)))return false;
+  // Purchase prices may be stored as decimal currency. Quantities and equivalences keep their strict tolerance.
+  const tolerance=['unit_cost','unit_cost_net','unit_cost_gross'].includes(key) ? 0.005000001 : 0.000001;
+  return Math.abs(Number(actual)-expected)<=tolerance;
+ }
+ return JSON.stringify(canonical(actual))===JSON.stringify(canonical(expected));
+}
+function matches(row,expected){return !!row&&Object.entries(expected).every(([key,value])=>materialFieldMatches(key,row[key],value));}
+function materialMismatchDetails(row,expected){
+ const labels={name:'Nombre',category:'Categoría',unit:'Formato de compra',minimum:'Stock mínimo',base_unit:'Unidad del contenido',base_units_per_purchase:'Contenido por formato',yield_pct:'Rendimiento',unit_cost:'Costo neto',unit_cost_net:'Precio neto',unit_cost_gross:'Precio con IVA',vat_pct:'IVA',unit_conversions:'Equivalencias',item_kind:'Tipo de producto',inventory_class:'Clasificación',count_frequency:'Frecuencia de conteo',source_recipe_local_id:'Receta vinculada'};
+ const display=v=>v===undefined?'sin campo':v===null?'vacío':JSON.stringify(v).slice(0,180);
+ return Object.entries(expected).filter(([key,value])=>!materialFieldMatches(key,row?.[key],value)).map(([key,value])=>`${labels[key]||key}: enviado ${display(value)}; devuelto ${display(row?.[key])}.`).join('\n');
+}
 async function checked(query){const r=await query;if(r.error)throw Error(r.error.message||'La nube rechazó el cambio.');if(!r.data)throw Error('La nube no confirmó ningún registro. Revisa los permisos de edición.');return r.data;}
 async function persist({p,target,locked,supplier,settings},org){
  let expected=payload(p,locked),id=p.cloudId;
@@ -20857,7 +20894,7 @@ async function persist({p,target,locked,supplier,settings},org){
  }else{
   p.cloudId=id;
   const saved=await kucheWriteInventoryCompatible(body=>kucheCloud.from('inventory_items').update(body).eq('id',id).eq('organization_id',org).eq('active',true).select('*').single(),expected);expected=saved.expected;const row=saved.row;
-  if(!matches(row,expected))throw Error('La nube devolvió datos diferentes. Los cambios siguen en el formulario; vuelve a intentar.');
+  if(!matches(row,expected))throw Error('La nube devolvió datos diferentes:\n'+materialMismatchDetails(row,expected)+'\nLos cambios siguen en el formulario.');
  }
  if(supplier){
   const sid=supplier.cloudId||await ops3EnsureCloudSupplier(supplier);if(!sid)throw Error('No se pudo confirmar el proveedor seleccionado.');p.preferredSupplierCloudId=sid;
@@ -20876,7 +20913,7 @@ async function persist({p,target,locked,supplier,settings},org){
  if(supplier){await checked(kucheCloud.from('supplier_item_terms').upsert({organization_id:org,supplier_id:p.preferredSupplierCloudId,inventory_item_id:id,purchase_format:p.unit,pack_stock_qty:1,current_price:Number(p.costNet??p.cost??0),minimum_packs:0,preferred:true,active:true,price_updated_at:new Date().toISOString()},{onConflict:'organization_id,supplier_id,inventory_item_id'}).select('id').single());}
  }
  const verified=await checked(kucheCloud.from('inventory_items').select('*').eq('organization_id',org).eq('id',id).single());
- if(!matches(verified,expected))throw Error('La materia prima cambió durante el guardado. Revisa el formulario y vuelve a guardar.');
+ if(!matches(verified,expected))throw Error('La materia prima cambió durante el guardado:\n'+materialMismatchDetails(verified,expected)+'\nLos cambios siguen en el formulario.');
  return verified;
 }
 function commit(data,verified){
@@ -20889,7 +20926,7 @@ function commit(data,verified){
  if(verified&&Number.isFinite(Number(verified.quantity))){
   const delta=Number(verified.quantity)-Number(current.quantity||0);current.areaStocks=current.areaStocks||{};
   current.areaStocks[current.primaryArea]=Math.max(0,Number(current.areaStocks[current.primaryArea]||0)+delta);current.quantity=Number(verified.quantity);
-  if(data.locked){current.cost=current.costNet=Number(verified.unit_cost_net??verified.unit_cost??current.costNet);current.costGross=Number(verified.unit_cost_gross??current.costGross);}
+  current.cost=current.costNet=Number(verified.unit_cost_net??verified.unit_cost??current.costNet);current.costGross=Number(verified.unit_cost_gross??current.costGross);
  }
  kucheV173NormalizePurchaseFormat(current);
  if(typeof v15SupplierTerms!=='undefined')v15SupplierTerms.forEach(t=>{if(String(t.inventoryLocalId)===String(current.id)||current.cloudId&&t.inventoryItemId===current.cloudId)t.preferred=!!supplier&&(String(t.supplierLocalId)===String(supplier.id)||t.supplierId===supplier.cloudId);});
