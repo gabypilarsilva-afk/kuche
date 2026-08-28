@@ -12118,7 +12118,7 @@ function isGarzon(){const r=normalizeRole(getCurrentWorker()?.role);return r.inc
 function isCashier(){const r=normalizeRole(getCurrentWorker()?.role);return r.includes("cajero");}
 function inferRecipeStation(recipe){const c=normalizeRole(recipe?.category);if(c.includes("bebestible"))return "Bar";if(c.includes("postre"))return "Postres";return "Cocina";}
 function getRecipeStation(recipe){return recipe?.station||inferRecipeStation(recipe);}
-function getPOSWorkerIdentity(){if(currentSession?.role==="worker"){const w=getCurrentWorker();return {workerId:w?.id||currentSession.workerId,workerName:w?.name||currentSession.name||"Trabajador"};}return {workerId:"admin",workerName:appSettings.adminName||"Administrador"};}
+function getPOSWorkerIdentity(){if(currentSession?.role==="worker"){const w=getCurrentWorker();return {workerId:w?.id||currentSession.workerId,workerName:w?.name||currentSession.name||"Trabajador"};}return {workerId:"admin",workerName:currentSession?.name||appSettings.adminName||"Administrador"};}
 function getActiveOrderForTable(tableId){return posOrders.find(o=>String(o.tableId)===String(tableId)&&o.status==="open");}
 function getActivePOSOrder(){return posOrders.find(o=>String(o.id)===String(activePOSOrderId)&&o.status==="open")||null;}
 function getOrderSubtotal(order){return (order?.items||[]).reduce((s,i)=>s+Number(i.quantity||0)*Number(i.unitPrice||0),0);}
@@ -12980,11 +12980,25 @@ function rtDecodeLocalId(value){
  const s=String(value||"");
  return /^\d+$/.test(s)?Number(s):s;
 }
+function rtOrderAccessRole(){
+ const s=currentSession;if(!s)return null;
+ // A cloud membership is authoritative; a cached UI role must not override it.
+ if(s.cloud){
+   if(!cloudAuthSession?.user?.id||!cloudOrganization?.id)return null;
+   if(String(s.userId)!==String(cloudAuthSession.user.id)||String(s.orgId)!==String(cloudOrganization.id))return null;
+   const m=cloudMembership;
+   if(!m||m.active!==true||String(m.organization_id)!==String(s.orgId))return null;
+   if(m.user_id&&String(m.user_id)!==String(s.userId))return null;
+   if(m.ownership_role==="owner")return "admin";
+   return m.role||null;
+ }
+ return s.role==="admin"?"admin":s.accessRole||null;
+}
 function rtCanManageOrders(){
- return currentSession?.role==="admin" || ["admin","manager","garzon","cajero"].includes(currentSession?.accessRole);
+ return ["admin","manager","garzon","cajero"].includes(rtOrderAccessRole());
 }
 function rtCanManageTables(){
- return currentSession?.role==="admin" || ["admin","manager"].includes(currentSession?.accessRole);
+ return ["admin","manager"].includes(rtOrderAccessRole());
 }
 function rtOrderHasSentItems(order){
  return (order?.items||[]).some(i=>!i.commercialOnly && !!i.sentAt);
@@ -18835,13 +18849,40 @@ function kucheV17UpdateKindUI(){
   if(typeof kucheV165UpdateInventoryVatPreview==="function")kucheV165UpdateInventoryVatPreview();
 }
 
+function kucheInventoryClassification(p){
+ return {inventoryKind:p.inventoryKind||'raw',inventoryClass:p.inventoryClass||'ingredient',countFrequency:p.countFrequency||'weekly',sourceRecipeId:p.sourceRecipeId==null?null:String(p.sourceRecipeId)};
+}
+function kucheMissingInventoryClassificationColumn(error){
+ if(error?.code!=='PGRST204')return null;
+ const match=String(error.message||'').match(/Could not find the '([^']+)' column of 'inventory_items' in the schema cache/);
+ return match&&['item_kind','inventory_class','count_frequency','source_recipe_local_id'].includes(match[1])?match[1]:null;
+}
+async function kucheWriteInventoryCompatible(send,payload){
+ const expected={...payload};
+ for(let attempt=0;attempt<5;attempt++){
+  const result=await send(expected);
+  if(!result.error){if(!result.data)throw Error('La nube no confirmó ningún registro. Revisa los permisos de edición.');return {row:result.data,expected};}
+  const missing=kucheMissingInventoryClassificationColumn(result.error);
+  if(!missing||!Object.prototype.hasOwnProperty.call(expected,missing))throw result.error;
+  // Only optional classification fields may fall back to organization_settings.
+  delete expected[missing];
+ }
+ throw Error('No se pudo confirmar la clasificación del inventario.');
+}
 async function kucheV17SyncInventoryKindCloud(p){
   if(!p||!kucheCloud||!cloudOrganization)return true;
   const cloudId=await ops3EnsureCloudInventoryItem(p,{allowInitialMigration:false});if(!cloudId)return false;
   try{
-    const {error}=await kucheCloud.from("inventory_items").update({item_kind:kucheV17NormalizeProduct(p).inventoryKind,inventory_class:p.inventoryClass,count_frequency:p.countFrequency,source_recipe_local_id:p.sourceRecipeId===null?null:String(p.sourceRecipeId)}).eq("id",cloudId).eq("organization_id",cloudOrganization.id);
-    if(error)throw error;return true;
-  }catch(e){console.warn("Clasificación inventario cloud; ejecuta el SQL V1.7.0",e.message);return false;}
+    const org=cloudOrganization.id;kucheV17NormalizeProduct(p);
+    await kucheWriteInventoryCompatible(body=>{const table=kucheCloud.from('inventory_items');return (Object.keys(body).length?table.update(body):table.select('id')).eq('id',cloudId).eq('organization_id',org).select('id').single();},{item_kind:p.inventoryKind,inventory_class:p.inventoryClass,count_frequency:p.countFrequency,source_recipe_local_id:p.sourceRecipeId==null?null:String(p.sourceRecipeId)});
+    const result=await kucheCloud.from('organization_settings').select('settings').eq('organization_id',org).maybeSingle();if(result.error)throw result.error;
+    const before=result.data?.settings||{},counts=before.inventory_count_settings_v186||{};
+    const settings={...before,inventory_count_settings_v186:{...counts,[cloudId]:{...counts[cloudId],...kucheInventoryClassification(p)}}};
+    let query=result.data?kucheCloud.from('organization_settings').update({settings}).eq('organization_id',org):kucheCloud.from('organization_settings').insert({organization_id:org,settings});
+    if(result.data?.settings)query=query.eq('settings',JSON.stringify(before));
+    const saved=await query.select('settings').single();if(saved.error)throw saved.error;
+    if(!saved.data)throw Error('No se confirmó la clasificación. Vuelve a guardar.');return true;
+  }catch(e){console.warn("Clasificación inventario cloud",e.message);return false;}
 }
 
 async function kucheV17SetCloudQuantity(p,reason){
@@ -18963,7 +19004,7 @@ addPurchaseLine=function(){_kucheV17AddPurchaseLine();const row=[...document.que
 const _kucheV17RefreshInventoryCloud=ops3RefreshInventoryFromCloud;
 ops3RefreshInventoryFromCloud=async function(){
   await _kucheV17RefreshInventoryCloud();if(!kucheCloud||!cloudOrganization)return;
-  try{const {data,error}=await kucheCloud.from("inventory_items").select("id,item_kind,inventory_class,count_frequency,source_recipe_local_id").eq("organization_id",cloudOrganization.id).eq("active",true);if(error)throw error;(data||[]).forEach(row=>{const p=inventory.find(x=>String(x.cloudId)===String(row.id));if(p){p.inventoryKind=row.item_kind||"raw";p.inventoryClass=row.inventory_class||(p.inventoryKind==="prepared"?"prepared":"ingredient");p.countFrequency=row.count_frequency||(p.inventoryKind==="prepared"?"daily":"weekly");p.sourceRecipeId=row.source_recipe_local_id||null;kucheV17NormalizeProduct(p);}});saveInventory();renderInventory();renderInventoryAreas();}catch(e){console.warn("Clasificación diaria/semanal cloud; ejecuta el SQL V1.7.0",e.message);}
+  try{const {data,error}=await kucheCloud.from("inventory_items").select("*").eq("organization_id",cloudOrganization.id).eq("active",true);if(error)throw error;(data||[]).forEach(row=>{const p=inventory.find(x=>String(x.cloudId)===String(row.id));if(p){p.inventoryKind=row.item_kind??p.inventoryKind??"raw";p.inventoryClass=row.inventory_class??p.inventoryClass??(p.inventoryKind==="prepared"?"prepared":"ingredient");p.countFrequency=row.count_frequency??p.countFrequency??(p.inventoryKind==="prepared"?"daily":"weekly");if('source_recipe_local_id' in row)p.sourceRecipeId=row.source_recipe_local_id;kucheV17NormalizeProduct(p);}});saveInventory();renderInventory();renderInventoryAreas();}catch(e){console.warn("Clasificación diaria/semanal cloud",e.message);}
 };
 
 if(typeof loadIntegralCloudData==="function"){
@@ -20352,7 +20393,7 @@ async function syncCountSettings(p){
  try{
   const cloudId=await ops3EnsureCloudInventoryItem(p,{allowInitialMigration:false});if(!cloudId)throw Error('Producto pendiente de sincronizar.');
   const {data,error}=await kucheCloud.from('organization_settings').select('settings').eq('organization_id',cloudOrganization.id).maybeSingle();if(error)throw error;
-  const counts={...(data?.settings?.inventory_count_settings_v186||{})};counts[cloudId]={weeklyInventoryEnabled:p.weeklyInventoryEnabled===true,inventoryCountMode:countMode(p),portionFormats:formatsFor(p)};
+  const counts={...(data?.settings?.inventory_count_settings_v186||{})};counts[cloudId]={...counts[cloudId],...kucheInventoryClassification(p),weeklyInventoryEnabled:p.weeklyInventoryEnabled===true,inventoryCountMode:countMode(p),portionFormats:formatsFor(p),primaryArea:p.primaryArea};
   const settings={...(data?.settings||{}),inventory_count_settings_v186:counts};
   const result=data?await kucheCloud.from('organization_settings').update({settings}).eq('organization_id',cloudOrganization.id):await kucheCloud.from('organization_settings').insert({organization_id:cloudOrganization.id,settings});if(result.error)throw result.error;return true;
  }catch(e){console.warn('Configuración de conteo',e.message);alert('La configuración quedó guardada en este dispositivo, pero no se pudo sincronizar con los trabajadores. Revisa la conexión y vuelve a guardar.');return false;}
@@ -20361,7 +20402,7 @@ async function loadCountSettings(){
  if(!kucheCloud||!cloudOrganization)return;
  try{const {data,error}=await kucheCloud.from('organization_settings').select('settings').eq('organization_id',cloudOrganization.id).maybeSingle();if(error)throw error;
   const counts=data?.settings?.inventory_count_settings_v186||{};
-  inventory.forEach(p=>{const config=counts[p.cloudId];if(!config)return;Object.assign(p,{weeklyInventoryEnabled:config.weeklyInventoryEnabled===true,inventoryCountMode:config.inventoryCountMode||'stock',portionFormats:Array.isArray(config.portionFormats)?config.portionFormats:[]});if(config.primaryArea)p.primaryArea=config.primaryArea;if(prepared(p)){const r=recipes.find(r=>String(r.id)===String(p.sourceRecipeId));if(r)r.portionFormats=p.portionFormats;}});saveInventory();saveRecipes();
+  inventory.forEach(p=>{const config=counts[p.cloudId];if(!config)return;Object.assign(p,{weeklyInventoryEnabled:config.weeklyInventoryEnabled===true,inventoryCountMode:config.inventoryCountMode||'stock',portionFormats:Array.isArray(config.portionFormats)?config.portionFormats:[]});for(const key of ['inventoryKind','inventoryClass','countFrequency','sourceRecipeId'])if(Object.prototype.hasOwnProperty.call(config,key))p[key]=config[key];if(config.primaryArea)p.primaryArea=config.primaryArea;if(prepared(p)){const r=recipes.find(r=>String(r.id)===String(p.sourceRecipeId));if(r)r.portionFormats=p.portionFormats;}});saveInventory();saveRecipes();
  }catch(e){console.warn('Lectura configuración de conteo',e.message);}
 }
 const oldCloudSession=handleCloudSession;
@@ -20806,16 +20847,16 @@ function canonical(v){if(Array.isArray(v))return v.map(canonical);if(v&&typeof v
 function matches(row,expected){return !!row&&Object.entries(expected).every(([k,v])=>typeof v==='number'?Number.isFinite(Number(row[k]))&&Math.abs(Number(row[k])-v)<.000001:JSON.stringify(canonical(row[k]))===JSON.stringify(canonical(v)));}
 async function checked(query){const r=await query;if(r.error)throw Error(r.error.message||'La nube rechazó el cambio.');if(!r.data)throw Error('La nube no confirmó ningún registro. Revisa los permisos de edición.');return r.data;}
 async function persist({p,target,locked,supplier,settings},org){
- const expected=payload(p,locked);let id=p.cloudId;
+ let expected=payload(p,locked),id=p.cloudId;
  if(!id&&target){const found=await checked(kucheCloud.from('inventory_items').select('id').eq('organization_id',org).eq('name',target.name).eq('active',true).single());id=found.id;}
  if(!id){
   id=crypto.randomUUID();p.cloudId=id;
-  await checked(kucheCloud.from('inventory_items').insert({...expected,id,organization_id:org,quantity:0,active:true}).select('id').single());
+  const saved=await kucheWriteInventoryCompatible(body=>kucheCloud.from('inventory_items').insert({...body,id,organization_id:org,quantity:0,active:true}).select('*').single(),expected);expected=saved.expected;
   // A later settings failure must retry this same row, never insert a duplicate.
   newCloudId=id;
  }else{
   p.cloudId=id;
-  const row=await checked(kucheCloud.from('inventory_items').update(expected).eq('id',id).eq('organization_id',org).eq('active',true).select('*').single());
+  const saved=await kucheWriteInventoryCompatible(body=>kucheCloud.from('inventory_items').update(body).eq('id',id).eq('organization_id',org).eq('active',true).select('*').single(),expected);expected=saved.expected;const row=saved.row;
   if(!matches(row,expected))throw Error('La nube devolvió datos diferentes. Los cambios siguen en el formulario; vuelve a intentar.');
  }
  if(supplier){
@@ -20823,7 +20864,7 @@ async function persist({p,target,locked,supplier,settings},org){
  }
  const result=await kucheCloud.from('organization_settings').select('settings').eq('organization_id',org).maybeSingle();if(result.error)throw Error(result.error.message);
  const before=result.data?.settings||{};
- const countConfig={weeklyInventoryEnabled:p.weeklyInventoryEnabled===true,inventoryCountMode:p.inventoryCountMode,portionFormats:p.portionFormats||[],primaryArea:p.primaryArea};
+ const countConfig={...before.inventory_count_settings_v186?.[id],...kucheInventoryClassification(p),weeklyInventoryEnabled:p.weeklyInventoryEnabled===true,inventoryCountMode:p.inventoryCountMode,portionFormats:p.portionFormats||[],primaryArea:p.primaryArea};
  const next={...before,inventory_count_settings_v186:{...(before.inventory_count_settings_v186||{}),[id]:countConfig}};
  let query=result.data?kucheCloud.from('organization_settings').update({settings:next}).eq('organization_id',org):kucheCloud.from('organization_settings').insert({organization_id:org,settings:next});
  if(result.data?.settings)query=query.eq('settings',JSON.stringify(before));
@@ -20967,7 +21008,7 @@ showPage=function(page,button){if(page==='adminagenda'){if(!admin())return;windo
 const oldAccess=applyAccessMode;
 applyAccessMode=function(){const r=oldAccess();nav();if(!admin()){if($('adminagenda'))$('adminagenda').innerHTML='';window.kucheAgenda?.clearPrivate();if($('adminagenda')?.classList.contains('active'))oldShow('dashboard',null);}dashboard();return r;};
 const oldWorkerAccess=workerCanAccess;
-workerCanAccess=function(page){return page==='adminagenda'?admin():oldWorkerAccess(page);};
+workerCanAccess=function(page){if(page==='commandas'&&['admin','manager'].includes(rtOrderAccessRole()))return true;return page==='adminagenda'?admin():oldWorkerAccess(page);};
 function restore(){nav();dashboard();if(!currentSession||restoreScope===scope())return;restoreScope=scope();const last=localStorage.getItem('kucheUX:last:'+scope());if(last&&$(last)&&can(last))go(last);}
 const oldSession=handleCloudSession;
 handleCloudSession=async function(session){const r=await oldSession(session);if(admin())window.kucheAgenda?.install();restore();if(admin())window.kucheAgenda?.load();return r;};
