@@ -20229,7 +20229,7 @@ function convert(qty,from,to){from=unitKey(from);to=unitKey(to);if(from===to)ret
 function formatsFor(p){
  if(Array.isArray(p?.portionFormats))return p.portionFormats;
  if(prepared(p)){const r=recipes.find(r=>String(r.id)===String(p.sourceRecipeId));return r?.portionFormats||[];}
- return (p?.conversions||[]).map((c,i)=>({id:c.id||`conversion-${i}-${norm(c.name)}`,name:c.name,quantity:Number(c.baseQty??c.base_qty),unit:p.baseUnit||p.unit}));
+ return (p?.conversions||[]).filter(c=>!c.packageDefinition).map((c,i)=>({id:c.id||`conversion-${i}-${norm(c.name)}`,name:c.name,quantity:Number(c.baseQty??c.base_qty),unit:p.baseUnit||p.unit}));
 }
 function countMode(p){
  // Existing portion settings remain recipe equivalents, never a physical count mode.
@@ -20291,7 +20291,8 @@ const oldEditProduct=editProduct;
 editProduct=function(id){const p=productById(id);if(prepared(p))return openPreparedSettings(id);const out=oldEditProduct(id);ensureMaterialPanel();loadPanel('v186Material',p);return out;};
 function applySettings(p,settings){
  Object.assign(p,settings);p.portionCountBreakdown={};
- p.conversions=settings.portionFormats.map(f=>({id:f.id,name:f.name,baseQty:convert(f.quantity,f.unit,p.baseUnit||p.unit)}));
+ const portionConversions=settings.portionFormats.map(f=>({id:f.id,name:f.name,baseQty:convert(f.quantity,f.unit,p.baseUnit||p.unit)}));
+ p.conversions=typeof window.kuchePackMergeConversions==='function'?window.kuchePackMergeConversions(p,portionConversions):portionConversions;
  if(prepared(p)&&typeof window.v186SavePreparedFormats==='function')window.v186SavePreparedFormats(p.sourceRecipeId,settings.portionFormats);
  saveInventory();
 }
@@ -20613,3 +20614,117 @@ install();history();renderReasonReports();
 </script>
 </body>
 </html>
+
+<style id="kuche-package-content-style">
+.kuche-pack-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:12px}#kuchePackFields{padding:16px;border:1px solid var(--border,#ddd);border-radius:12px}#kuchePackSummary{margin-top:10px}#productBasePerPurchase[readonly]{background:var(--bg,#f5f5f5)}@media(max-width:700px){.kuche-pack-grid{grid-template-columns:1fr}}
+</style>
+<script id="kuche-package-content">
+(function(){
+'use strict';
+const $=id=>document.getElementById(id), esc=v=>escapeHTML(String(v??''));
+let suspended=false, savingSpec=undefined, busy=false;
+const round=n=>Math.round(n*1e9)/1e9;
+const fmt=n=>Number(n).toLocaleString('es-CL',{maximumFractionDigits:6});
+function spec(p){return (p?.conversions||[]).find(c=>c.packageDefinition?.version===1)?.packageDefinition||null;}
+function calculate(count,quantity,unit){
+ count=Number(count);quantity=Number(quantity);
+ if(!Number.isSafeInteger(count)||count<=0)throw Error('Indica cuántas unidades trae el formato, usando un número entero mayor que cero.');
+ if(!Number.isFinite(quantity)||quantity<=0)throw Error('Indica el contenido de cada unidad, mayor que cero.');
+ const scale={g:['kg',.001],kg:['kg',1],ml:['L',.001],L:['L',1]}[unit];
+ if(!scale)throw Error('Selecciona g, kg, ml o L para el contenido de cada unidad.');
+ const each=round(quantity*scale[1]),total=round(count*each);
+ if(!Number.isFinite(total)||each<=0||total<.0001)throw Error('El contenido total debe ser al menos 0,0001 kg o L.');
+ return {version:1,count,quantity,unit,baseUnit:scale[0],each,total};
+}
+function merge(p,list){
+ const definition=savingSpec!==undefined?savingSpec:spec(p);
+ const clean=list.filter(c=>!c.packageDefinition);
+ if(!definition)return clean;
+ const value=calculate(definition.count,definition.quantity,definition.unit);
+ // Keep the existing recipe unit name, now explicitly weighted/volumetric.
+ return [...clean.filter(c=>c.name!=='unidad'),{id:'package-inner-unit',name:'unidad',baseQty:value.each,packageDefinition:value}];
+}
+window.kuchePackMergeConversions=merge;
+window.kuchePackageMath={calculate,spec,merge};
+function install(){
+ const grid=$('inventoryForm')?.querySelector('.form-grid');if(!grid)return;if($('kuchePackFields')){$('productBaseUnit').closest('.field').after($('kuchePackFields'));return;}
+ const box=document.createElement('div');box.id='kuchePackFields';box.style.gridColumn='1 / -1';
+ box.innerHTML='<label class="v186-check"><input id="kuchePackEnabled" type="checkbox"> El formato contiene unidades con peso o volumen propio</label><div id="kuchePackDetails" hidden><div class="kuche-pack-grid"><div class="field"><label for="kuchePackCount">Unidades dentro del formato</label><input id="kuchePackCount" type="number" min="1" step="1" placeholder="Ej. 6"></div><div class="field"><label for="kuchePackEach">Contenido neto de cada unidad</label><input id="kuchePackEach" type="number" min="0.000001" step="any" placeholder="Ej. 200"></div><div class="field"><label for="kuchePackUnit">Unidad del contenido individual</label><select id="kuchePackUnit"><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="L">L</option></select></div></div><p class="inline-note">Ej.: 1 paquete trae 6 bolsas de 200 g = 1,2 kg. Usa el contenido neto, sin envases. El inventario por peso se registra en kg, aunque queden bolsas abiertas.</p></div><div id="kuchePackSummary" class="inline-note" aria-live="polite"></div>';
+ $('productBaseUnit').closest('.field').after(box);
+ ['kuchePackEnabled','kuchePackCount','kuchePackEach','kuchePackUnit'].forEach(id=>$(id).addEventListener('input',()=>kucheV173UpdatePurchaseFormatPreview()));
+}
+function read(){return calculate($('kuchePackCount').value,$('kuchePackEach').value,$('kuchePackUnit').value);}
+function update(){
+ if(suspended||!$('kuchePackEnabled'))return;
+ const enabled=$('kuchePackEnabled').checked,content=$('productBasePerPurchase'),base=$('productBaseUnit');
+ $('kuchePackDetails').hidden=!enabled;content.readOnly=enabled;base.disabled=enabled;
+ content.closest('.field').querySelector('label').textContent=enabled?'Contenido total del formato (automático)':'Cantidad que trae el formato';
+ const note=content.closest('.field').querySelector('.inline-note');if(note)note.textContent=enabled?'Unidades por contenido individual. No se suman envases al peso.':'Ej.: una bolsa trae 100 g; una caja puede traer 24 unidades.';
+ if(!enabled){$('kuchePackSummary').textContent='';return;}
+ try{
+  if(['g','kg','ml','L','unidad'].includes($('unit').value))throw Error('Selecciona un formato como paquete, caja, bolsa o pack para registrar unidades interiores.');
+  const d=read();content.value=d.total;base.value=d.baseUnit;
+  $('kuchePackSummary').textContent=`1 ${$('unit').value} = ${d.count} unidades × ${fmt(d.quantity)} ${d.unit} = ${fmt(d.total)} ${d.baseUnit}. Cada unidad equivale a ${fmt(d.each)} ${d.baseUnit}.`;
+ }catch(e){content.value='';$('kuchePackSummary').textContent=e.message;}
+}
+const oldPreview=kucheV173UpdatePurchaseFormatPreview;
+kucheV173UpdatePurchaseFormatPreview=function(){update();return oldPreview();};
+function load(p){
+ install();if(!$('kuchePackEnabled'))return;
+ const d=spec(p);$('kuchePackEnabled').checked=!!d;
+ $('kuchePackCount').value=d?.count||(p?.baseUnit==='unidad'?p.basePerPurchase:'');
+ $('kuchePackEach').value=d?.quantity||'';$('kuchePackUnit').value=d?.unit||'g';
+ kucheV173UpdatePurchaseFormatPreview();
+}
+const oldNew=newProduct;
+newProduct=function(){suspended=true;try{return oldNew();}finally{suspended=false;load(null);}};
+const oldEdit=editProduct;
+editProduct=function(id){suspended=true;try{return oldEdit(id);}finally{suspended=false;const p=inventory.find(p=>String(p.id)===String(id));if(p?.inventoryKind!=='prepared')load(p);}};
+const oldPrepare=kucheV174PrepareMaterialForm;
+kucheV174PrepareMaterialForm=function(){const out=oldPrepare();install();return out;};
+const oldCollect=collectInventoryConversions;
+collectInventoryConversions=function(){return savingSpec===undefined?oldCollect():merge(null,oldCollect());};
+const oldOptions=opsFinalUnitOptions;
+opsFinalUnitOptions=function(p,selected=''){
+ const out=oldOptions(p,selected);if(!spec(p))return out;
+ const units=p.baseUnit==='kg'?['g','kg']:['ml','L'];
+ return out+units.filter(u=>u!==p.unit&&u!==p.baseUnit&&!(p.conversions||[]).some(c=>c.name===u)).map(u=>`<option value="${u}" ${u===selected?'selected':''}>${u}</option>`).join('');
+};
+function convertPortionRows(d){
+ const changes=[];
+ if(!d)return changes;
+ for(const row of $('v186MaterialRows')?.children||[]){
+  const name=row.querySelector('.v186-name').value.trim(),unit=row.querySelector('.v186-unit'),qty=row.querySelector('.v186-qty');
+  if(name.toLowerCase()==='unidad')throw Error('“unidad” corresponde al contenido individual del paquete. Usa otro nombre para tus porciones.');
+  if(['unidad','unidades','u','un'].includes(unit.value)){
+   const amount=Number(qty.value);if(!Number.isFinite(amount)||amount<=0)throw Error('Revisa la cantidad de cada porción.');
+   changes.push({unit,qty,oldUnit:unit.value,oldQty:qty.value,newQty:round(amount*d.each),newUnit:d.baseUnit});
+  }
+ }
+ return changes;
+}
+const oldSave=saveProduct;
+saveProduct=async function(){
+ if(busy)return;
+ install();let d=null,changes=[];
+ try{
+  const existing=inventory.find(p=>String(p.id)===String(editingId));
+  if(spec(existing)&&!$('kuchePackEnabled').checked)throw Error('Este producto ya tiene unidades vinculadas a recetas. Para conservar sus equivalencias, modifica la cantidad y el contenido individual sin desactivar esta opción.');
+  if($('kuchePackEnabled').checked){
+   if(['g','kg','ml','L','unidad'].includes($('unit').value))throw Error('Elige un formato de compra que contenga unidades, por ejemplo paquete o caja.');
+   d=read();changes=convertPortionRows(d);
+  }
+ }catch(e){alert(e.message);return;}
+ busy=true;savingSpec=d;
+ try{
+  update();changes.forEach(c=>{c.qty.value=c.newQty;c.unit.value=c.newUnit;});
+  await oldSave();
+ }finally{
+  if($('inventoryForm').classList.contains('open'))changes.forEach(c=>{c.qty.value=c.oldQty;c.unit.value=c.oldUnit;});
+  savingSpec=undefined;busy=false;
+ }
+};
+install();
+})();
+
+</script>
