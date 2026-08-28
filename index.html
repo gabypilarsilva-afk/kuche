@@ -13137,6 +13137,7 @@ async function rtSyncCloudOrder(order){
    order.cloudId=data.id;
    return data;
  }catch(e){
+   order.lastSyncError=kucheSyncErrorMessage(e);
    console.warn("No se pudo sincronizar la comanda",e.message);
    return null;
  }
@@ -13190,13 +13191,17 @@ async function rtSyncCloudOrderItems(order){
    }
    return true;
  }catch(e){
+   order.lastSyncError=kucheSyncErrorMessage(e);
    console.warn("No se pudieron sincronizar los productos de la comanda",e.message);
    return false;
  }
 }
 async function rtSyncCurrentOrderToCloud(order=getActivePOSOrder()){
- if(!order||!rtCanManageOrders())return false;
- await rtSyncCloudOrder(order);
+ if(!order)return false;
+ order.lastSyncError=null;
+ if(!rtCanManageOrders()){order.lastSyncError="La sesión actual no tiene permiso para sincronizar comandas.";return false;}
+ const saved=await rtSyncCloudOrder(order);
+ if(!saved?.id){order.lastSyncError=order.lastSyncError||"No se pudo guardar la cabecera de la comanda. Revisa la sesión y la conexión.";return false;}
  return await rtSyncCloudOrderItems(order);
 }
 function rtScheduleCurrentOrderPush(){
@@ -15805,7 +15810,7 @@ async function syncKucheOrderSnapshot(row){
  if(!order&&row.payload){order=row.payload;posOrders.unshift(order);}
  if(!order)return true;
  const ok=await rtSyncCurrentOrderToCloud(order);
- if(!ok||!order.cloudId)throw new Error("No se pudo sincronizar la comanda.");
+ if(!ok||!order.cloudId)throw new Error(order.lastSyncError||"No se pudo sincronizar la comanda.");
  const batches={};
  (order.items||[]).filter(i=>!i.commercialOnly&&i.sentAt).forEach(i=>{
    const key=i.dispatchBatchKey||i.sentAt||"legacy";
@@ -15850,14 +15855,15 @@ async function flushKucheOfflineQueue(showResult=false){
  kucheOfflineFlushBusy=true;
  try{
    const rows=(await kucheOfflineRows()).sort((a,b)=>new Date(a.occurred_at)-new Date(b.occurred_at));
-   let synced=0;
+   let synced=0;const failures=[];
    for(const row of rows){
      try{
        if(row.type==="pos_order")await syncKucheOrderSnapshot(row);
        else await syncKucheAuditRow(row);
        await recordKucheOfflineLog(row,"synced",null);
-       await kucheOfflineDelete(row.key);synced++;
+       await kucheOfflineDelete(row.key);kucheSyncFailureDetails.delete(row.key);synced++;
      }catch(e){
+       failures.push(kucheSyncFailure(row,e));
        await recordKucheOfflineLog(row,"pending",e.message||"Pendiente");
        console.warn("Operación offline pendiente",row.key,e.message);
      }
@@ -15868,7 +15874,7 @@ async function flushKucheOfflineQueue(showResult=false){
      try{await rtLoadOrdersFromCloud();}catch(e){}
      try{await ops3RefreshInventoryFromCloud();}catch(e){}
    }
-   if(showResult)alert(remaining?`Se sincronizaron ${synced} operación(es). Quedan ${remaining} pendiente(s).`:`Sincronización completa. ${synced} operación(es) procesadas.`);
+   if(showResult){await renderKucheSyncPendingDetails();alert(remaining?`Se sincronizaron ${synced} operación(es). Quedan ${remaining} pendiente(s).${failures.length?"\n\nMotivo:\n"+failures.slice(0,3).join("\n\n"):"\nHay cambios nuevos o un registro pendiente de otro intento."}\n\nLos registros pendientes no se han eliminado.`:`Sincronización completa. ${synced} operación(es) procesadas.`);}
    return remaining===0;
  }finally{kucheOfflineFlushBusy=false;refreshKucheConnectivityUI();renderSystemInfo();}
 }
@@ -20172,7 +20178,7 @@ function v185ToBase(qty,from,to){qty=Number(qty)||0;if(from===to)return qty;cons
 function v185BaseQty(r,f){return v185ToBase(f?.quantity,f?.unit,r?.outputUnit||"porción");}
 function v185SaveConfig(r,formats,defaultId){if(!r)return;r.portionFormats=formats;r.defaultPortionFormatId=defaultId||formats[0]?.id||"";const data={formats,defaultId:r.defaultPortionFormatId};v185Store[v185Key(r)]=data;v185Store[String(r.name||"").toLowerCase()]=data;localStorage.setItem(V185_PORTION_KEY,JSON.stringify(v185Store));saveRecipes();const p=typeof kucheV17PreparedProduct==="function"?kucheV17PreparedProduct(r.id):inventory.find(x=>String(x.sourceRecipeId)===String(r.id));if(p){p.portionFormats=formats;p.defaultPortionFormatId=r.defaultPortionFormatId;saveInventory();}}
 window.v186SavePreparedFormats=function(id,formats){const r=recipes.find(x=>String(x.id)===String(id));if(!r)return;const defaultId=formats.some(f=>f.id===r.defaultPortionFormatId)?r.defaultPortionFormatId:formats[0]?.id||"";v185SaveConfig(r,formats,defaultId);v185ApplyExtraQuantity(r);};
-function v185InstallBox(){const grid=document.querySelector("#recipeForm>.recipe-main-grid");if(!grid)return;let box=document.getElementById("kucheV185PortionBox");if(!box){box=document.createElement("div");box.id="kucheV185PortionBox";box.className="kuche-v185-portion-box";box.innerHTML='<div class="kuche-v185-portion-head"><div><strong>Formatos para contar porciones</strong><div class="inline-note">Define cuánto equivale cada porción. Ej.: Porción pequeña = 3 unidades; Porción grande = 10 unidades; Hamburguesa = 100 g.</div></div><button type="button" class="secondary-button" onclick="kucheV185AddPortionFormat()">+ Agregar formato</button></div><div id="kucheV185PortionRows"></div>';const saleBox=document.getElementById("kucheV183BaseSaleBox");if(saleBox)saleBox.insertAdjacentElement("beforebegin",box);else grid.appendChild(box);}box.classList.toggle("visible",document.getElementById("recipeType")?.value==="mise");}
+function v185InstallBox(){const grid=document.querySelector("#recipeForm>.recipe-main-grid");if(!grid)return;let box=document.getElementById("kucheV185PortionBox");if(!box){box=document.createElement("div");box.id="kucheV185PortionBox";box.className="kuche-v185-portion-box";box.innerHTML='<div class="kuche-v185-portion-head"><div><strong>Equivalencias de porción para recetas y extras</strong><div class="inline-note">Define cuánto equivale cada porción. Ej.: Porción pequeña = 3 unidades; Porción grande = 10 unidades; Hamburguesa = 100 g.</div></div><button type="button" class="secondary-button" onclick="kucheV185AddPortionFormat()">+ Agregar formato</button></div><div id="kucheV185PortionRows"></div>';const saleBox=document.getElementById("kucheV183BaseSaleBox");if(saleBox)saleBox.insertAdjacentElement("beforebegin",box);else grid.appendChild(box);}box.classList.toggle("visible",document.getElementById("recipeType")?.value==="mise");}
 function v185AddRow(existing=null,isDefault=false){v185InstallBox();const rows=document.getElementById("kucheV185PortionRows");if(!rows)return;const f=existing||{id:v185Id(),name:"",quantity:1,unit:document.getElementById("recipeOutputUnit")?.value||"porción"},row=document.createElement("div");row.className="kuche-v185-portion-row";row.dataset.id=f.id;row.innerHTML=`<div class="field"><label>Nombre del formato</label><input class="v185PortionName" placeholder="Ej. Porción de 3 aros" value="${escapeHTML(f.name||"")}"></div><div class="field"><label>Equivale a</label><input class="v185PortionQty" type="number" min="0.0001" step="0.0001" value="${Number(f.quantity)||1}"></div><div class="field"><label>Unidad</label><select class="v185PortionUnit">${v185UnitOptions(f.unit||"porción")}</select></div><label class="kuche-v185-default"><input class="v185PortionDefault" type="radio" name="v185PortionDefault" ${isDefault?"checked":""}> Porción de venta/extra</label><button type="button" class="danger-button">Eliminar</button>`;rows.appendChild(row);row.querySelector("button").onclick=()=>{row.remove();const first=rows.querySelector(".v185PortionDefault");if(first&&![...rows.querySelectorAll(".v185PortionDefault")].some(x=>x.checked))first.checked=true;};if(!rows.querySelector(".v185PortionDefault:checked"))row.querySelector(".v185PortionDefault").checked=true;}
 window.kucheV185AddPortionFormat=()=>v185AddRow();
 function v185Load(r=null){v185InstallBox();const rows=document.getElementById("kucheV185PortionRows");if(!rows)return;rows.innerHTML="";if(!r||!v185IsBase(r))return;const formats=v185Formats(r),def=v185DefaultId(r,formats);formats.forEach(f=>v185AddRow(f,String(f.id)===def));}
@@ -20225,34 +20231,42 @@ function formatsFor(p){
  if(prepared(p)){const r=recipes.find(r=>String(r.id)===String(p.sourceRecipeId));return r?.portionFormats||[];}
  return (p?.conversions||[]).map((c,i)=>({id:c.id||`conversion-${i}-${norm(c.name)}`,name:c.name,quantity:Number(c.baseQty??c.base_qty),unit:p.baseUnit||p.unit}));
 }
-function countMode(p){return p?.inventoryCountMode||(formatsFor(p).length?'portions':'stock');}
+function countMode(p){
+ // Existing portion settings remain recipe equivalents, never a physical count mode.
+ if([p?.unit,p?.baseUnit].some(u=>['g','kg'].includes(unitKey(u))))return 'weight';
+ return p?.inventoryCountMode==='base'?'base':'stock';
+}
+function stockPerBaseUnit(p){
+ const direct=convert(1,p.baseUnit||p.unit,p.unit);
+ if(Number.isFinite(direct))return direct;
+ const content=Number(p.basePerPurchase||1);return content>0?1/content:NaN;
+}
 function formatStockQty(p,f){
  const base=convert(Number(f.quantity),f.unit,p.baseUnit||p.unit);
  if(!Number.isFinite(base)||base<=0)return NaN;
- // Same conversion used by recipe consumption; purchase packs and yield stay consistent.
- return opsFinalIngredientPurchaseQty(p,base,p.baseUnit||p.unit);
+ // A physical count uses actual weight, not the recipe's waste/yield adjustment.
+ return base*stockPerBaseUnit(p);
 }
+function portionQuantityLabel(q){return Number(q||0).toLocaleString('es-CL',{minimumFractionDigits:3,maximumFractionDigits:6});}
 function inCount(p,mode,area){return p?.active!==false&&(mode==='daily'||p.weeklyInventoryEnabled===true)&&(Number(p.areaStocks?.[area]||0)>0||inferInventoryArea(p)===area);}
 window.v186InventoryInCount=inCount;
 window.v186CountMath={convert,formatStockQty,formatsFor,inCount};
 kucheV17ModeLabel=mode=>mode==='daily'?'Inventario diario':'Inventario semanal';
 let preparedEditingId=null;
 function unitOptions(value){return [...new Set(['g','kg','ml','L','unidad','porción',value].filter(Boolean))].map(u=>`<option value="${attr(u)}" ${u===value?'selected':''}>${esc(u)}</option>`).join('');}
-function panelHTML(prefix){return `<div class="v186-settings" id="${prefix}Settings"><h3>Porciones e inventario</h3><p class="inline-note">Todos los productos aparecen en el inventario diario de su área. El semanal es un control adicional de la misma existencia.</p><label class="v186-check"><input id="${prefix}Weekly" type="checkbox"> Incluir también en inventario semanal</label><div class="field"><label for="${prefix}Mode">Forma de conteo</label><select id="${prefix}Mode"><option value="stock">Cantidad directa en la unidad de stock</option><option value="base">Cantidad directa en la unidad base (g, kg, ml, L o unidades)</option><option value="portions">Porciones y cantidad sin porcionar</option></select></div><div id="${prefix}Formats"><div class="recipe-ingredients-header"><strong>¿A cuánto equivale una porción?</strong><button type="button" class="secondary-button" id="${prefix}Add">+ Agregar porción</button></div><p class="inline-note">Ej.: Lechuga para hamburguesa = 20 g; Lechuga para mechada = 30 g. Puedes registrar varios tamaños sin duplicar el producto.</p><div id="${prefix}Rows"></div></div></div>`;}
+function panelHTML(prefix){return `<div class="v186-settings" id="${prefix}Settings"><h3>Equivalencias e inventario</h3><p class="inline-note">En el inventario, los productos medidos por peso se registran directamente en kg. El trabajador pesa todo lo disponible, sin contar porciones. Los productos sin equivalencia de peso conservan su unidad de stock.</p><label class="v186-check"><input id="${prefix}Weekly" type="checkbox"> Incluir también en inventario semanal</label><div id="${prefix}Formats"><div class="recipe-ingredients-header"><strong>Equivalencias para recetas</strong><button type="button" class="secondary-button" id="${prefix}Add">+ Agregar equivalencia</button></div><p class="inline-note">Ej.: porción de tomate = 0,070 kg. Esta equivalencia se conserva para las recetas y el costeo. En inventario solo se anota el peso real, por ejemplo 0,700 kg.</p><div id="${prefix}Rows"></div></div></div>`;}
 function addRow(prefix,f={}){
  const row=document.createElement('div');row.className='v186-format-row';row.dataset.id=f.id||uid();
- row.innerHTML=`<div class="field"><label>Nombre de la porción</label><input class="v186-name" value="${attr(f.name||'')}" placeholder="Ej. Porción hamburguesa"></div><div class="field"><label>Equivale a</label><input class="v186-qty" type="number" min="0.000001" step="any" value="${Number(f.quantity)||1}"></div><div class="field"><label>Unidad</label><select class="v186-unit">${unitOptions(f.unit||$('productBaseUnit')?.value||'g')}</select></div><button type="button" class="danger-button">Eliminar</button>`;
+ row.innerHTML=`<div class="field"><label>Nombre de la porción</label><input class="v186-name" value="${attr(f.name||'')}" placeholder="Ej. Porción hamburguesa"></div><div class="field"><label>1 porción equivale a</label><input class="v186-qty" type="number" min="0.000001" step="any" value="${Number(f.quantity)||1}"></div><div class="field"><label>Unidad</label><select class="v186-unit">${unitOptions(f.unit||$('productBaseUnit')?.value||'g')}</select></div><button type="button" class="danger-button">Eliminar</button>`;
  row.querySelector('button').onclick=()=>row.remove();$(prefix+'Rows').appendChild(row);
 }
 function loadPanel(prefix,p){
  $(prefix+'Weekly').checked=p?.weeklyInventoryEnabled===true;
- $(prefix+'Mode').value=countMode(p);
  $(prefix+'Rows').innerHTML='';formatsFor(p).forEach(f=>addRow(prefix,f));
- const toggle=()=>{$(prefix+'Formats').hidden=$(prefix+'Mode').value!=='portions';};
- $(prefix+'Mode').onchange=toggle;$(prefix+'Add').onclick=()=>addRow(prefix);toggle();
+ $(prefix+'Formats').hidden=false;$(prefix+'Add').onclick=()=>addRow(prefix);
 }
 function collectPanel(prefix,p){
- const mode=$(prefix+'Mode').value,formats=[],names=new Set();
+ const mode=countMode(p),formats=[],names=new Set();
  for(const row of $(prefix+'Rows').children){
   const name=row.querySelector('.v186-name').value.trim(),quantity=Number(row.querySelector('.v186-qty').value),unit=row.querySelector('.v186-unit').value;
   if(!name||!Number.isFinite(quantity)||quantity<=0)throw Error('Completa el nombre y una equivalencia mayor que cero para cada porción.');
@@ -20262,7 +20276,6 @@ function collectPanel(prefix,p){
   if(!Number.isFinite(formatStockQty(p,f)))throw Error(`No se puede convertir “${name}” de ${unit} a ${p.baseUnit||p.unit}. Revisa las unidades.`);
   formats.push(f);
  }
- if(mode==='portions'&&!formats.length)throw Error('Agrega al menos una porción o elige cantidad directa.');
  return {weeklyInventoryEnabled:$(prefix+'Weekly').checked,inventoryCountMode:mode,portionFormats:formats};
 }
 function ensureMaterialPanel(){
@@ -20346,22 +20359,31 @@ function breakdownTotal(p,data){let total=Number(data?.loose)||0;for(const f of 
 function updateTotal(box){
  const p=productById(box.dataset.product),hidden=box.closest('.count-line').querySelector('input[data-product]');if(!p||!hidden)return;
  const data={loose:Number(box.querySelector('.v186-loose').value),formats:{}};let valid=Number.isFinite(data.loose)&&data.loose>=0;
- box.querySelectorAll('.v186-count').forEach(input=>{const n=Number(input.value);if(!Number.isFinite(n)||n<0||!Number.isInteger(n))valid=false;data.formats[input.dataset.format]=n;});
+ box.querySelectorAll('.v186-count').forEach(input=>{const n=Number(input.value);if(!input.value.trim()||!Number.isFinite(n)||n<0||!Number.isInteger(n))valid=false;data.formats[input.dataset.format]=n;});
  const total=breakdownTotal(p,data);valid=valid&&Number.isFinite(total);hidden.value=valid?String(Math.round(total*1e10)/1e10):'';box.dataset.valid=String(valid);
- box.querySelector('.v186-total').textContent=valid?`Total contado: ${formatNumber(total)} ${p.unit}`:'Revisa las cantidades y equivalencias.';return {data,valid};
+ const units=Object.values(data.formats).reduce((sum,n)=>sum+n,0);
+ box.querySelector('.v186-total').textContent=valid?`${units} unidades de porción${data.loose>0?' + '+portionQuantityLabel(data.loose)+' '+p.unit+' sin porcionar':''} · Total: ${portionQuantityLabel(total)} ${p.unit}`:'Ingresa las unidades de cada porción; escribe 0 cuando no haya.';return {data,valid};
+}
+function inventoryCountDisplay(p){
+ const mode=countMode(p);
+ if(mode==='weight'){
+  const direct=convert(1,'kg',p.unit);
+  const factor=Number.isFinite(direct)?direct:convert(1,'kg',p.baseUnit)*stockPerBaseUnit(p);
+  return {unit:'kg',factor};
+ }
+ return mode==='base'?{unit:p.baseUnit||p.unit,factor:stockPerBaseUnit(p)}:{unit:p.unit,factor:1};
 }
 function enhanceCount(mode){
- const prefix=kucheV171CountPrefix(mode),lines=$(prefix+'Lines'),area=$(prefix+'Area')?.value;if(!lines||!area)return;
+ const prefix=kucheV171CountPrefix(mode),lines=$(prefix+'Lines');if(!lines)return;
  lines.querySelectorAll('.'+prefix+'Input').forEach(hidden=>{
-  const p=productById(hidden.dataset.product),row=hidden.closest('.count-line');
-  if(p&&countMode(p)==='base'&&!row.querySelector('.v186-direct')){
-   const factor=opsFinalIngredientPurchaseQty(p,1,p.baseUnit||p.unit),input=document.createElement('input');input.className='v186-direct';input.type='number';input.min='0';input.step='any';input.value=String(Number(hidden.value)/factor);row.children[1].textContent=p.baseUnit||p.unit;hidden.type='hidden';row.appendChild(input);input.oninput=()=>{hidden.value=input.value.trim()&&Number.isFinite(Number(input.value))&&Number(input.value)>=0?String(Number(input.value)*factor):'';};return;
-  }
-  if(!p||countMode(p)!=='portions'||!formatsFor(p).length||row.querySelector('.v186-count-box'))return;
-  const stock=Number(p.areaStocks?.[area]||0),saved=p.portionCountBreakdown?.[area],total=breakdownTotal(p,saved),data=saved&&Number.isFinite(total)&&Math.abs(total-stock)<1e-7?saved:{loose:stock,formats:{}};
-  const box=document.createElement('div');box.className='v186-count-box';box.dataset.product=p.id;
-  box.innerHTML=`<strong>Conteo por porciones</strong><div class="inline-note">Cuenta cada porción una sola vez. Agrega aparte lo que queda sin porcionar.</div><div class="kuche-v185-format-grid">${formatsFor(p).map(f=>`<label class="kuche-v185-format-input"><span>${esc(f.name)}<br><small>1 = ${formatNumber(f.quantity)} ${esc(f.unit)}</small></span><input class="v186-count" data-format="${attr(f.id)}" type="number" min="0" step="1" value="${Number(data.formats?.[f.id])||0}"></label>`).join('')}<label class="kuche-v185-format-input"><span>Sin porcionar<br><small>en ${esc(p.unit)}</small></span><input class="v186-loose" type="number" min="0" step="any" value="${Number(data.loose)||0}"></label></div><strong class="v186-total"></strong>`;
-  hidden.type='hidden';row.appendChild(box);box.querySelectorAll('input').forEach(i=>i.oninput=()=>updateTotal(box));updateTotal(box);
+  const p=productById(hidden.dataset.product),row=hidden.closest('.count-line');if(!p||!row||row.querySelector('.v186-direct'))return;
+  const display=inventoryCountDisplay(p);if(!Number.isFinite(display.factor)||display.factor<=0)return;
+  row.children[1].textContent=display.unit;
+  const note=row.querySelector('.role-note');if(note)note.textContent=`Teórico: ${portionQuantityLabel(Number(hidden.value)/display.factor)} ${display.unit}`;
+  if(display.unit===p.unit&&display.factor===1){hidden.step='any';hidden.inputMode='decimal';hidden.setAttribute('aria-label',`${p.name}: cantidad en ${display.unit}`);return;}
+  const input=document.createElement('input');input.className='v186-direct';input.type='number';input.min='0';input.step='any';input.inputMode='decimal';input.setAttribute('aria-label',`${p.name}: cantidad en ${display.unit}`);input.value=String(Math.round(Number(hidden.value)/display.factor*1e10)/1e10);
+  hidden.type='hidden';row.appendChild(input);
+  input.oninput=()=>{const n=Number(input.value);hidden.value=input.value.trim()&&Number.isFinite(n)&&n>=0?String(Math.round(n*display.factor*1e10)/1e10):'';};
  });
 }
 window.v186EnhanceCount=enhanceCount;
@@ -20372,13 +20394,10 @@ let savingCount=false;
 kucheV171SaveCountPage=async function(mode){
  if(savingCount)return;const prefix=kucheV171CountPrefix(mode),area=$(prefix+'Area')?.value;
  if(!kucheV171AllowedAreas().some(a=>a.key===area)){alert('No tienes permiso para contar esta área.');return;}
- const inputs=[...$(prefix+'Lines').querySelectorAll('.'+prefix+'Input')],snapshots=[];
- for(const box of $(prefix+'Lines').querySelectorAll('.v186-count-box')){const result=updateTotal(box);if(!result?.valid){alert('Revisa las porciones: deben ser cantidades enteras iguales o mayores que cero.');return;}snapshots.push({p:productById(box.dataset.product),data:result.data});}
- if(inputs.some(i=>!i.value.trim()||!Number.isFinite(Number(i.value))||Number(i.value)<0||!inCount(productById(i.dataset.product),mode,area))){alert('Completa todas las cantidades con valores iguales o mayores que cero.');return;}
- const previous=inventoryAreaCounts[0]?.id;savingCount=true;
- try{await oldCountSave(mode);if(inventoryAreaCounts[0]?.id===previous)return;
-  snapshots.forEach(({p,data})=>{p.portionCountBreakdown=p.portionCountBreakdown||{};p.portionCountBreakdown[area]=data;const line=inventoryAreaCounts[0]?.lines?.find(l=>String(l.productId)===String(p.id));if(line)line.portionBreakdown={...data,definitions:formatsFor(p).map(f=>({...f}))};});saveInventory();saveIntegralData();kucheV171RenderCountPage(mode);
- }finally{savingCount=false;}
+ const inputs=[...$(prefix+'Lines').querySelectorAll('.'+prefix+'Input')];
+ if(inputs.some(i=>!i.value.trim()||!Number.isFinite(Number(i.value))||Number(i.value)<0||!inCount(productById(i.dataset.product),mode,area))){alert('Completa las cantidades con el peso o stock real. Puedes ingresar decimales; escribe 0 cuando no haya.');return;}
+ savingCount=true;
+ try{await oldCountSave(mode);}finally{savingCount=false;}
 };
 // No-charge products reuse the existing extras pipeline (comanda, KDS and stock).
 // Only explicit admin selections are tagged; recipes are never auto-added to this list.
@@ -20417,13 +20436,178 @@ v15RenderFreeRecipeConfig=function(){
 const oldClarify=kucheV172ClarifyNoCharge;
 kucheV172ClarifyNoCharge=function(){oldClarify();v15RenderFreeRecipeConfig();};
 function labels(){
- for(const mode of ['daily','weekly']){const page=$(mode==='daily'?'dailyinventory':'weeklyinventory');if(!page)continue;const desc=page.querySelector('.page-header p'),note=page.querySelector('.kuche-v17-count-note');if(desc)desc.textContent=mode==='daily'?'Conteo diario de materias primas y preparaciones, según el área de cada trabajador.':'Control de los productos seleccionados por el administrador en Materia prima.';if(note)note.textContent=mode==='daily'?'Cuenta en la unidad configurada o separa por porciones. No vuelvas a sumar las mismas porciones como producto sin porcionar.':'Solo aparecen los productos marcados “Incluir también en inventario semanal”. Este conteo actualiza el mismo stock del inventario diario.';}
+ for(const mode of ['daily','weekly']){const page=$(mode==='daily'?'dailyinventory':'weeklyinventory');if(!page)continue;const desc=page.querySelector('.page-header p'),note=page.querySelector('.kuche-v17-count-note');if(desc)desc.textContent=mode==='daily'?'Conteo diario de materias primas y preparaciones, según el área de cada trabajador.':'Control de los productos seleccionados por el administrador en Materia prima.';if(note)note.textContent=mode==='daily'?'Pesa el producto disponible y registra el total en kg. No se cuentan porciones. Los productos sin peso definido conservan su unidad de stock.':'Solo aparecen los productos marcados “Incluir también en inventario semanal”. Este conteo actualiza el mismo stock del inventario diario.';}
  const help=$('kucheV17CountHelp');if(help)help.textContent='Diario: todos los productos del área. Semanal: solo los seleccionados por el administrador.';
 }
 function refresh(){kucheV172GlobalExtras=kucheV172GlobalExtras.map(e=>isFree(e)?kucheV172NormalizeExtra(e):e);labels();kucheV171RenderIngredients();kucheV171RenderCountPage('daily');kucheV171RenderCountPage('weekly');v15RenderFreeRecipeConfig();}
 const oldShowPage=showPage;
 showPage=function(id,button){const out=oldShowPage(id,button);labels();if(id==='ingredients')kucheV171RenderIngredients();if(id==='recipes')v15RenderFreeRecipeConfig();return out;};
 ensureMaterialPanel();loadPanel('v186Material',null);refresh();
+})();
+
+</script>
+<script id="kuche-sync-diagnostics">
+/* Diagnóstico de sincronización: conserva la cola y muestra el motivo del rechazo. */
+var kucheSyncFailureDetails = new Map();
+function kucheSyncErrorMessage(error){
+ const message=typeof error==='string'?error:(error?.message||'No se recibió una confirmación de la nube.');
+ return `${error?.code?'['+String(error.code)+'] ':''}${message}`;
+}
+function kucheSyncPendingName(row){
+ const types={pos_order:'Comanda',payment_method:'Medio de pago',discount_agreement:'Convenio',operational_expense:'Gasto',asset_item:'Bien o material',asset_cycle:'Inventario anual',asset_count:'Conteo anual',audit_event:'Registro de actividad'};
+ const p=row?.payload||{},name=p.tableName||p.name||p.label||p.description;
+ return `${types[row?.type]||row?.reason||'Operación'}${name?' · '+String(name).slice(0,160):''}`;
+}
+function kucheSyncFailure(row,error){
+ const message=kucheSyncErrorMessage(error);
+ kucheSyncFailureDetails.set(row.key,{message,at:new Date().toISOString()});
+ return `${kucheSyncPendingName(row)}: ${message}`;
+}
+async function renderKucheSyncPendingDetails(){
+ const page=document.getElementById('systeminfo');if(!page)return;
+ const rows=await kucheOfflineRows();let panel=document.getElementById('kucheSyncPendingDetails');
+ if(!panel){panel=document.createElement('div');panel.id='kucheSyncPendingDetails';panel.className='integral-panel';document.getElementById('systemTechnicalBanner')?.insertAdjacentElement('afterend',panel);}
+ panel.hidden=!rows.length;if(!rows.length){panel.innerHTML='';return;}
+ panel.innerHTML='<h2>Detalle de operaciones pendientes</h2><p class="category">Estos registros siguen guardados en este dispositivo. No borres los datos del navegador. Pulsa Sincronizar ahora para obtener el motivo del último intento.</p>'+rows.map(row=>{
+  const detail=kucheSyncFailureDetails.get(row.key),label=kucheSyncPendingName(row);
+  return `<div style="padding:12px 0;border-top:1px solid var(--border)"><strong>${escapeHTML(label)}</strong><div class="category">${escapeHTML(row.reason||'Pendiente de envío')}</div><p style="white-space:pre-wrap;overflow-wrap:anywhere">${escapeHTML(detail?.message||'Aún no hay un resultado de sincronización en esta sesión.')}</p></div>`;
+ }).join('');
+}
+const kucheSyncPreviousRenderSystemInfo=renderSystemInfo;
+renderSystemInfo=async function(){const result=await kucheSyncPreviousRenderSystemInfo();await renderKucheSyncPendingDetails();return result;};
+
+</script>
+<style id="kuche-stock-justification-style">
+.stock-just-modal{position:fixed;inset:0;z-index:30000;background:rgba(0,0,0,.4);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:4vh 16px}.stock-just-card{background:var(--card,#fff);color:var(--text,#20332c);width:min(900px,100%);border-radius:16px;padding:24px;box-shadow:0 15px 50px #0003}.stock-just-line{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:12px;align-items:end;padding:12px 0;border-bottom:1px solid var(--border,#ddd)}.stock-just-line input,.stock-just-line select{width:100%}.stock-just-line .stock-just-search{margin-bottom:6px}.stock-just-modal[hidden]{display:none!important}@media(max-width:650px){.stock-just-line{grid-template-columns:1fr 1fr}.stock-just-line .field:first-child{grid-column:1/-1}.stock-just-card{padding:16px}}
+</style>
+<script id="kuche-stock-justification">
+/* Salidas justificadas: cocina registra consumo real sin crear una receta. */
+(function(){
+'use strict';
+const $=id=>document.getElementById(id),esc=v=>escapeHTML(String(v??'')),attr=v=>ops2EscapeAttr(String(v??''));
+const admin=()=>currentSession?.role==='admin'||['admin','manager'].includes(currentSession?.accessRole);
+const allowed=()=>admin()||currentSession?.accessRole==='cocina';
+const reasons={expired:'Vencido',damaged:'En mal estado',staffmeal:'Almuerzo del personal'};
+const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const product=id=>inventory.find(p=>String(p.id)===String(id));
+const round=n=>Math.round(n*1e10)/1e10;
+const storageKey=()=> 'kucheStockJustifications:'+String(cloudOrganization?.id||appSettings?.businessName||'local');
+function operations(){try{return JSON.parse(localStorage.getItem(storageKey())||'[]');}catch{return [];}}
+function store(op){const all=operations(),i=all.findIndex(x=>x.id===op.id);if(i<0)all.unshift(op);else all[i]=op;localStorage.setItem(storageKey(),JSON.stringify(all));}
+function canUse(p){return p?.active!==false&&p.inventoryClass!=='supply'&&(admin()||assignedAreasForRole().includes(inferInventoryArea(p)));}
+function units(p){
+ if(!p)return [];const result=[{key:'stock',label:p.unit,factor:1}];
+ const base=p.baseUnit||p.unit,perBase=base===p.unit?1:1/Number(p.basePerPurchase||1);
+ const factor=u=>u===base?1:({'kg>g':1000,'g>kg':.001,'L>ml':1000,'ml>L':.001}[u+'>'+base]);
+ for(const u of ['kg','g','L','ml',base]){const f=factor(u);if(f&&u!==p.unit&&!result.some(x=>x.label===u))result.push({key:'unit:'+u,label:u,factor:f*perBase});}
+ for(const [i,c] of (p.conversions||[]).entries()){const q=Number(c.baseQty??c.base_qty);if(q>0&&c.name)result.push({key:'portion:'+i,label:c.name,factor:q*perBase});}
+ // Prepared recipes may define portions without raw-material conversion rows.
+ for(const [i,f] of (p.portionFormats||[]).entries()){if(result.some(x=>x.label===f.name))continue;const q=Number(f.quantity)*factor(f.unit)*perBase;if(Number.isFinite(q)&&q>0)result.push({key:'prepared:'+i,label:f.name,factor:q});}
+ return result.filter(x=>Number.isFinite(x.factor)&&x.factor>0);
+}
+function pendingQty(id){return operations().filter(o=>o.status==='pending'&&!o.cloudApplied).flatMap(o=>o.lines).filter(l=>String(l.productId)===String(id)).reduce((sum,l)=>sum+l.quantity,0);}
+function buildLines(inputs){
+ normalizeAreaStocks();const list=[],totals=new Map();
+ for(const input of inputs){const p=product(input.productId),choice=units(p).find(u=>u.key===input.unitKey),qty=Number(input.quantity);if(!canUse(p)||!choice||!Number.isFinite(qty)||qty<=0)throw Error('Selecciona un producto disponible, su unidad y una cantidad mayor que cero.');
+ const quantity=round(qty*choice.factor),area=inferInventoryArea(p);if(quantity<=0)throw Error('La cantidad es demasiado pequeña.');
+ totals.set(String(p.id),(totals.get(String(p.id))||0)+quantity);
+ list.push({productId:p.id,cloudId:p.cloudId||null,productName:p.name,unit:p.unit,quantity,inputQuantity:qty,inputUnit:choice.label,unitCost:Number(p.costNet??p.cost??0),cost:quantity*Number(p.costNet??p.cost??0),area,sourceRecipeId:p.sourceRecipeId||null});}
+ if(!list.length)throw Error('Agrega al menos un producto.');
+ for(const [id,qty] of totals){const p=product(id),area=inferInventoryArea(p),available=Math.min(Number(p.quantity||0),Number(p.areaStocks?.[area]||0))-pendingQty(id);if(qty>available+1e-9)throw Error(`Stock insuficiente de ${p.name}. Disponible: ${formatNumber(Math.max(0,available))} ${p.unit}.`);}
+ return list;
+}
+function groupLines(lines){const map=new Map();for(const l of lines){const key=l.cloudId||String(l.productId);if(!map.has(key))map.set(key,{...l,quantity:0});map.get(key).quantity=round(map.get(key).quantity+l.quantity);}return [...map.values()];}
+let saving=false;
+function install(){
+ if(!$('stockJustificationModal')){const el=document.createElement('div');el.id='stockJustificationModal';el.className='stock-just-modal';el.hidden=true;el.innerHTML=`<div class="stock-just-card" role="dialog" aria-modal="true" aria-labelledby="stockJustTitle"><h2 id="stockJustTitle">Registrar salida de inventario</h2><p>Elige lo que realmente se utilizó o retiró del inventario. No necesitas crear una receta.</p><div class="module-grid"><div class="field"><label>Motivo</label><select id="stockJustReason"><option value="">Seleccionar motivo</option><option value="expired">Vencido</option><option value="damaged">En mal estado</option><option value="staffmeal">Almuerzo del personal</option></select></div><div class="field"><label>Fecha</label><input id="stockJustDate" type="date"></div><div class="field" id="stockJustPeopleField"><label>Personas que almorzaron</label><input id="stockJustPeople" type="number" min="1" step="1" placeholder="Ej. 2"></div><div class="field"><label>Registrado por</label><input id="stockJustResponsible" readonly></div></div><div id="stockJustLines"></div><button class="secondary-button" type="button" id="stockJustAdd">+ Agregar producto</button><div class="field" style="margin-top:12px"><label>Qué se preparó / observaciones</label><textarea id="stockJustNotes" placeholder="Ej. Pasta con salsa de tomate"></textarea></div><p id="stockJustPreview" class="status-box"></p><div class="form-actions"><button type="button" class="primary-button" id="stockJustSave">Guardar y descontar inventario</button><button type="button" class="secondary-button" id="stockJustClose">Cancelar</button></div></div>`;document.body.appendChild(el);$('stockJustAdd').onclick=()=>addLine();$('stockJustClose').onclick=()=>{if(!saving)el.hidden=true;};$('stockJustSave').onclick=save;$('stockJustReason').onchange=updatePreview;}
+ for(const id of ['waste']){const page=$(id);if(!page)continue;let button=$('stockJustOpen'+id);if(!button){button=document.createElement('button');button.id='stockJustOpen'+id;button.className='primary-button';button.type='button';button.textContent=id==='staffmeals'?'+ Registrar almuerzo desde inventario':'+ Justificar salida';page.querySelector('.page-header')?.appendChild(button);}button.hidden=!allowed();button.onclick=()=>open('');
+ let history=$('stockJustHistory'+id);if(!history){history=document.createElement('div');history.id='stockJustHistory'+id;history.className='integral-panel';page.querySelector('.page-header')?.insertAdjacentElement('afterend',history);}}
+ // Retain the old weekly plan, but replace the recipe-only lunch entry point.
+ const oldKitchen=$('v15KitchenMealPanel');if(oldKitchen)oldKitchen.hidden=true;
+ const retired=$('staffmeals');if(retired){retired.hidden=true;retired.classList.remove('active');}
+ document.querySelectorAll('.nav-item').forEach(b=>{if((b.getAttribute('onclick')||'').includes("'staffmeals'"))b.remove();});
+ const wastePage=$('waste'),header=wastePage?.querySelector('.page-header');
+ if(header){const description=header.querySelector('p');if(description)description.textContent='Cocina registra cada salida y justifica el motivo: vencido, en mal estado o almuerzo del personal.';header.querySelector('button[onclick="openWasteForm()"]')?.setAttribute('hidden','');}
+ $('wasteForm')?.classList.remove('open');
+ const oldButton=$('staffmeals')?.querySelector('button[onclick="openStaffMealForm()"]');if(oldButton)oldButton.hidden=true;
+}
+function addLine(){
+ const row=document.createElement('div');row.className='stock-just-line';row.innerHTML='<div class="field"><label>Buscar en inventario</label><input class="stock-just-search" placeholder="Escribe salsa, pasta, tomate…"><select class="stock-just-product"></select></div><div class="field"><label>Cantidad utilizada</label><input class="stock-just-qty" type="number" min="0" step="any" inputmode="decimal"></div><div class="field"><label>Unidad / equivalencia</label><select class="stock-just-unit"></select></div><button type="button" class="danger-button">Quitar</button>';
+ const select=row.querySelector('.stock-just-product'),unit=row.querySelector('.stock-just-unit');
+ const populate=()=>{const id=select.value,q=norm(row.querySelector('.stock-just-search').value);select.innerHTML='<option value="">Seleccionar producto</option>'+inventory.filter(p=>canUse(p)&&norm(p.name).includes(q)).sort((a,b)=>a.name.localeCompare(b.name,'es')).map(p=>`<option value="${attr(p.id)}">${esc(p.name)} · ${formatNumber(p.quantity)} ${esc(p.unit)}</option>`).join('');select.value=id;if(!select.value)unit.innerHTML='';updatePreview();};
+ row.querySelector('.stock-just-search').oninput=populate;select.onchange=()=>{const p=product(select.value),options=units(p);unit.innerHTML=options.map(u=>`<option value="${attr(u.key)}">${esc(u.label)}</option>`).join('');const kg=options.find(x=>x.label==='kg');if(kg)unit.value=kg.key;updatePreview();};row.querySelector('.stock-just-qty').oninput=updatePreview;unit.onchange=updatePreview;row.querySelector('button').onclick=()=>{row.remove();updatePreview();};$('stockJustLines').appendChild(row);populate();
+}
+function inputs(){return [...$('stockJustLines').children].map(row=>({productId:row.querySelector('.stock-just-product').value,quantity:row.querySelector('.stock-just-qty').value,unitKey:row.querySelector('.stock-just-unit').value}));}
+function updatePreview(){if(!$('stockJustReason'))return;const meal=$('stockJustReason').value==='staffmeal';$('stockJustPeopleField').hidden=!meal;const cost=inputs().reduce((sum,i)=>{const p=product(i.productId),u=units(p).find(u=>u.key===i.unitKey);return sum+(Number(i.quantity)||0)*(u?.factor||0)*Number(p?.costNet??p?.cost??0);},0);$('stockJustPreview').textContent=(meal?'Costo de alimentación del personal: ':'Costo de pérdida: ')+`$${formatMoney(cost)}. `+(meal?'Se registra separado de las mermas.':'No se considera alimento aprovechable.');}
+function open(reason){if(!allowed()){alert('Solo Cocina o Administración puede registrar estas salidas.');return;}install();$('stockJustReason').value=reason;$('stockJustDate').value=getToday();$('stockJustPeople').value='';$('stockJustResponsible').value=integralUserName();$('stockJustNotes').value='';$('stockJustLines').innerHTML='';addLine();$('stockJustificationModal').hidden=false;updatePreview();}
+window.openStockJustification=open;
+function materialize(op){
+ const cost=op.lines.reduce((s,l)=>s+l.cost,0);
+ if(op.reason==='staffmeal'){
+ if(!staffMeals.some(m=>m.sourceOperationId===op.id))staffMeals.unshift({id:op.recordId,sourceOperationId:op.id,date:op.date,staffId:null,staffName:'Equipo · '+op.responsible,recipeId:null,recipeName:op.notes||op.lines.map(l=>`${l.inputQuantity} ${l.inputUnit} de ${l.productName}`).join(' + '),portions:op.people,cost,consumptions:op.lines.map(l=>({...l})),notes:op.notes,status:'activo',createdAt:op.createdAt});
+ }else{op.lines.forEach((l,i)=>{if(!wastes.some(w=>w.sourceOperationId===op.id&&w.sourceLine===i))wastes.unshift({id:op.recordId+i/1000,sourceOperationId:op.id,sourceLine:i,date:op.date,productId:l.productId,productName:l.productName,unit:l.unit,quantity:l.quantity,type:'desperdicio',cause:reasons[op.reason],responsible:op.responsible,recoverable:false,notes:op.notes,unitCost:l.unitCost,cost:l.cost,status:'activo',createdAt:op.createdAt});});}
+ saveStaffMeals();saveWasteData();op.status='confirmed';store(op);
+}
+function localStock(op){normalizeAreaStocks();for(const l of groupLines(op.lines)){const p=product(l.productId),old=Number(p.quantity);p.quantity=round(old-l.quantity);p.areaStocks[l.area]=round(Number(p.areaStocks[l.area]||0)-l.quantity);if(p.sourceRecipeId)kucheV17AdjustBatchesToTotal(p.sourceRecipeId,p.quantity);movements.unshift({id:Date.now()+Math.random(),source:'stock_justification',sourceId:op.id,productId:p.id,productName:p.name,type:'salida',quantity:l.quantity,reason:reasons[op.reason],previousStock:old,resultingStock:p.quantity,unit:p.unit,date:new Date(op.date+'T12:00:00').toISOString()});}saveInventory();saveMovements();saveIntegralData();}
+async function strictLog(row,status){
+ const {error}=await kucheCloud.from('offline_operation_log').upsert({organization_id:cloudOrganization.id,device_id:row.device_id,source_local_id:row.key,operation_type:reasons[row.payload.reason]||'Salida de inventario',payload:row.payload,occurred_at:row.occurred_at,performed_by_user_id:cloudAuthSession.user.id,performed_by_name:row.payload.responsible,sync_status:status,synced_at:status==='synced'?new Date().toISOString():null},{onConflict:'organization_id,device_id,source_local_id'});if(error)throw error;
+}
+async function sync(row){
+ const op=row.payload;if(!allowed())throw Error('Esta sesión no tiene permiso para registrar salidas de cocina.');if(!cloudOrganization||op.organizationId!==cloudOrganization.id)throw Error('La salida pertenece a otra empresa. Abre la empresa correspondiente.');
+ await strictLog(row,'pending');
+ if(!op.cloudApplied){const {error}=await kucheCloud.rpc('consume_inventory_for_operation',{p_organization_id:cloudOrganization.id,p_source_type:op.reason==='staffmeal'?'staffmeal':'waste',p_source_id:op.id,p_source_local_id:row.key,p_lines:groupLines(op.lines).map(l=>({inventory_item_id:l.cloudId,quantity:l.quantity})),p_allow_negative:false});if(error)throw error;op.cloudApplied=true;store(op);await kucheOfflinePut({...row,payload:op});}
+ const grouped=groupLines(op.lines),{data,error}=await kucheCloud.from('inventory_items').select('id,quantity').eq('organization_id',cloudOrganization.id).in('id',grouped.map(l=>l.cloudId));if(error)throw error;
+ for(const l of grouped){const stock=data?.find(r=>r.id===l.cloudId),p=product(l.productId)||inventory.find(p=>p.cloudId===l.cloudId);if(!stock||!p)throw Error('No se pudo confirmar el stock de '+l.productName);normalizeAreaStocks();const next=Number(stock.quantity),delta=next-Number(p.quantity);p.areaStocks[l.area]=Math.max(0,Number(p.areaStocks[l.area]||0)+delta);p.quantity=next;if(p.sourceRecipeId){const batches=kucheV17AdjustBatchesToTotal(p.sourceRecipeId,next);op.pendingBatchIds=[...new Set([...(op.pendingBatchIds||[]),...batches.map(b=>String(b.id))])];}}
+ saveInventory();saveIntegralData();store(op);await kucheOfflinePut({...row,payload:op});
+ for(const id of [...(op.pendingBatchIds||[])]){const batch=preparedBatches.find(b=>String(b.id)===id);if(!batch||!await kucheV17SyncBatchCloud(batch))throw Error('El stock se descontó, pero falta sincronizar un lote preparado. Reintenta desde Información del sistema.');op.pendingBatchIds=op.pendingBatchIds.filter(x=>x!==id);saveIntegralData();store(op);await kucheOfflinePut({...row,payload:op});}
+ await strictLog(row,'synced');materialize(op);refresh();return true;
+}
+const previousSync=syncKucheAuditRow;
+syncKucheAuditRow=async row=>row.type==='stock_justification'?sync(row):previousSync(row);
+async function save(){
+ if(saving||!allowed())return;let lines;const reason=$('stockJustReason').value,date=$('stockJustDate').value,people=Number($('stockJustPeople').value);
+ try{if(!reasons[reason]||!date||date>getToday())throw Error('Elige un motivo y una fecha válida, no futura.');if(reason==='staffmeal'&&(!Number.isInteger(people)||people<1))throw Error('Indica cuántas personas almorzaron. Las porciones de cada producto se ingresan en las líneas.');lines=buildLines(inputs());}catch(e){alert(e.message);return;}
+ saving=true;$('stockJustSave').disabled=true;
+ const op={id:crypto.randomUUID(),recordId:Date.now(),organizationId:cloudOrganization?.id||null,reason,date,people:reason==='staffmeal'?people:0,responsible:integralUserName(),notes:$('stockJustNotes').value.trim(),lines,status:'pending',createdAt:new Date().toISOString()};
+ try{
+ if(cloudOrganization){if(!kucheCloud||!cloudAuthSession?.user||!navigator.onLine)throw Error('Conecta KÜCHE a la nube antes de registrar esta salida compartida. El formulario se conserva.');for(const l of lines){const p=product(l.productId);l.cloudId=p.cloudId||await ops3EnsureCloudInventoryItem(p,{allowInitialMigration:false});if(!l.cloudId)throw Error('No se pudo vincular '+p.name+' al inventario compartido.');}
+ const row={key:'justification:'+op.id,type:'stock_justification',entity_id:op.id,reason:reasons[reason],payload:op,device_id:kucheDeviceId(),user_id:cloudAuthSession.user.id,user_name:op.responsible,occurred_at:op.createdAt,updated_at:op.createdAt};await kucheOfflinePut(row);store(op);$('stockJustificationModal').hidden=true;await flushKucheOfflineQueue(true);
+ }else{localStock(op);materialize(op);$('stockJustificationModal').hidden=true;alert('Salida registrada en este dispositivo. Se descontó el inventario y se registró el costo como '+(reason==='staffmeal'?'alimentación del personal.':'pérdida.'));}
+ refresh();
+ }catch(e){alert(e.message);}finally{saving=false;$('stockJustSave').disabled=false;}
+}
+function history(){const all=operations();for(const id of ['waste']){const box=$('stockJustHistory'+id);if(!box)continue;const list=all.filter(o=>id==='waste'||o.reason==='staffmeal').slice(0,20);box.innerHTML='<h2>Salidas justificadas desde inventario</h2>'+list.map(o=>`<div style="padding:12px 0;border-top:1px solid var(--border)"><strong>${esc(reasons[o.reason])} · ${esc(o.date)}</strong><div>${o.lines.map(l=>`${esc(l.productName)}: ${l.inputQuantity} ${esc(l.inputUnit)}`).join(' · ')}</div><div class="category">${esc(o.responsible)}${o.reason==='staffmeal'?' · '+o.people+' personas':''} · ${o.status==='confirmed'?'Registrado':o.cloudApplied?'Stock descontado; registro pendiente de sincronizar':'Pendiente de sincronizar; aún no confirmado'}${o.notes?' · '+esc(o.notes):''}</div></div>`).join('')||'<div class="category">Sin salidas justificadas registradas.</div>';}}
+function refresh(){install();history();renderReasonReports();renderWaste();updateWasteStats();renderStaffMeals();updateStaffMealStats();renderInventory();if(typeof kucheV171RenderIngredients==='function')kucheV171RenderIngredients();}
+async function load(){if(!kucheCloud||!cloudOrganization||!cloudAuthSession?.user)return;try{const {data,error}=await kucheCloud.from('offline_operation_log').select('payload').eq('organization_id',cloudOrganization.id).eq('sync_status','synced').like('source_local_id','justification:%').order('occurred_at',{ascending:false}).limit(300);if(error)throw error;for(const r of data||[]){const op=r.payload;if(op?.id&&op.organizationId===cloudOrganization.id&&Array.isArray(op.lines)){op.lines.forEach(l=>{const p=inventory.find(p=>p.cloudId===l.cloudId);if(p)l.productId=p.id;});materialize(op);}}}catch(e){console.warn('Salidas justificadas',e.message);}}
+const previousAccess=workerCanAccess;
+workerCanAccess=function(id){if(id==='staffmeals')return false;if(id==='waste'&&allowed())return true;return previousAccess(id);};
+const previousShow=showPage;
+showPage=function(id,button){if(id==='staffmeals'){id='waste';button=null;}const result=previousShow(id,button);if(['waste','reports'].includes(id)){refresh();load().then(()=>{history();renderReasonReports();if(id==='reports')renderExtendedReports();});}return result;};
+openWasteForm=function(){open('');};
+openStaffMealForm=function(){showPage('waste',null);open('staffmeal');};
+const oldQuickPages=ops2QuickPages;
+ops2QuickPages=function(){return (oldQuickPages()||[]).filter(x=>x[0]!=='staffmeals');};
+// Do not let legacy cancellation restore stock locally after a cloud-confirmed deduction.
+const previousCancelMeal=cancelStaffMeal,previousCancelWaste=cancelWaste;
+cancelStaffMeal=function(id){const r=staffMeals.find(x=>String(x.id)===String(id));if(r?.sourceOperationId){alert('Esta salida tiene un registro de inventario. Solicita a Administración revisar el movimiento y realizar el ajuste correspondiente; no se devolverá stock automáticamente.');return;}return previousCancelMeal(id);};
+cancelWaste=function(id){if(!admin()){alert('Solo Administración puede anular registros de pérdidas.');return;}const r=wastes.find(x=>String(x.id)===String(id));if(r?.sourceOperationId){alert('Esta salida tiene un registro de inventario. Solicita a Administración revisar el movimiento y realizar el ajuste correspondiente; no se devolverá stock automáticamente.');return;}return previousCancelWaste(id);};
+
+function reportTotals(){
+ const sum={staffmeal:0,expired:0,damaged:0,other:0};
+ for(const meal of staffMeals){if(meal.status!=='anulado'&&dateInReportRange(meal.date))sum.staffmeal+=Number(meal.cost||0);}
+ for(const w of wastes){if(w.status==='anulado'||!dateInReportRange(w.date))continue;const reason=norm(w.cause);if(/vencid|vencimiento/.test(reason))sum.expired+=Number(w.cost||0);else if(/mal estado|deterioro/.test(reason))sum.damaged+=Number(w.cost||0);else sum.other+=Number(w.cost||0);}
+ return sum;
+}
+function renderReasonReports(){
+ const page=$('reports');if(!page)return;let panel=$('stockJustReasonReports');if(!panel){panel=document.createElement('div');panel.id='stockJustReasonReports';panel.className='report-section';const anchor=$('reportWasteCost')?.closest('.report-section');if(anchor)anchor.after(panel);else page.appendChild(panel);}
+ const totals=reportTotals(),cards=[['Almuerzo del personal',totals.staffmeal],['Pérdida por vencimiento',totals.expired],['Pérdida por mal estado',totals.damaged]];if(totals.other)cards.push(['Otras pérdidas anteriores',totals.other]);
+ panel.innerHTML='<div class="report-section-header"><h3>Gastos y pérdidas por motivo</h3><span>Período seleccionado</span></div><div class="report-kpis">'+cards.map(([label,value])=>`<div class="report-kpi"><span>${label}</span><strong>$${formatMoney(value)}</strong></div>`).join('')+'</div><p class="category">El almuerzo es consumo del personal y no se suma a las pérdidas por vencimiento o mal estado. Los costos se calculan con la cantidad retirada y el costo del producto registrado.</p>';
+}
+const previousExtendedReports=renderExtendedReports;
+renderExtendedReports=function(){previousExtendedReports();renderReasonReports();};
+
+window.kucheStockJustificationMath={units,buildLines,groupLines,reportTotals};
+install();history();renderReasonReports();
 })();
 
 </script>
