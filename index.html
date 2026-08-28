@@ -19024,7 +19024,7 @@ function kucheV171NavButton(page,label,extraClass=""){
 
 function kucheV171RebuildInventoryNavigation(){
   const nav=document.querySelector(".nav");if(!nav)return;
-  const title=[...nav.querySelectorAll(".nav-title")].find(x=>x.textContent.includes("Proveedores e inventario")||x.textContent.includes("Ingredientes, inventarios")||x.textContent.includes("Materia prima, inventarios"));if(!title)return;
+  const title=[...nav.querySelectorAll(".nav-title")].find(x=>x.textContent.includes("Proveedores e inventario")||x.textContent.includes("Ingredientes, inventarios")||(x.textContent.includes("Materia prima, inventarios")||x.textContent.includes("Materia prima, inventario")));if(!title)return;
   title.textContent="2 · Materia prima, inventarios y compras";
   const pages=new Set(["suppliers","ingredients","recipes","dailyinventory","weeklyinventory","inventory","inventoryareas","purchases","smartpurchases","supplyplanner","reconciliation","traceability"]);
   [...nav.querySelectorAll(".nav-item")].forEach(b=>{const m=(b.getAttribute("onclick")||"").match(/showPage\('([^']+)'/);if(m&&pages.has(m[1]))b.remove();});
@@ -20883,6 +20883,265 @@ window.kucheV18NewRecipeKind=function(kind){
  const result=openRecipeKind(kind);
  requestAnimationFrame(()=>{const form=$('recipeForm');if(!form?.classList.contains('open'))return;form.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});$('recipeName')?.focus({preventScroll:true});});return result;
 };
+})();
+
+</script>
+
+<style id="kuche-ux-agenda-style">
+/* KÜCHE: navegación y agenda sin cambiar los colores del local. */
+.sidebar .nav-title.ux-group-title{display:flex!important;align-items:center;justify-content:space-between;gap:10px;padding:12px 10px;margin-top:8px;border-radius:9px;font-size:12px;font-weight:650;line-height:1.4;letter-spacing:0;text-transform:none;color:inherit;cursor:pointer;opacity:.9;white-space:normal}
+.sidebar .nav-title.ux-group-title::after{content:'▸';font-size:15px;flex:none}
+.sidebar .nav-title.ux-group-title[aria-expanded=true]::after{content:'▾'}
+.sidebar .nav-title.ux-group-title:hover,.sidebar .nav-title.ux-group-title:focus-visible{background:rgba(255,255,255,.13);outline:2px solid currentColor;outline-offset:-2px}
+.sidebar .nav-item[data-ux-group]{padding-left:22px;font-size:12px}
+.sidebar .nav-item[data-ux-folded=true],.sidebar .nav-title[hidden],#uxAgendaNav[hidden]{display:none!important}
+#adminagenda [hidden],#uxAgendaDialog [hidden],#inventoryForm .field[hidden],#kuchePackFields[hidden]{display:none!important}
+.ux-card{background:var(--card,#fff);border:1px solid var(--border,#ddd);border-radius:14px;padding:18px;margin-bottom:18px}
+.ux-card h2,#uxAgendaPeriod{font-size:17px;margin:0 0 12px;color:var(--green-dark,inherit)}
+.ux-quick-grid{display:flex;flex-wrap:wrap;gap:10px}.ux-quick-grid>button{flex:1;min-width:150px;text-align:left;padding:13px}
+.ux-advanced{grid-column:1/-1;border:1px solid var(--border,#ddd);border-radius:12px;padding:12px}
+.ux-advanced summary,#uxPortionDetails summary,#uxAgendaSetup summary{cursor:pointer;font-weight:650;padding:8px 0}
+.ux-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:14px 0}
+#inventoryForm>.form-actions,#recipeForm>.form-actions,#purchaseForm>.form-actions,#productionForm>.form-actions,#uxAgendaForm>.form-actions{position:sticky;bottom:10px;z-index:8;display:flex;gap:10px;flex-wrap:wrap;padding:14px;background:var(--card,#fff);border:1px solid var(--border,#ddd);border-radius:12px;box-shadow:0 3px 16px #00000012}
+#inventoryForm,#recipeForm,#purchaseForm,#productionForm{scroll-margin-top:90px}
+#uxSearchOpen{white-space:nowrap;font-size:11px;padding:8px 11px;margin-left:10px}
+.ux-dialog{border:1px solid var(--border,#ddd);border-radius:16px;padding:22px;width:min(840px,94vw);max-height:88dvh;overflow:auto;color:var(--text,#252525);background:var(--card,#fff);margin:auto;box-shadow:0 20px 80px #0004}
+.ux-dialog::backdrop{background:#17202580}
+.ux-dialog-head{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:14px}.ux-dialog-head h2{font-size:18px;margin:0}
+.ux-dialog label,.ux-agenda-toolbar label{font-size:12px;display:flex;flex-direction:column;gap:6px}
+.ux-dialog input,.ux-dialog textarea,.ux-dialog select,#uxAgendaSQL,.ux-agenda-toolbar input,.ux-agenda-toolbar select{font:inherit;padding:10px;border:1px solid var(--border,#ddd);border-radius:8px;width:100%;color:inherit;background:var(--input-bg,#fff);min-width:0}
+#uxSearchResults{display:grid;gap:6px;margin-top:15px;max-height:55vh;overflow:auto}
+.ux-search-result{display:flex;justify-content:space-between;gap:12px;border:1px solid var(--border,#ddd);border-radius:9px;background:transparent;color:inherit;text-align:left;padding:13px;cursor:pointer}.ux-search-result span{font-size:11px;opacity:.7}
+.ux-agenda-toolbar{display:flex;align-items:end;flex-wrap:wrap;gap:10px;margin-bottom:16px}.ux-agenda-toolbar label{max-width:190px}.ux-agenda-toolbar .v186-check{flex-direction:row;align-items:center}.ux-agenda-toolbar .v186-check input{width:auto}
+#uxAgendaCanvas{overflow-x:auto;margin-top:12px;padding-bottom:8px}.ux-agenda-body{display:grid;gap:9px}.ux-view-month{grid-template-columns:repeat(7,minmax(110px,1fr));min-width:820px}.ux-view-week{grid-template-columns:repeat(7,minmax(130px,1fr));min-width:1000px}.ux-view-day{grid-template-columns:1fr;max-width:920px}
+.ux-calendar-day{border:1px solid var(--border,#ddd);border-radius:12px;background:var(--card,#fff);padding:9px;min-height:120px}.ux-is-today{outline:2px solid var(--green,#6e9b80);outline-offset:-2px}.ux-other-month{opacity:.6}
+.ux-day-heading{display:block;border:0;background:transparent;color:inherit;font-weight:700;text-align:left;padding:7px 4px;margin-bottom:8px;cursor:pointer}
+.ux-event{border:1px solid var(--border,#ddd);border-left:4px solid #527bb5;background:var(--card,#fff);border-radius:8px;padding:10px;margin:8px 0;font-size:12px;overflow-wrap:anywhere}.ux-event-task{border-left-color:#b78828}.ux-event-purchase{border-left-color:#597e57}.ux-event-reservation{border-left-color:#b06685}.ux-event-top{display:flex;justify-content:space-between;gap:6px;font-size:10px;opacity:.8;margin-bottom:5px}.ux-event p{margin:8px 0}.ux-event li{margin:4px 0}.ux-done{opacity:.65}.ux-done>strong{text-decoration:line-through}.ux-event[role=button]{cursor:pointer}.ux-event[role=button]:focus-visible{outline:2px solid currentColor}.ux-event-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.ux-event-actions button{font-size:10px;padding:6px 9px}
+.ux-agenda-item-row{display:grid;grid-template-columns:2fr .7fr .8fr 1.3fr auto;gap:8px;align-items:end;border-bottom:1px solid var(--border,#ddd);padding:10px 0}.ux-agenda-item-row label{min-width:0}
+#uxAgendaFormError{color:var(--danger,#ad3434);white-space:pre-line;margin:10px 0}#uxAgendaSQL{font-family:monospace;font-size:11px;margin:10px 0}#uxAgendaSetup p,#uxAgendaSetup li{font-size:12px;line-height:1.6}#uxAgendaTechnical{white-space:pre-wrap;overflow-wrap:anywhere}#uxAgendaStatus{font-size:12px}#uxAgendaToday .ux-event{display:inline-block;vertical-align:top;min-width:160px;max-width:260px;margin-right:8px}
+@media(max-width:700px){.ux-form-grid{grid-template-columns:1fr}.ux-agenda-item-row{grid-template-columns:1fr 1fr}.ux-agenda-item-row label:first-child{grid-column:1/-1}.ux-dialog{padding:15px}.ux-view-week{grid-template-columns:1fr;min-width:0}#uxSearchOpen{font-size:10px;max-width:115px;white-space:normal}.ux-quick-grid>button{min-width:130px}#uxAgendaToday .ux-event{display:block;max-width:none}.ux-dialog-head{align-items:flex-start}#uxAgendaStatus{max-width:65%}}
+
+</style>
+<script id="kuche-ux-navigation">
+(function(){
+'use strict';
+const $=id=>document.getElementById(id),esc=v=>escapeHTML(String(v??''));
+const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const groups=[['config','Configuración inicial',['settings','rules','staff','shifts','onboarding']],['materials','Materia prima, inventario y compras',['suppliers','ingredients','dailyinventory','weeklyinventory','purchases','smartpurchases','supplyplanner','reconciliation','traceability']],['recipes','Recetas y producción',['recipes','recipebook','preparations','production','waste','temperatures']],['sales','Venta y servicio',['reservations','promotions','agreements','commandas','kds','cash','sales','club']],['team','Equipo y operación',['checklists','activities','myattendance','assets','academy','protocols']],['costs','Costos y análisis',['expenses','cid','tips','menuengineering','simulator','assistant','reports']],['growth','Dirección y crecimiento',['executive','finance','receiving','customers','delivery','integrations']],['system','Sistema y ayuda',['appearance','manual','systeminfo']]];
+let opened='',navBusy=false,restoreScope='',searchActions=[];
+const admin=()=>!!currentSession&&(currentSession.accessRole?currentSession.accessRole==='admin'||currentSession.ownershipRole==='owner':currentSession.role==='admin');
+const can=page=>!!page&&!!currentSession&&(page==='adminagenda'?admin():currentSession.role!=='worker'||workerCanAccess(page));
+const scope=()=>String(cloudOrganization?.id||appSettings.businessName||'local')+':'+String(cloudAuthSession?.user?.id||currentSession?.userId||currentSession?.name||'guest');
+const pageOf=b=>(b.getAttribute('onclick')||'').match(/showPage\('([^']+)'/)?.[1]||b.dataset.uxPage;
+function nav(){
+ const host=document.querySelector('.sidebar .nav');if(!host||navBusy)return;navBusy=true;
+ try{
+  let agenda=$('uxAgendaNav');if(!agenda){agenda=document.createElement('button');agenda.id='uxAgendaNav';agenda.className='nav-item';agenda.dataset.uxPage='adminagenda';agenda.innerHTML='<span>Mi agenda</span>';agenda.onclick=()=>go('adminagenda');host.appendChild(agenda);}
+  agenda.hidden=!admin();
+  const titles=[...host.querySelectorAll('.nav-title')],buttons=[...host.querySelectorAll('.nav-item')];
+  const headers=groups.map(([key,title],i)=>{let h=titles.find(x=>x.dataset.uxGroup===key)||titles.find(x=>norm(x.textContent).includes(norm(title.split(',')[0])));if(!h){h=document.createElement('div');h.className='nav-title';host.appendChild(h);}h.dataset.uxGroup=key;
+   if(h.textContent!==title)h.textContent=title;h.classList.add('ux-group-title');h.setAttribute('role','button');h.tabIndex=0;
+   if(!h.dataset.uxWired){h.dataset.uxWired='1';const toggle=()=>{opened=opened===key?'':key;fold();};h.addEventListener('click',toggle);h.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}});}return h;});
+  const used=new Set(headers);titles.filter(x=>!used.has(x)).forEach(x=>x.hidden=true);
+  buttons.filter(b=>['inventory','inventoryareas','staffmeals'].includes(pageOf(b))).forEach(b=>b.hidden=true);
+  const standalone=buttons.filter(b=>['dashboard','adminagenda'].includes(pageOf(b)));
+  const order=[...standalone.sort((a,b)=>pageOf(a)==='dashboard'?-1:1)];
+  groups.forEach(([key,title,pages],i)=>{order.push(headers[i]);const children=buttons.filter(b=>pages.includes(pageOf(b)));children.sort((a,b)=>pages.indexOf(pageOf(a))-pages.indexOf(pageOf(b)));children.forEach(b=>b.dataset.uxGroup=key);order.push(...children);});
+  const other=buttons.filter(b=>!order.includes(b)&&!['inventory','inventoryareas','staffmeals'].includes(pageOf(b)));
+  other.forEach(b=>b.dataset.uxGroup='system');order.push(...other);
+  const current=[...host.children].filter(x=>order.includes(x));if(current.length!==order.length||current.some((x,i)=>x!==order[i]))order.forEach(el=>host.appendChild(el));
+  fold();
+ }finally{navBusy=false;}
+}
+function fold(){
+ document.querySelectorAll('.sidebar .nav .nav-item').forEach(b=>{const key=b.dataset.uxGroup;b.dataset.uxFolded=key&&key!==opened?'true':'false';if(pageOf(b)==='adminagenda')b.hidden=!admin();});
+ document.querySelectorAll('.ux-group-title').forEach(h=>{h.setAttribute('aria-expanded',String(h.dataset.uxGroup===opened));const children=[...document.querySelectorAll('.sidebar .nav .nav-item')].filter(b=>b.dataset.uxGroup===h.dataset.uxGroup);h.hidden=!children.some(b=>can(pageOf(b))&&b.style.display!=='none');});
+}
+function go(page,action){if(!can(page)){alert('Tu perfil no tiene acceso a esta sección.');return;}const button=[...document.querySelectorAll('.sidebar .nav .nav-item')].find(b=>pageOf(b)===page);showPage(page,button||null);if(action)action();}
+function reveal(form,field){requestAnimationFrame(()=>{const el=$(form);if(!el)return;el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});((field?$(field):null)||el.querySelector('input:not([type=hidden]),select'))?.focus({preventScroll:true});});}
+const oldShow=showPage;
+showPage=function(page,button){if(page==='adminagenda'){if(!admin())return;window.kucheAgenda?.install();}const out=oldShow(page,button);if(!$(page)?.classList.contains('active'))return out;
+ nav();const h=groups.find(g=>g[2].includes(page));opened=h?.[0]||'';fold();document.querySelectorAll('.sidebar .nav .nav-item').forEach(b=>b.classList.toggle('active',pageOf(b)===page));
+ if(currentSession)localStorage.setItem('kucheUX:last:'+scope(),page);
+ if(page==='adminagenda')window.kucheAgenda?.open();return out;};
+const oldAccess=applyAccessMode;
+applyAccessMode=function(){const r=oldAccess();nav();if(!admin()){if($('adminagenda'))$('adminagenda').innerHTML='';window.kucheAgenda?.clearPrivate();if($('adminagenda')?.classList.contains('active'))oldShow('dashboard',null);}dashboard();return r;};
+const oldWorkerAccess=workerCanAccess;
+workerCanAccess=function(page){return page==='adminagenda'?admin():oldWorkerAccess(page);};
+function restore(){nav();dashboard();if(!currentSession||restoreScope===scope())return;restoreScope=scope();const last=localStorage.getItem('kucheUX:last:'+scope());if(last&&$(last)&&can(last))go(last);}
+const oldSession=handleCloudSession;
+handleCloudSession=async function(session){const r=await oldSession(session);if(admin())window.kucheAgenda?.install();restore();if(admin())window.kucheAgenda?.load();return r;};
+function material(){
+ const form=$('inventoryForm'),grid=form?.querySelector('.form-grid');if(!grid)return;
+ let advanced=$('uxMaterialAdvanced');if(!advanced){advanced=document.createElement('details');advanced.id='uxMaterialAdvanced';advanced.className='ux-advanced';advanced.innerHTML='<summary>Más opciones: rendimiento y consumo</summary><div class="ux-form-grid"></div>';grid.appendChild(advanced);}
+ for(const id of ['productYieldPct','productConsumptionMode','productBulkAllowed']){const field=$(id)?.closest('.field');if(field)advanced.querySelector('div').appendChild(field);}grid.appendChild(advanced);
+ const format=$('unit')?.value,base=$('productBaseUnit'),content=$('productBasePerPurchase');
+ const direct=['kg','g','L','ml','unidad'].includes(format)&&base?.value===format&&Number(content?.value)===1&&!$('kuchePackEnabled')?.checked;
+ if(base)base.closest('.field').hidden=direct;if(content)content.closest('.field').hidden=direct;
+ if($('kuchePackFields'))$('kuchePackFields').hidden=['kg','g','L','ml','unidad'].includes(format)&&!$('kuchePackEnabled')?.checked;
+ const price=$('cost')?.closest('.field')?.querySelector('label');if(price)price.textContent='Precio por '+(format||'formato de compra');
+ const formats=$('v186MaterialFormats');if(formats){let details=$('uxPortionDetails');if(!details){details=document.createElement('details');details.id='uxPortionDetails';details.innerHTML='<summary>Equivalencias para recetas</summary>';formats.before(details);details.appendChild(formats);}}
+ const help={productYieldPct:'Porcentaje aprovechable después de limpiar o preparar. Ej.: 85% de una cebolla.',productBasePerPurchase:'Contenido total del formato comprado.',minimum:'Cantidad mínima que deseas mantener, en el formato de compra.',v186MaterialWeekly:'Incluye este producto también en el inventario semanal.'};Object.entries(help).forEach(([id,t])=>{if($(id))$(id).title=t;});
+}
+const oldPrepare=kucheV174PrepareMaterialForm;kucheV174PrepareMaterialForm=function(){const r=oldPrepare();material();return r;};
+const oldPreview=kucheV173UpdatePurchaseFormatPreview;kucheV173UpdatePurchaseFormatPreview=function(){const r=oldPreview();material();return r;};
+for(const name of ['newProduct','editProduct']){const original=window[name];window[name]=function(...args){const r=original(...args);material();if($('uxMaterialAdvanced'))$('uxMaterialAdvanced').open=editingId!==null;if($('uxPortionDetails'))$('uxPortionDetails').open=!!$('v186MaterialRows')?.children.length;return r;};}
+for(const [name,form,field] of [['openPurchaseForm','purchaseForm','purchaseDate'],['newProduction','productionForm','prepName']]){const original=window[name];if(typeof original==='function')window[name]=function(...args){const r=original(...args);reveal(form,field);return r;};}
+function shortcut(label,page,action){const b=document.createElement('button');b.className='secondary-button';b.textContent=label;b.onclick=()=>go(page,action);return b;}
+function dashboard(){
+ const page=$('dashboard');if(!page)return;let box=$('uxQuickActions');if(!box){box=document.createElement('section');box.id='uxQuickActions';box.className='ux-card';page.querySelector('.page-header')?.after(box);}
+ box.innerHTML='<h2>¿Qué necesitas hacer?</h2><div class="ux-quick-grid"></div><div id="uxActionNotice" class="inline-note"></div>';const grid=box.querySelector('.ux-quick-grid');
+ const actions=currentSession?.role==='admin'?[['Registrar compra','purchases',()=>openPurchaseForm()],['Crear receta','recipes',()=>kucheV18NewRecipeKind('sale')],['Revisar reportes','reports'],['Mi agenda','adminagenda']]:[['Realizar inventario','dailyinventory'],['Registrar producción','production',()=>newProduction()],['Justificar salida','waste',()=>openWasteForm()],['Ver comandas de cocina','kds'],['Mesas y comandas','commandas'],['Registrar asistencia','myattendance']];
+ actions.filter(x=>can(x[1])).slice(0,4).forEach(a=>grid.appendChild(shortcut(...a)));
+ const low=(inventory||[]).filter(p=>p.active!==false&&Number(p.quantity)<Number(p.minimum));if(currentSession?.role==='admin'&&low.length){const b=shortcut(`${low.length} productos bajo el stock mínimo · Revisar`,'ingredients');$('uxActionNotice').appendChild(b);}
+ window.kucheAgenda?.summary();
+}
+const oldDashboard=updateDashboard;updateDashboard=function(){const r=oldDashboard();dashboard();return r;};
+function searchEntries(query){
+ const q=norm(query).trim();if(q.length<2)return [];const result=[];
+ document.querySelectorAll('.sidebar .nav .nav-item').forEach(b=>{const page=pageOf(b);if(!['inventory','inventoryareas','staffmeals'].includes(page)&&can(page)&&norm(b.textContent).includes(q))result.push({title:b.textContent.trim(),detail:'Sección',page});});
+ const allowedAreas=typeof kucheV171AllowedAreas==='function'?kucheV171AllowedAreas().map(a=>a.key):[];
+ if(can('ingredients')||can('dailyinventory'))(inventory||[]).filter(p=>p.active!==false&&norm(p.name).includes(q)&&(currentSession.role==='admin'||allowedAreas.includes(inferInventoryArea(p)))).slice(0,6).forEach(p=>result.push({title:p.name,detail:'Materia prima',page:can('ingredients')?'ingredients':'dailyinventory',action:currentSession.role==='admin'?()=>editProduct(p.id):null}));
+ if(can('recipes')||can('recipebook'))(recipes||[]).filter(r=>norm(r.name).includes(q)||(r.ingredients||[]).some(i=>norm(inventory.find(p=>String(p.id)===String(i.productId))?.name).includes(q))).slice(0,6).forEach(r=>result.push({title:r.name,detail:'Receta',page:can('recipes')?'recipes':'recipebook',action:can('recipes')?()=>{editRecipe(r.id);reveal('recipeForm','recipeName');}:null}));
+ return result.slice(0,14);
+}
+function search(){const entries=searchEntries($('uxSearchInput').value);searchActions=entries;const list=$('uxSearchResults');list.innerHTML='';if(!entries.length){list.textContent=$('uxSearchInput').value.length<2?'Escribe al menos dos letras.':'No encontramos resultados dentro de tus secciones.';return;}entries.forEach((e,i)=>{const b=document.createElement('button');b.type='button';b.className='ux-search-result';b.innerHTML='<strong>'+esc(e.title)+'</strong><span>'+esc(e.detail)+'</span>';b.onclick=()=>{$('uxSearchDialog').close();go(e.page,e.action);};list.appendChild(b);});}
+function installSearch(){if($('uxSearchDialog'))return;const dialog=document.createElement('dialog');dialog.id='uxSearchDialog';dialog.className='ux-dialog';dialog.innerHTML='<div class="ux-dialog-head"><h2>Buscar en KÜCHE</h2><button type="button" class="secondary-button" id="uxSearchClose">Cerrar</button></div><label for="uxSearchInput">¿Qué necesitas encontrar?</label><input id="uxSearchInput" type="search" placeholder="Materia prima, receta o sección…" autocomplete="off"><div id="uxSearchResults"></div>';document.body.appendChild(dialog);$('uxSearchClose').onclick=()=>dialog.close();$('uxSearchInput').oninput=search;
+ const button=document.createElement('button');button.id='uxSearchOpen';button.className='secondary-button';button.type='button';button.textContent='Buscar en KÜCHE';button.onclick=()=>{if(!currentSession)return;dialog.showModal();$('uxSearchInput').value='';search();$('uxSearchInput').focus();};document.querySelector('.topbar-left-mobile')?.appendChild(button);
+ dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});
+}
+const oldConnectivity=refreshKucheConnectivityUI;refreshKucheConnectivityUI=async function(...args){const r=await oldConnectivity(...args);const pill=$('offlineQueueStatus');if(pill){const m=pill.textContent.match(/(\d+) pendiente/);if(m)pill.textContent=`${m[1]} cambio(s) sin sincronizar`;pill.title='Estado de sincronización de datos. No son tareas de la agenda.';}return r;};
+window.kucheUX={admin,can,scope,go,reveal,nav,material,dashboard,searchEntries,restore};
+installSearch();nav();material();dashboard();
+const host=document.querySelector('.sidebar .nav');if(host)new MutationObserver(()=>{if(!navBusy)queueMicrotask(nav);}).observe(host,{childList:true,subtree:true});
+})();
+
+</script>
+<script id="kuche-admin-agenda">
+(function(){
+'use strict';
+const $=id=>document.getElementById(id),esc=v=>escapeHTML(String(v??'')),admin=()=>window.kucheUX.admin();
+const kinds={meeting:'Reunión',task:'Actividad',purchase:'Compra por hacer',reservation:'Reserva'};
+const activationSQL="-- Ejecutar una sola vez en el Editor SQL del proyecto Supabase de KÜCHE.\n-- No borra tablas, comandas, inventario ni reservas.\ncreate table if not exists public.kuche_admin_agenda (\n id uuid primary key,\n organization_id uuid not null references public.organizations(id) on delete cascade,\n user_id uuid not null references auth.users(id) on delete cascade,\n kind text not null check (kind in ('meeting','task','purchase')),\n title text not null check (length(trim(title)) between 1 and 200),\n event_date date not null,\n start_time text not null default '',\n end_time text not null default '',\n details jsonb not null default '{}'::jsonb,\n completed boolean not null default false,\n deleted boolean not null default false,\n revision integer not null default 1 check (revision > 0),\n updated_at timestamptz not null default now()\n);\nalter table public.kuche_admin_agenda enable row level security;\nrevoke all on public.kuche_admin_agenda from anon;\ngrant select, insert, update, delete on public.kuche_admin_agenda to authenticated;\ndrop policy if exists kuche_agenda_private_admin on public.kuche_admin_agenda;\ncreate policy kuche_agenda_private_admin on public.kuche_admin_agenda\nfor all to authenticated\nusing (\n user_id = auth.uid() and exists (\n  select 1 from public.organization_members m\n  where m.organization_id = kuche_admin_agenda.organization_id\n    and m.user_id = auth.uid() and m.active = true\n    and (m.role = 'admin' or m.ownership_role = 'owner')\n )\n)\nwith check (\n user_id = auth.uid() and exists (\n  select 1 from public.organization_members m\n  where m.organization_id = kuche_admin_agenda.organization_id\n    and m.user_id = auth.uid() and m.active = true\n    and (m.role = 'admin' or m.ownership_role = 'owner')\n )\n);\ncreate index if not exists kuche_admin_agenda_owner_date\n on public.kuche_admin_agenda(organization_id,user_id,event_date);\nnotify pgrst, 'reload schema';\n";
+const pad=n=>String(n).padStart(2,'0');
+const dayKey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const today=()=>dayKey(new Date());
+const parseDay=s=>new Date(s+'T12:00:00');
+function validDay(s){return /^\d{4}-\d{2}-\d{2}$/.test(s)&&!isNaN(parseDay(s))&&dayKey(parseDay(s))===s;}
+function shift(s,n){const d=parseDay(s);d.setDate(d.getDate()+n);return dayKey(d);}
+function days(date,view){if(view==='day')return [date];const d=parseDay(date);if(view==='month')d.setDate(1);d.setDate(d.getDate()-(d.getDay()+6)%7);return Array.from({length:view==='month'?42:7},(_,i)=>shift(dayKey(d),i));}
+let selected=today(),view='week',filter='all',showDone=false,editing=null,returnFocus=null;
+const syncing=new Set(),resync=new Set(),state=new Map();
+function context(){if(!admin())throw Error('La agenda es exclusiva del administrador.');const org=String(cloudOrganization?.id||appSettings.businessName||'local'),user=String(cloudAuthSession?.user?.id||currentSession?.userId||currentSession?.name||'admin');return {org,user,key:'kucheAdminAgendaV1:'+encodeURIComponent(org)+':'+encodeURIComponent(user),cloud:!!(kucheCloud&&cloudOrganization&&cloudAuthSession?.user)};}
+function read(c){const raw=localStorage.getItem(c.key);if(!raw)return [];let items;try{items=JSON.parse(raw);}catch(e){throw Error('No se pudo leer la agenda guardada. No se sobrescribieron sus datos.');}if(!Array.isArray(items))throw Error('El respaldo de agenda no tiene un formato válido.');return items;}
+function write(c,items){localStorage.setItem(c.key,JSON.stringify(items));}
+function patch(c,id,fn){const entries=read(c),index=entries.findIndex(e=>e.id===id),next=fn(index>=0?entries[index]:null);if(next){if(index<0)entries.push(next);else entries[index]=next;}write(c,entries);}
+function canonical(v){if(Array.isArray(v))return v.map(canonical);if(v&&typeof v==='object')return Object.fromEntries(Object.keys(v).sort().map(k=>[k,canonical(v[k])]));return v;}
+function content(e){return {kind:e.kind,title:e.title,event_date:e.event_date,start_time:e.start_time||'',end_time:e.end_time||'',details:e.details||{},completed:!!e.completed,deleted:!!e.deleted};}
+function same(a,b){return JSON.stringify(canonical(content(a)))===JSON.stringify(canonical(content(b)));}
+function payload(e,c,revision){return {...content(e),id:e.id,organization_id:c.org,user_id:c.user,revision,updated_at:e.updated_at};}
+function current(c){try{return admin()&&context().key===c.key;}catch(e){return false;}}
+function mergeAck(c,snapshot,remote){patch(c,snapshot.id,latest=>{if(!latest)return null;if((latest.editToken||latest.updated_at)===(snapshot.editToken||snapshot.updated_at))return {...remote,dirty:false,conflict:null};return {...latest,revision:remote.revision,dirty:true,conflict:null};});}
+async function sync(){
+ if(!admin())return;const c=context();if(syncing.has(c.key)){resync.add(c.key);return;}
+ if(!c.cloud||navigator.onLine===false){state.set(c.key,{message:'Agenda guardada en este dispositivo. Sin conexión para sincronizar.'});render();summary();return;}
+ syncing.add(c.key);state.set(c.key,{message:'Sincronizando agenda…'});
+ try{
+  renderStatus();
+  const response=await kucheCloud.from('kuche_admin_agenda').select('*').eq('organization_id',c.org).eq('user_id',c.user);if(response.error)throw response.error;
+  if(!current(c))return;
+  const remote=new Map((response.data||[]).map(e=>[e.id,e]));
+  for(const snapshot of read(c)){
+   if(!current(c))return;const r=remote.get(snapshot.id);
+   if(!snapshot.dirty){if(r)patch(c,snapshot.id,latest=>latest?.dirty?latest:{...r,dirty:false});continue;}
+   if(r&&same(r,snapshot)){mergeAck(c,snapshot,r);continue;}
+   if((r&&Number(r.revision)!==Number(snapshot.revision||0))||(!r&&Number(snapshot.revision)>0)){
+    patch(c,snapshot.id,latest=>({...latest,conflict:{remote:r||null},dirty:true}));continue;
+   }
+   const nextRevision=Number(r?.revision||0)+1,data=payload(snapshot,c,nextRevision);
+   let request=r?kucheCloud.from('kuche_admin_agenda').update(data).eq('id',snapshot.id).eq('organization_id',c.org).eq('user_id',c.user).eq('revision',r.revision):kucheCloud.from('kuche_admin_agenda').insert(data);
+   const result=await request.select('*').single();if(result.error)throw result.error;if(!result.data?.id||!same(result.data,snapshot))throw Error('La nube no confirmó el contenido de la agenda.');
+   mergeAck(c,snapshot,result.data);
+  }
+  for(const r of remote.values())if(!read(c).some(e=>e.id===r.id))patch(c,r.id,()=>({...r,dirty:false}));
+  const pending=read(c).filter(e=>e.dirty).length;
+  state.set(c.key,{message:pending?`Agenda: ${pending} cambio(s) por revisar o sincronizar.`:'Agenda sincronizada con tu cuenta.',ready:true});
+ }catch(e){state.set(c.key,{message:'Agenda guardada en este dispositivo. La sincronización no se completó.',error:e.message||String(e),setup:['PGRST205','42P01'].includes(e.code)||/kuche_admin_agenda.*(schema cache|does not exist)/i.test(e.message||'')});}
+ finally{syncing.delete(c.key);if(current(c)){render();summary();if(resync.delete(c.key))queueMicrotask(sync);}}
+}
+function validate(e){
+ if(!['meeting','task','purchase'].includes(e.kind))throw Error('Selecciona reunión, actividad o compra por hacer.');
+ if(!e.title.trim()||e.title.trim().length>200)throw Error('Escribe un título de hasta 200 caracteres.');
+ if(!validDay(e.event_date))throw Error('Selecciona una fecha válida.');
+ for(const time of [e.start_time,e.end_time])if(time&&!/^([01]\d|2[0-3]):[0-5]\d$/.test(time))throw Error('Revisa el horario.');
+ if(e.end_time&&(!e.start_time||e.end_time<=e.start_time))throw Error('La hora final debe ser posterior a la inicial, dentro del mismo día.');
+ if(e.kind==='purchase'){if(!e.details.items?.length)throw Error('Agrega al menos un producto a la compra por hacer.');for(const i of e.details.items)if(!i.product.trim()||!Number.isFinite(Number(i.quantity))||Number(i.quantity)<=0||!i.unit.trim())throw Error('Completa producto, cantidad mayor que cero y unidad.');}
+ return e;
+}
+function saveEntry(e){const c=context();validate(e);const old=read(c).find(x=>x.id===e.id);const next={...old,...e,title:e.title.trim(),id:old?.id||crypto.randomUUID(),revision:old?.revision||0,dirty:true,deleted:false,updated_at:new Date().toISOString(),editToken:crypto.randomUUID()};write(c,[...read(c).filter(x=>x.id!==next.id),next]);return next;}
+function reservationEvents(){return (reservations||[]).filter(r=>!['cancelada','cancelled'].includes(r.status)&&validDay(r.date)).map(r=>({id:'reservation:'+r.id,reservationId:r.id,kind:'reservation',title:r.client||'Reserva',event_date:r.date,start_time:(r.time||'').slice(0,5),details:{notes:r.notes||'',place:r.tableName||'',people:r.people},completed:false,deleted:false,status:r.status}));}
+function events(){const c=context();return [...read(c).filter(e=>!e.deleted),...reservationEvents()].sort((a,b)=>(a.event_date+(a.start_time||'99:99')).localeCompare(b.event_date+(b.start_time||'99:99'))||a.title.localeCompare(b.title,'es'));}
+function selectedEvents(){return events().filter(e=>(filter==='all'||filter===e.kind)&&(showDone||!e.completed));}
+function closeEditor(){const d=$('uxAgendaDialog');if(d?.open)d.close();editing=null;returnFocus?.focus?.();}
+function openEditor(kind='task',id=null){
+ if(!admin())return;install();const entry=id?read(context()).find(e=>e.id===id&&!e.deleted):null;if(id&&!entry)return;
+ editing=entry?.id||null;returnFocus=document.activeElement;
+ $('uxAgendaFormTitle').textContent=entry?'Editar actividad de agenda':'Agendar';
+ $('uxAgendaKind').value=entry?.kind||kind;$('uxAgendaTitle').value=entry?.title||'';$('uxAgendaDate').value=entry?.event_date||selected;$('uxAgendaStart').value=entry?.start_time||'';$('uxAgendaEnd').value=entry?.end_time||'';
+ $('uxAgendaPeople').value=entry?.details?.participants||'';$('uxAgendaPlace').value=entry?.details?.place||'';$('uxAgendaNotes').value=entry?.details?.notes||'';
+ $('uxAgendaItems').innerHTML='';(entry?.details?.items||[]).forEach(addItem);if(!$('uxAgendaItems').children.length)addItem();kindFields();$('uxAgendaFormError').textContent='';$('uxAgendaDialog').showModal();$('uxAgendaTitle').focus();
+}
+function kindFields(){const kind=$('uxAgendaKind').value;for(const [id,type] of [['uxAgendaMeetingFields','meeting'],['uxAgendaPurchaseFields','purchase']]){const box=$(id);box.hidden=kind!==type;box.querySelectorAll('input,select,textarea').forEach(el=>el.disabled=kind!==type);}}
+function addItem(item={}){if(!admin())return;const row=document.createElement('div');row.className='ux-agenda-item-row';row.innerHTML=`<label>Producto<input class="ua-product" list="uxAgendaProducts" value="${esc(item.product||'')}" placeholder="Buscar o escribir producto"></label><label>Cantidad<input class="ua-quantity" type="number" min="0.001" step="any" value="${esc(item.quantity||'')}"></label><label>Unidad<input class="ua-unit" value="${esc(item.unit||'kg')}" placeholder="kg, unidad, paquete"></label><label>Proveedor<input class="ua-supplier" list="uxAgendaSuppliers" value="${esc(item.supplier||'')}"></label><button type="button" class="secondary-button">Quitar</button>`;row.querySelector('button').onclick=()=>row.remove();$('uxAgendaItems').appendChild(row);kindFields();}
+function submit(event){event.preventDefault();if(!admin()||!$('uxAgendaDialog')?.open)return;try{const kind=$('uxAgendaKind').value,items=kind==='purchase'?[...$('uxAgendaItems').children].map(row=>({product:row.querySelector('.ua-product').value.trim(),quantity:Number(row.querySelector('.ua-quantity').value),unit:row.querySelector('.ua-unit').value.trim(),supplier:row.querySelector('.ua-supplier').value.trim()})):[];const e=saveEntry({id:editing,kind,title:$('uxAgendaTitle').value,event_date:$('uxAgendaDate').value,start_time:$('uxAgendaStart').value,end_time:$('uxAgendaEnd').value,details:{participants:$('uxAgendaPeople').value,place:$('uxAgendaPlace').value,notes:$('uxAgendaNotes').value,items},completed:editing?!!read(context()).find(x=>x.id===editing)?.completed:false});selected=e.event_date;closeEditor();render();summary();sync();}catch(e){$('uxAgendaFormError').textContent=e.message;}}
+function toggle(id){if(!admin())return;const c=context();patch(c,id,e=>e?{...e,completed:!e.completed,dirty:true,updated_at:new Date().toISOString(),editToken:crypto.randomUUID()}:null);render();summary();sync();}
+function remove(id){if(!admin()||!confirm('¿Eliminar esta actividad de tu agenda? No se modificará ninguna compra ni reserva.'))return;const c=context();patch(c,id,e=>e?{...e,deleted:true,dirty:true,updated_at:new Date().toISOString(),editToken:crypto.randomUUID()}:null);render();summary();sync();}
+function resolve(id,local){if(!admin())return;const c=context(),e=read(c).find(e=>e.id===id);if(!e?.conflict)return;if(local&&!confirm('¿Conservar tu versión en lugar de la versión de la nube?'))return;const r=e.conflict.remote;patch(c,id,()=>local?{...e,revision:r?.revision||0,conflict:null,dirty:true,updated_at:new Date().toISOString(),editToken:crypto.randomUUID()}:r?{...r,dirty:false,conflict:null}:{...e,deleted:true,dirty:false,conflict:null});render();summary();if(local)sync();}
+function eventCard(e,compact=false){
+ const card=document.createElement('div');card.className='ux-event ux-event-'+e.kind+(e.completed?' ux-done':'');
+ const when=e.start_time||'Sin hora';card.innerHTML=`<div class="ux-event-top"><span class="ux-type">${esc(kinds[e.kind])}</span><span>${esc(when)}</span></div><strong>${esc(e.title)}</strong>`;
+ if(compact){card.tabIndex=0;card.setAttribute('role','button');const open=()=>{selected=e.event_date;view='day';window.kucheUX.go('adminagenda');render();};card.onclick=open;card.onkeydown=x=>{if(x.key==='Enter')open();};return card;}
+ const detail=document.createElement('div');detail.className='inline-note';detail.textContent=e.kind==='reservation'?`${e.details.place} · ${e.details.people||0} personas · ${e.status||''}`:[e.details?.place,e.details?.participants,e.end_time?'Hasta '+e.end_time:''].filter(Boolean).join(' · ');card.appendChild(detail);
+ if(e.details?.notes){const n=document.createElement('p');n.textContent=e.details.notes;card.appendChild(n);}
+ if(e.kind==='purchase'){const list=document.createElement('ul');(e.details.items||[]).forEach(i=>{const li=document.createElement('li');li.textContent=`${i.product}: ${i.quantity} ${i.unit}${i.supplier?' · '+i.supplier:''}`;list.appendChild(li);});card.appendChild(list);}
+ const actions=document.createElement('div');actions.className='ux-event-actions';const button=(label,fn)=>{const b=document.createElement('button');b.type='button';b.className='secondary-button';b.textContent=label;b.onclick=fn;actions.appendChild(b);};
+ if(e.kind==='reservation')button('Ver reserva',()=>window.kucheUX.go('reservations',()=>{editReservation(e.reservationId);window.kucheUX.reveal('reservationPanel','reservationClient');}));
+ else{button(e.completed?'Marcar pendiente':'Completar',()=>toggle(e.id));button('Editar',()=>openEditor(e.kind,e.id));button('Eliminar',()=>remove(e.id));}
+ card.appendChild(actions);return card;
+}
+function renderStatus(){if(!admin()||!$('uxAgendaStatus'))return;const c=context(),s=state.get(c.key),local=read(c),pending=local.filter(e=>e.dirty).length;$('uxAgendaStatus').textContent=(s?.message||'Agenda guardada en este dispositivo.')+(pending?` ${pending} cambio(s) de agenda sin confirmar.`:'');$('uxAgendaSync').disabled=syncing.has(c.key);$('uxAgendaTechnical').textContent=s?.error||'';$('uxAgendaSetup').hidden=!!s?.ready&&!s?.setup;}
+function render(){
+ if(!admin()||!$('uxAgendaBody'))return;
+ try{
+  renderStatus();$('uxAgendaDatePick').value=selected;$('uxAgendaView').value=view;$('uxAgendaFilter').value=filter;
+  const list=selectedEvents(),range=days(selected,view),body=$('uxAgendaBody');body.innerHTML='';body.className='ux-agenda-body ux-view-'+view;
+  $('uxAgendaPeriod').textContent=view==='month'?parseDay(selected).toLocaleDateString('es-CL',{month:'long',year:'numeric'}):view==='week'?`${range[0]} al ${range[6]}`:parseDay(selected).toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'});
+  range.forEach(date=>{const cell=document.createElement('section');cell.className='ux-calendar-day'+(date===today()?' ux-is-today':'')+(view==='month'&&date.slice(0,7)!==selected.slice(0,7)?' ux-other-month':'');const heading=document.createElement('button');heading.type='button';heading.className='ux-day-heading';heading.textContent=parseDay(date).toLocaleDateString('es-CL',{weekday:'short',day:'numeric'});heading.onclick=()=>{selected=date;view='day';render();};cell.appendChild(heading);const items=list.filter(e=>e.event_date===date);(view==='month'?items.slice(0,3):items).forEach(e=>cell.appendChild(eventCard(e,view==='month')));if(view==='month'&&items.length>3){const more=document.createElement('button');more.type='button';more.className='secondary-button';more.textContent=`Ver ${items.length-3} más`;more.onclick=heading.onclick;cell.appendChild(more);}if(!items.length&&view!=='month'){const empty=document.createElement('p');empty.className='inline-note';empty.textContent='Sin actividades.';cell.appendChild(empty);}body.appendChild(cell);});
+  const conflicts=$('uxAgendaConflicts');conflicts.innerHTML='';read(context()).filter(e=>e.conflict).forEach(e=>{const box=document.createElement('div');box.className='status-box warning';box.textContent=`“${e.title}” cambió en otro dispositivo. Elige qué versión conservar. `;for(const [label,local] of [['Usar versión de la nube',false],['Conservar mis cambios',true]]){const b=document.createElement('button');b.className='secondary-button';b.textContent=label;b.onclick=()=>resolve(e.id,local);box.appendChild(b);}conflicts.appendChild(box);});
+ }catch(e){$('uxAgendaStatus').textContent=e.message;}
+}
+function summary(){const dashboard=$('dashboard');if(!dashboard)return;let box=$('uxAgendaToday');if(!admin()){if(box)box.remove();return;}if(!box){box=document.createElement('section');box.id='uxAgendaToday';box.className='ux-card';($('uxQuickActions')||dashboard.querySelector('.page-header')).after(box);}try{const list=events().filter(e=>e.event_date===today()&&!e.completed),overdue=events().filter(e=>e.kind!=='reservation'&&!e.completed&&e.event_date<today()).length;box.innerHTML='<div class="ux-dialog-head"><h2>Hoy en tu agenda</h2><button class="secondary-button" type="button">Abrir agenda</button></div>';box.querySelector('button').onclick=()=>{selected=today();view='day';window.kucheUX.go('adminagenda');};if(!list.length){const p=document.createElement('p');p.className='inline-note';p.textContent='No tienes actividades ni reservas para hoy.';box.appendChild(p);}list.slice(0,5).forEach(e=>box.appendChild(eventCard(e,true)));if(overdue){const p=document.createElement('p');p.className='inline-note';p.textContent=`Tienes ${overdue} actividad(es) pendiente(s) de fechas anteriores.`;box.appendChild(p);}}catch(e){box.textContent=e.message;}}
+function install(){
+ if(!admin())return;
+ let page=$('adminagenda');if(!page){page=document.createElement('section');page.id='adminagenda';page.className='page';document.querySelector('main .content').appendChild(page);}
+ if(!$('uxAgendaBody'))page.innerHTML=`<div class="page-header"><div><h1>Mi agenda</h1><p>Reuniones, actividades y compras del administrador, junto a las reservas del local.</p></div><button id="uxAgendaAdd" class="primary-button" type="button">+ Agendar</button></div><div class="ux-agenda-toolbar"><button id="uxAgendaPrev" class="secondary-button" type="button" aria-label="Periodo anterior">Anterior</button><button id="uxAgendaTodayButton" class="secondary-button" type="button">Hoy</button><button id="uxAgendaNext" class="secondary-button" type="button" aria-label="Periodo siguiente">Siguiente</button><label>Fecha<input id="uxAgendaDatePick" type="date"></label><label>Vista<select id="uxAgendaView"><option value="day">Día</option><option value="week">Semana</option><option value="month">Mes</option></select></label><label>Mostrar<select id="uxAgendaFilter"><option value="all">Todo</option><option value="meeting">Reuniones</option><option value="reservation">Reservas</option><option value="task">Actividades</option><option value="purchase">Compras por hacer</option></select></label><label class="v186-check"><input id="uxAgendaDone" type="checkbox"> Incluir completadas</label></div><div class="ux-card"><div class="ux-dialog-head"><div id="uxAgendaStatus" role="status"></div><button id="uxAgendaSync" class="secondary-button" type="button">Sincronizar agenda</button></div><details id="uxAgendaSetup"><summary>Sincronización privada y respaldo</summary><p>La agenda funciona en este dispositivo. Para sincronizarla entre tus dispositivos, activa su tabla privada una sola vez con tu cuenta administradora de Supabase. No guardes estas notas en tablas compartidas con trabajadores.</p><ol><li>En el proyecto Supabase de KÜCHE, abre SQL Editor y crea una consulta.</li><li>Copia el código de abajo, pégalo y ejecútalo.</li><li>Vuelve a esta pantalla y pulsa Sincronizar agenda.</li></ol><textarea id="uxAgendaSQL" readonly aria-label="SQL para activar la agenda privada" rows="6"></textarea><button id="uxAgendaCopySQL" class="secondary-button" type="button">Copiar código de activación</button><button id="uxAgendaExport" class="secondary-button" type="button">Descargar respaldo de mi agenda</button><p id="uxAgendaTechnical" class="inline-note"></p></details></div><div id="uxAgendaConflicts"></div><h2 id="uxAgendaPeriod"></h2><div id="uxAgendaCanvas"><div id="uxAgendaBody"></div></div>`;
+ $('uxAgendaSQL').value=activationSQL;
+ $('uxAgendaAdd').onclick=()=>openEditor('task');$('uxAgendaSync').onclick=sync;
+ const move=direction=>{if(view==='month'){const d=parseDay(selected);d.setDate(1);d.setMonth(d.getMonth()+direction);selected=dayKey(d);}else selected=shift(selected,direction*(view==='week'?7:1));render();};
+ $('uxAgendaPrev').onclick=()=>move(-1);$('uxAgendaNext').onclick=()=>move(1);$('uxAgendaTodayButton').onclick=()=>{selected=today();render();};$('uxAgendaDatePick').onchange=e=>{if(validDay(e.target.value)){selected=e.target.value;render();}};$('uxAgendaView').onchange=e=>{view=e.target.value;render();};$('uxAgendaFilter').onchange=e=>{filter=e.target.value;render();};$('uxAgendaDone').onchange=e=>{showDone=e.target.checked;render();};
+ $('uxAgendaCopySQL').onclick=async()=>{if(!admin())return;try{await navigator.clipboard.writeText(activationSQL);$('uxAgendaTechnical').textContent='Código copiado. Ejecútalo en el Editor SQL de tu proyecto Supabase.';}catch(e){$('uxAgendaSQL').focus();$('uxAgendaSQL').select();$('uxAgendaTechnical').textContent='Selecciona y copia el código del recuadro.';}};
+ $('uxAgendaExport').onclick=()=>{if(!admin())return;const c=context(),blob=new Blob([JSON.stringify({application:'KUCHE',version:1,organization:c.org,user:c.user,exportedAt:new Date().toISOString(),entries:read(c)},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='KUCHE_MI_AGENDA_'+today()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+ if(!$('uxAgendaDialog')){const dialog=document.createElement('dialog');dialog.id='uxAgendaDialog';dialog.className='ux-dialog';dialog.innerHTML=`<form id="uxAgendaForm"><div class="ux-dialog-head"><h2 id="uxAgendaFormTitle">Agendar</h2><button id="uxAgendaClose" class="secondary-button" type="button">Cerrar</button></div><div class="ux-form-grid"><label>Tipo<select id="uxAgendaKind"><option value="meeting">Reunión</option><option value="task">Actividad</option><option value="purchase">Compra por hacer</option></select></label><label>Título<input id="uxAgendaTitle" required maxlength="200" placeholder="Ej. Reunión con proveedor"></label><label>Fecha<input id="uxAgendaDate" type="date" required></label><label>Hora inicial (opcional)<input id="uxAgendaStart" type="time"></label><label>Hora final (opcional)<input id="uxAgendaEnd" type="time"></label></div><div id="uxAgendaMeetingFields" class="ux-form-grid"><label>Participantes<input id="uxAgendaPeople" placeholder="Nombres de los participantes"></label><label>Lugar o enlace<input id="uxAgendaPlace" placeholder="Local, dirección o enlace"></label></div><div id="uxAgendaPurchaseFields"><p class="inline-note">Esta es una lista de compras por hacer. No registra gastos ni cambia el inventario.</p><div id="uxAgendaItems"></div><button id="uxAgendaAddItem" type="button" class="secondary-button">+ Agregar producto</button></div><label>Notas<textarea id="uxAgendaNotes" rows="3"></textarea></label><div id="uxAgendaFormError" role="alert" class="inline-note"></div><div class="form-actions"><button class="primary-button" type="submit">Guardar en mi agenda</button><button id="uxAgendaCancel" class="secondary-button" type="button">Cancelar</button></div><datalist id="uxAgendaProducts"></datalist><datalist id="uxAgendaSuppliers"></datalist></form>`;document.body.appendChild(dialog);$('uxAgendaForm').onsubmit=submit;$('uxAgendaKind').onchange=kindFields;$('uxAgendaAddItem').onclick=()=>addItem();$('uxAgendaClose').onclick=closeEditor;$('uxAgendaCancel').onclick=closeEditor;dialog.addEventListener('cancel',()=>editing=null);}
+ $('uxAgendaProducts').innerHTML=(inventory||[]).filter(p=>p.active!==false).map(p=>`<option value="${esc(p.name)}"></option>`).join('');$('uxAgendaSuppliers').innerHTML=(suppliers||[]).map(s=>`<option value="${esc(s.name)}"></option>`).join('');
+}
+function open(){if(!admin())return;install();render();sync();}
+function clearPrivate(){if($('adminagenda'))$('adminagenda').innerHTML='';$('uxAgendaDialog')?.close();$('uxAgendaForm')?.reset();if($('uxAgendaItems'))$('uxAgendaItems').innerHTML='';$('uxAgendaToday')?.remove();editing=null;}
+const oldReservations=renderReservations;renderReservations=function(){const r=oldReservations();if(admin()){render();summary();}return r;};
+const oldLogout=logoutKuche;logoutKuche=async function(...args){clearPrivate();return await oldLogout(...args);};
+window.kucheAgenda={install,open,load:sync,sync,summary,render,openEditor,clearPrivate,math:{days,shift,validDay,validate,content,same,payload,context,read,saveEntry,reservationEvents,events,mergeAck,resolve}};
+window.addEventListener('online',()=>{if(admin())sync();});
+window.addEventListener('storage',e=>{if(admin()&&e.key===context().key){render();summary();}});
+if(admin()){install();summary();}window.kucheUX.nav();
 })();
 
 </script>
