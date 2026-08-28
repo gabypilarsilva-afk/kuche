@@ -20297,8 +20297,8 @@ function openPreparedSettings(id){
  if(!isAdmin()){alert('Solo el administrador puede configurar las porciones.');return;}
  const p=productById(id);if(!p)return;preparedEditingId=p.id;
  let host=$('v186PreparedEditor');if(!host){host=document.createElement('div');host.id='v186PreparedEditor';host.className='integral-panel';$('ingredients').appendChild(host);}
- host.innerHTML=`<h2>${esc(p.name)}</h2><p>Unidad de stock: ${esc(p.unit)}. El costo y la producción se mantienen vinculados a su receta base.</p>${panelHTML('v186Prepared')}<div class="form-actions"><button type="button" class="primary-button" id="v186PreparedSave">Guardar porciones e inventario</button><button type="button" class="secondary-button" id="v186PreparedCancel">Cancelar</button></div>`;
- host.hidden=false;loadPanel('v186Prepared',p);$('v186PreparedSave').onclick=savePreparedSettings;$('v186PreparedCancel').onclick=()=>{host.hidden=true;preparedEditingId=null;};host.scrollIntoView({behavior:'smooth'});
+ host.innerHTML=`<h2>${esc(p.name)}</h2><p>Unidad de stock: ${esc(p.unit)}. El costo y la producción se mantienen vinculados a su receta base.</p>${panelHTML('v186Prepared')}<div class="form-actions"><button type="button" class="primary-button" id="v186PreparedSave">Guardar porciones e inventario</button><button type="button" class="secondary-button" id="v186PreparedRecipe">Ver receta base</button><button type="button" class="secondary-button" id="v186PreparedCancel">Cancelar</button></div>`;
+ host.hidden=false;loadPanel('v186Prepared',p);$('v186PreparedSave').onclick=savePreparedSettings;$('v186PreparedRecipe').onclick=()=>editRecipe(p.sourceRecipeId);$('v186PreparedCancel').onclick=()=>{host.hidden=true;preparedEditingId=null;};host.scrollIntoView({behavior:'smooth'});
 }
 window.v186OpenMaterialSettings=id=>prepared(productById(id))?openPreparedSettings(id):kucheV171OpenEditCatalogItem(id);
 async function savePreparedSettings(){
@@ -20337,8 +20337,8 @@ kucheV171RenderIngredients=function(){
   const call=button.getAttribute('onclick'),id=call.match(/\('([^']+)'\)/)?.[1];
   const p=call.includes('editRecipe(')?inventory.find(p=>String(p.sourceRecipeId)===String(id)):productById(id);if(!p)return;
   const badge=row.querySelector('.kuche-v183-inventory-badge');if(badge)badge.textContent=p.weeklyInventoryEnabled===true?'Diario + semanal':'Inventario diario';
-  const settings=document.createElement('button');settings.type='button';settings.className='secondary-button';settings.textContent='Porciones e inventario';settings.onclick=()=>window.v186OpenMaterialSettings(p.id);button.parentElement.appendChild(settings);
-  const note=document.createElement('div');note.className='category';note.textContent=countMode(p)==='portions'?formatsFor(p).map(f=>`${f.name}: ${formatNumber(f.quantity)} ${f.unit}`).join(' · '):`Conteo directo en ${countMode(p)==='base'?(p.baseUnit||p.unit):p.unit}`;row.children[0].appendChild(note);
+  // Keep portion controls inside the product editor; the catalog only exposes Editar.
+  if(prepared(p)){button.textContent='Editar';button.removeAttribute('onclick');button.onclick=()=>openPreparedSettings(p.id);}
  });
  const guide=$('kucheV183WeeklyGuide');if(guide)guide.innerHTML='<strong>Inventario diario:</strong> todas las materias primas y preparaciones de cada área. <strong>Inventario semanal:</strong> solo los productos que marques con “Incluir también en inventario semanal” al registrar o editar. Ambos actualizan la misma existencia.';
 };
