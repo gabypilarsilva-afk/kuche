@@ -10904,13 +10904,19 @@ function themeContrast(hex){
 function applyThemeColor(value,save=false){
  const color=cleanThemeHex(value)||"#173F35";
  const root=document.documentElement;
+ const {r,g,b}=hexToRgb(color);
  root.style.setProperty("--green-dark",color);
  root.style.setProperty("--green",mixTheme(color,"#FFFFFF",0.11));
  root.style.setProperty("--green-soft",mixTheme(color,"#FFFFFF",0.89));
  root.style.setProperty("--primary-contrast",themeContrast(color));
- const {r,g,b}=hexToRgb(color);
  root.style.setProperty("--shadow",`0 4px 18px rgba(${r},${g},${b},.08)`);
+ root.style.setProperty("--brand-rgb",`${r},${g},${b}`);
+ root.style.setProperty("--brand-border",mixTheme(color,"#FFFFFF",0.75));
+ root.style.setProperty("--brand-surface",mixTheme(color,"#FFFFFF",0.94));
+ root.style.setProperty("--brand-shadow",`0 10px 30px rgba(${r},${g},${b},.12)`);
  root.style.setProperty("--cream","#F6F3EC");
+ const themeMeta=document.querySelector('meta[name="theme-color"]');
+ if(themeMeta)themeMeta.setAttribute("content",color);
  if(save){appSettings.primaryColor=color;saveAppSettings();}
  const picker=document.getElementById("themeColorPicker"),hex=document.getElementById("themeColorHex");
  if(picker)picker.value=color.toLowerCase();
@@ -15708,7 +15714,7 @@ setTimeout(()=>setStaffBirthDateParts(document.getElementById('staffBirthDate')?
 /* =====================================================
    KÜCHE CONTINUIDAD OPERATIVA + AYUDA + PROPIETARIOS
 ===================================================== */
-const KUCHE_APP_VERSION="V19 · revisión 2026-09-01.2";
+const KUCHE_APP_VERSION="V19 · revisión 2026-09-01.3";
 const KUCHE_OFFLINE_AUTH_KEY="kucheOfflineAuthSnapshot";
 const KUCHE_DEVICE_ID_KEY="kucheDeviceId";
 const KUCHE_OFFLINE_DB="kucheOfflineOperations";
@@ -20988,7 +20994,7 @@ window.addEventListener('storage',event=>{if(writing&&event.key==='kucheInventor
 const openRecipeKind=window.kucheV18NewRecipeKind;
 window.kucheV18NewRecipeKind=function(kind){
  const result=openRecipeKind(kind);
- requestAnimationFrame(()=>{const form=$('recipeForm');if(!form?.classList.contains('open'))return;form.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});$('recipeName')?.focus({preventScroll:true});});return result;
+ requestAnimationFrame(()=>{const form=$('recipeForm');if(!form?.classList.contains('open'))return;form.scrollIntoView({behavior:'auto',block:'start'});$('recipeName')?.focus({preventScroll:true});});return result;
 };
 })();
 
@@ -21065,7 +21071,7 @@ function fold(){
  document.querySelectorAll('.ux-group-title').forEach(h=>{h.setAttribute('aria-expanded',String(h.dataset.uxGroup===opened));const children=[...document.querySelectorAll('.sidebar .nav .nav-item')].filter(b=>b.dataset.uxGroup===h.dataset.uxGroup);h.hidden=!children.some(b=>can(pageOf(b))&&b.style.display!=='none');});
 }
 function go(page,action){if(!can(page)){alert('Tu perfil no tiene acceso a esta sección.');return;}const button=[...document.querySelectorAll('.sidebar .nav .nav-item')].find(b=>pageOf(b)===page);showPage(page,button||null);if(action)action();}
-function reveal(form,field){requestAnimationFrame(()=>{const el=$(form);if(!el)return;el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});((field?$(field):null)||el.querySelector('input:not([type=hidden]),select'))?.focus({preventScroll:true});});}
+function reveal(form,field){requestAnimationFrame(()=>{const el=$(form);if(!el)return;el.scrollIntoView({behavior:'auto',block:'start'});((field?$(field):null)||el.querySelector('input:not([type=hidden]),select'))?.focus({preventScroll:true});});}
 const oldShow=showPage;
 showPage=function(page,button){if(page==='adminagenda'){if(!admin())return;window.kucheAgenda?.install();}const out=oldShow(page,button);if(!$(page)?.classList.contains('active'))return out;
  nav();const h=groups.find(g=>g[2].includes(page));opened=h?.[0]||'';fold();document.querySelectorAll('.sidebar .nav .nav-item').forEach(b=>b.classList.toggle('active',pageOf(b)===page));
@@ -21279,7 +21285,7 @@ if(admin()){install();summary();}window.kucheUX.nav();
 <script id="kuche-v19-control-script">
 (function(){
 'use strict';
-var V19_VERSION='V19 · revisión 2026-09-01.2';
+var V19_VERSION='V19 · revisión 2026-09-01.3';
 var $=function(id){return document.getElementById(id);};
 var esc=function(value){return typeof escapeHTML==='function'?escapeHTML(String(value==null?'':value)):String(value==null?'':value).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});};
 var money=function(value){return '$'+(typeof formatMoney==='function'?formatMoney(Number(value)||0):new Intl.NumberFormat('es-CL').format(Math.round(Number(value)||0)));};
@@ -21513,5 +21519,204 @@ function boot(){
 }
 Object.assign(window,{v19PurchaseModeChanged:v19PurchaseModeChanged,v19BuildInstallmentPreview:v19BuildInstallmentPreview,v19OpenPurchasePlan:v19OpenPurchasePlan,v19PayInstallment:v19PayInstallment,v19UndoInstallment:v19UndoInstallment,v19FindClubByRut:v19FindClubByRut,v19QuickEnroll:v19QuickEnroll,v19SelectReward:v19SelectReward,v19ClearReward:v19ClearReward,v19PrintPrebill:v19PrintPrebill,v19SaveRewardBenefit:v19SaveRewardBenefit,v19RenderFinance:v19RenderFinance,v19OpenExpense:v19OpenExpense,v19SaveExpense:v19SaveExpense,v19PayExpense:v19PayExpense,v19OpenOwnerFunding:v19OpenOwnerFunding,v19SaveOwnerFunding:v19SaveOwnerFunding,v19RepayOwner:v19RepayOwner,v19OpenStaffPayment:v19OpenStaffPayment,v19UpdateStaffPayPreview:v19UpdateStaffPayPreview,v19SaveStaffPayment:v19SaveStaffPayment,v19MarkStaffPaid:v19MarkStaffPaid,v19RenderToday:v19RenderToday,v19OpenShiftLog:v19OpenShiftLog,v19SaveShiftLog:v19SaveShiftLog,v19ResolveLog:v19ResolveLog,v19OpenApproval:v19OpenApproval,v19SaveApproval:v19SaveApproval,v19DecideApproval:v19DecideApproval,v19CloseDay:v19CloseDay,v19GoFinance:v19GoFinance,v19RefreshAll:v19RefreshAll});
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(boot,200);});else setTimeout(boot,200);setTimeout(boot,3200);
+})();
+</script>
+
+<style id="kuche-v19-performance-theme-style">
+/* Capa final de rendimiento y color: conserva los estados semánticos de éxito,
+   advertencia y peligro, pero unifica todos los acentos de marca. */
+html{scroll-behavior:auto}
+button,.nav-item,[role="button"]{touch-action:manipulation}
+.page{scroll-margin-top:12px}
+.page.active .table-card,
+.page.active .v18-card,
+.page.active .v19-card,
+.page.active .ux-card,
+.page.active .report-card,
+.page.active .list-card{
+ content-visibility:auto;
+ contain-intrinsic-size:1px 420px;
+}
+.kuche-v18-recipe-tab.active,
+.kuche-v18-simple-head{
+ background:linear-gradient(135deg,var(--green-dark),var(--green))!important;
+}
+#recipeForm.kuche-v18-simple-form{box-shadow:var(--brand-shadow)!important}
+.kuche-v18-recipe-total strong,
+.kuche-v18-advanced>summary,
+#recipeBaseComponents .kuche-v18-base-cost input,
+.kuche-v182-base-options>summary,
+.kuche-v182-waiter-toggle,
+.kuche-v183-base-sale-toggle,
+.kuche-v183-weekly-guide strong,
+.kuche-v185-portion-head strong{
+ color:var(--green-dark)!important;
+}
+.kuche-v18-type-chip,
+.kuche-v182-base-full-cost,
+.kuche-v183-inventory-badge,
+.kuche-v184-extra-help,
+.kuche-v185-default{
+ color:var(--green)!important;
+}
+.kuche-v18-type-chip,
+.kuche-v183-inventory-badge,
+.kuche-v184-extra-help,
+.kuche-v172-no-charge-guide,
+.kuche-v18-recipe-tab b{
+ background:var(--green-soft)!important;
+}
+.kuche-v16-note,.kuche-v163-fixed-note{background:rgba(var(--brand-rgb),.06)!important}
+.kuche-v173-format-preview{
+ border-color:rgba(var(--brand-rgb),.22)!important;
+ background:linear-gradient(135deg,rgba(var(--brand-rgb),.08),rgba(241,184,74,.08))!important;
+}
+.kuche-v185-portion-box{border-color:rgba(var(--brand-rgb),.22)!important}
+.kuche-v185-portion-row{border-top-color:rgba(var(--brand-rgb),.2)!important}
+.kuche-v185-daily-formats{border-color:rgba(var(--brand-rgb),.15)!important}
+.nav-item:focus-visible,.primary-button:focus-visible,.secondary-button:focus-visible{
+ outline:3px solid var(--brand-border);outline-offset:2px;
+}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+
+<script id="kuche-v19-performance-navigation-script">
+(function(){
+"use strict";
+var FORM_TARGETS='.form-panel,.recipe-panel,.production-panel,.attendance-panel,.task-panel,[id$="Form"],[id$="Panel"],[role="dialog"],dialog';
+var lastNavigation={page:'',at:0};
+
+function isVisible(element){
+ if(!element||!element.isConnected)return false;
+ var style=getComputedStyle(element);
+ return style.display!=='none'&&style.visibility!=='hidden'&&!element.hidden&&element.getClientRects().length>0;
+}
+function firstUsableField(root){
+ if(!root)return null;
+ return root.querySelector('input:not([type="hidden"]):not([disabled]),select:not([disabled]),textarea:not([disabled]),button:not([disabled])');
+}
+function focusHeading(page){
+ var heading=page&&page.querySelector('.page-header h1,h1');
+ if(!heading)return;
+ if(!heading.hasAttribute('tabindex'))heading.setAttribute('tabindex','-1');
+ try{heading.focus({preventScroll:true});}catch(_){heading.focus();}
+}
+function goToPageTop(page){
+ if(!page)return;
+ var scroller=document.scrollingElement||document.documentElement;
+ if(scroller&&typeof scroller.scrollTo==='function')scroller.scrollTo({top:0,left:0,behavior:'auto'});
+ else window.scrollTo(0,0);
+ var nested=page.closest('.content');
+ if(nested&&nested.scrollHeight>nested.clientHeight&&getComputedStyle(nested).overflowY!=='visible')nested.scrollTop=0;
+ focusHeading(page);
+}
+function replaceLegacyBrand(value){
+ if(!value||/var\(--green|var\(--brand/.test(value))return value;
+ return String(value)
+  .replace(/#173f35/gi,'var(--green-dark)')
+  .replace(/#24594b/gi,'var(--green)')
+  .replace(/rgba\(\s*23\s*,\s*63\s*,\s*53\s*,\s*([\d.]+)\s*\)/gi,'rgba(var(--brand-rgb),$1)')
+  .replace(/rgba\(\s*36\s*,\s*89\s*,\s*75\s*,\s*([\d.]+)\s*\)/gi,'rgba(var(--brand-rgb),$1)');
+}
+function normalizeInlineTheme(root){
+ (root||document).querySelectorAll('[style]').forEach(function(element){
+  for(var i=0;i<element.style.length;i++){
+   var property=element.style[i],value=element.style.getPropertyValue(property),next=replaceLegacyBrand(value);
+   if(property.indexOf('--')===0)continue;
+   if(next!==value)element.style.setProperty(property,next,element.style.getPropertyPriority(property));
+  }
+ });
+}
+function normalizeLegacyThemeRules(){
+ Array.prototype.forEach.call(document.styleSheets,function(sheet){
+  var rules;
+  try{rules=sheet.cssRules;}catch(_){return;}
+  function walk(list){
+   Array.prototype.forEach.call(list||[],function(rule){
+   if(rule.cssRules)walk(rule.cssRules);
+   if(!rule.style)return;
+   for(var i=0;i<rule.style.length;i++){
+    var property=rule.style[i],value=rule.style.getPropertyValue(property),next=replaceLegacyBrand(value);
+    if(property.indexOf('--')===0)continue;
+    if(next!==value)rule.style.setProperty(property,next,rule.style.getPropertyPriority(property));
+   }
+   });
+  }
+  walk(rules);
+ });
+ normalizeInlineTheme(document);
+}
+
+var previousTheme=window.applyThemeColor;
+if(typeof previousTheme==='function')window.applyThemeColor=function(){
+ var result=previousTheme.apply(this,arguments);
+ var color=getComputedStyle(document.documentElement).getPropertyValue('--green-dark').trim();
+ var meta=document.querySelector('meta[name="theme-color"]');
+ if(meta&&color)meta.setAttribute('content',color);
+ return result;
+};
+
+var previousShowPage=window.showPage;
+if(typeof previousShowPage==='function')window.showPage=function(pageId,button){
+ var page=document.getElementById(pageId);
+ if(!page||!page.classList.contains('page')){
+  alert('Esta sección no está disponible. KÜCHE mantuvo abierta la pantalla actual.');
+  return false;
+ }
+ var now=performance.now();
+ if(lastNavigation.page===pageId&&now-lastNavigation.at<80&&page.classList.contains('active'))return true;
+ lastNavigation={page:pageId,at:now};
+ var result=previousShowPage.apply(this,arguments);
+ if(!page.classList.contains('active'))return result;
+ requestAnimationFrame(function(){
+  goToPageTop(page);
+  normalizeInlineTheme(page);
+  requestAnimationFrame(function(){goToPageTop(page);});
+ });
+ return result;
+};
+
+function visibleTargetSet(){
+ var set=new Set();
+ document.querySelectorAll(FORM_TARGETS).forEach(function(element){if(isVisible(element))set.add(element);});
+ return set;
+}
+document.addEventListener('click',function(event){
+ var button=event.target.closest('button,[role="button"]');
+ if(!button||button.disabled||button.classList.contains('nav-item')||button.closest('.ux-nav-group'))return;
+ var before=visibleTargetSet();
+ setTimeout(function(){
+  var opened=null;
+  document.querySelectorAll(FORM_TARGETS).forEach(function(element){
+   if(!opened&&isVisible(element)&&!before.has(element))opened=element;
+  });
+  if(!opened)return;
+  if(opened.matches('[role="dialog"],dialog')){
+   var modalField=firstUsableField(opened);if(modalField)try{modalField.focus({preventScroll:true});}catch(_){modalField.focus();}
+   return;
+  }
+  opened.scrollIntoView({behavior:'auto',block:'start'});
+  var field=firstUsableField(opened);
+  if(field)try{field.focus({preventScroll:true});}catch(_){field.focus();}
+ },35);
+},true);
+
+function auditNavigation(){
+ document.querySelectorAll('.nav-item').forEach(function(button){
+  button.setAttribute('type','button');
+  var code=button.getAttribute('onclick')||'',match=code.match(/showPage\(\s*['"]([^'"]+)['"]/);
+  if(!match)return;
+  var page=document.getElementById(match[1]);
+  if(page){button.setAttribute('aria-controls',match[1]);button.setAttribute('aria-label',button.textContent.trim());}
+ });
+}
+function boot(){
+ auditNavigation();
+ normalizeLegacyThemeRules();
+ var active=document.querySelector('.page.active');
+ if(active)normalizeInlineTheme(active);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+if('requestIdleCallback' in window)requestIdleCallback(normalizeLegacyThemeRules,{timeout:1500});else setTimeout(normalizeLegacyThemeRules,500);
 })();
 </script>
