@@ -14303,7 +14303,7 @@ function printKDSBatch(orderId,station,batchKey){
 }
 async function markKDSBatchReady(orderId,station,batchKey){
  const order=posOrders.find(o=>String(o.id)===String(orderId));if(!order)return;
- const now=new Date().toISOString(),worker=getCurrentWorker(),staffId=cloudStaffRecord?.id||null,workerName=worker?.name||currentSession?.name||"Equipo";
+ const now=new Date().toISOString(),identity=getPOSWorkerIdentity(),worker=(staff||[]).find(w=>String(w.id)===String(identity.workerId)),staffId=worker?.cloudStaffId||((currentSession?.role==="worker"&&String(currentSession.workerId)===String(identity.workerId))?cloudStaffRecord?.id:null)||null,workerName=identity.workerName||"Equipo";
  (order.items||[]).filter(i=>i.station===station&&String(i.dispatchBatchKey||i.sentAt)===String(batchKey)&&i.sentAt).forEach(i=>{i.kdsStatus="ready";i.readyAt=now;i.readyBy=workerName;});
  localStorage.setItem("kuchePOSOrders",JSON.stringify(posOrders));
  if(kucheCloud&&cloudOrganization&&order.cloudId){
@@ -16959,6 +16959,104 @@ renderWorkerStockAlert();
 normalizeKDSData();
 initializeLogin();
 
+</script>
+
+<style id="kuche-v20-shared-station-style">
+.kuche-station-lock{position:fixed;inset:0;z-index:100500;background:linear-gradient(145deg,var(--green-dark),var(--green));display:none;align-items:center;justify-content:center;padding:24px}
+.kuche-station-lock.open{display:flex}
+.kuche-station-card{width:min(760px,96vw);max-height:92vh;overflow:auto;background:#fff;border-radius:20px;padding:26px;box-shadow:0 28px 80px rgba(0,0,0,.28)}
+.kuche-station-brand{font-size:25px;font-weight:900;letter-spacing:4px;color:var(--green-dark)}
+.kuche-station-card h2{margin:14px 0 6px;color:var(--green-dark);font-size:27px}.kuche-station-card>p{color:var(--muted);margin:0 0 18px;line-height:1.5}
+.kuche-station-workers{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:16px 0}
+.kuche-station-worker{border:1px solid var(--border);border-radius:13px;background:#fff;padding:14px;text-align:left;color:var(--ink)}
+.kuche-station-worker:hover,.kuche-station-worker.selected{border-color:var(--green);background:var(--green-soft)}
+.kuche-station-worker:disabled{opacity:.55;cursor:not-allowed}.kuche-station-worker strong{display:block;font-size:14px}.kuche-station-worker span{display:block;color:var(--muted);font-size:11px;margin-top:5px}
+.kuche-station-pinbox{display:none;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;background:var(--cream);border:1px solid var(--border);border-radius:13px;padding:14px}.kuche-station-pinbox.open{display:grid}
+.kuche-station-error{min-height:20px;color:var(--danger);font-size:12px;margin-top:9px}
+.kuche-station-bar{display:none;position:sticky;top:0;z-index:95;background:var(--green-dark);color:#fff;padding:10px 22px;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 4px 16px rgba(0,0,0,.16)}
+.kuche-station-bar strong{font-size:13px}.kuche-station-bar span{font-size:11px;color:rgba(255,255,255,.72)}.kuche-station-actions{display:flex;gap:8px;flex-wrap:wrap}.kuche-station-actions button{border-color:rgba(255,255,255,.35);color:#fff;background:rgba(255,255,255,.1)}
+body.kuche-shared-station-mode .sidebar,body.kuche-shared-station-mode #mobileQuickBar,body.kuche-shared-station-mode #mobileMenuOverlay{display:none!important}
+body.kuche-shared-station-mode .main{margin-left:0!important;width:100%!important}
+body.kuche-shared-station-mode .kuche-station-bar{display:flex}
+body.kuche-shared-station-mode #mobileMenuButton,body.kuche-shared-station-mode #uxSearchOpen{display:none!important}
+.kuche-station-setup-note{font-size:11px;color:var(--muted);margin-top:5px}
+@media(max-width:700px){.kuche-station-card{padding:19px}.kuche-station-workers{grid-template-columns:1fr 1fr}.kuche-station-pinbox{grid-template-columns:1fr}.kuche-station-bar{align-items:flex-start;padding:9px 12px}.kuche-station-actions button{font-size:10px;padding:7px}.kuche-station-bar span{display:none}}
+</style>
+
+<script id="kuche-v20-shared-station-script">
+(function(){
+"use strict";
+const V20_SHARED_VERSION="V20 · estación compartida";
+let sharedOperator=null;
+let selectedStationWorkerId=null;
+
+function el(id){return document.getElementById(id);}
+function normalize(value){return String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();}
+function stationOrgKey(){return String(cloudOrganization?.id||currentSession?.orgId||appSettings?.businessRut||appSettings?.businessName||"local");}
+function stationModeKey(){return "kucheSharedStationV1:"+encodeURIComponent(stationOrgKey());}
+function stationTypeKey(){return "kucheSharedStationTypeV1:"+encodeURIComponent(stationOrgKey());}
+function stationModeActive(){return localStorage.getItem(stationModeKey())==="1";}
+function stationDeviceType(){return localStorage.getItem(stationTypeKey())||"pos";}
+function stationConfigurator(){return !!currentSession&&(currentSession.role==="admin"||["admin","manager"].includes(currentSession.accessRole)||currentSession.ownershipRole==="owner");}
+function stationRole(worker){return worker?.accessRole||(typeof window.mapStaffRoleToAccessRole==="function"?window.mapStaffRoleToAccessRole(worker?.role):"trabajador")||"trabajador";}
+function roleLabel(role){return ({admin:"Administrador",manager:"Gerente / encargado",garzon:"Garzón",cajero:"Caja",cocina:"Cocina",bar:"Bar",bodega:"Bodega",trabajador:"Trabajador"})[role]||role;}
+function activeWorkers(){return (staff||[]).filter(function(w){return w&&w.status!=="inactivo"&&w.active!==false;});}
+function adminCandidate(){if(!stationConfigurator())return null;return {id:"__station_admin__",name:currentSession?.name||appSettings?.adminName||"Administrador",role:"Administrador",accessRole:"admin",isPrimaryAdmin:true,hasPin:!!String(appSettings?.adminPin||"")};}
+function stationCandidates(){const rows=[];const admin=adminCandidate(),type=stationDeviceType();if(admin)rows.push(admin);activeWorkers().filter(function(w){const role=stationRole(w);return type!=="kitchen"||["cocina","admin","manager"].includes(role);}).forEach(function(w){rows.push({id:String(w.id),name:w.name||"Trabajador",role:w.role||roleLabel(stationRole(w)),accessRole:stationRole(w),worker:w,hasPin:!!(w.stationPinHash||w.pin)});});return rows.filter(function(row,index,array){return array.findIndex(x=>String(x.id)===String(row.id))===index;});}
+async function hashPin(pin){const value=String(pin||"");if(window.crypto?.subtle){const data=new TextEncoder().encode("KUCHE-STATION-PIN:"+value);const digest=await crypto.subtle.digest("SHA-256",data);return Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,"0")).join("");}let h=2166136261;for(let i=0;i<value.length;i++){h^=value.charCodeAt(i);h=Math.imul(h,16777619);}return "fallback-"+(h>>>0).toString(16);}
+function auditStation(action,detail,identity){try{const who=identity||sharedOperator||{workerId:"admin",workerName:currentSession?.name||"Administrador"};auditLog=auditLog||[];auditLog.unshift({id:Date.now()+Math.random(),date:new Date().toISOString(),workerId:who.workerId,workerName:who.workerName,action,subject:"Estación compartida",reason:detail||""});if(typeof window.saveAuditLog==="function")window.saveAuditLog();}catch(error){console.warn("Auditoría estación",error);}}
+
+function ensureStationDOM(){
+ if(!el("kucheStationLock")){
+  const lock=document.createElement("div");lock.id="kucheStationLock";lock.className="kuche-station-lock";lock.setAttribute("role","dialog");lock.setAttribute("aria-modal","true");lock.innerHTML='<div class="kuche-station-card"><div class="kuche-station-brand">KÜCHE</div><h2 id="kucheStationTitle">¿Quién va a comandar?</h2><p id="kucheStationIntro">Selecciona tu nombre e ingresa tu PIN. El restaurante permanece conectado y las comandas abiertas no se pierden al cambiar de turno.</p><div id="kucheStationWorkers" class="kuche-station-workers"></div><div id="kucheStationPinBox" class="kuche-station-pinbox"><div class="field"><label>PIN personal</label><input id="kucheStationPin" type="password" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="4 a 6 números"></div><button id="kucheStationEnter" class="primary-button" type="button">Entrar</button></div><div id="kucheStationError" class="kuche-station-error" role="alert"></div></div>';
+  document.body.appendChild(lock);el("kucheStationEnter").addEventListener("click",enterSharedStation);el("kucheStationPin").addEventListener("keydown",function(event){if(event.key==="Enter")enterSharedStation();});
+ }
+ if(!el("kucheStationBar")){
+  const bar=document.createElement("div");bar.id="kucheStationBar";bar.className="kuche-station-bar";bar.innerHTML='<div><strong id="kucheStationOperator">Estación compartida</strong><br><span>Las acciones quedan registradas a nombre del trabajador activo.</span></div><div class="kuche-station-actions"><button type="button" onclick="kucheSwitchStationWorker()">Cambiar trabajador</button><button type="button" onclick="kucheCloseSharedStation()">Cerrar estación</button></div>';
+  const main=document.querySelector("main.main");if(main)main.insertBefore(bar,main.firstChild);else document.body.appendChild(bar);
+ }
+}
+function installStationButton(){const page=el("commandas"),actions=page?.querySelector(".page-header .staff-actions");if(actions&&!el("kucheSharedStationButton")){const button=document.createElement("button");button.id="kucheSharedStationButton";button.type="button";button.className="secondary-button admin-sensitive";button.textContent="Usar este PC para comandas";button.onclick=function(){activateSharedStation("pos");};actions.prepend(button);}const kds=el("kds"),kdsActions=kds?.querySelector(".page-header .staff-actions")||kds?.querySelector(".page-header");if(kdsActions&&!el("kucheKitchenStationButton")){const button=document.createElement("button");button.id="kucheKitchenStationButton";button.type="button";button.className="secondary-button admin-sensitive";button.textContent="Usar esta tablet en Cocina";button.onclick=function(){activateSharedStation("kitchen");};kdsActions.appendChild(button);const note=document.createElement("div");note.id="kucheKitchenAttendanceNote";note.className="inline-note";note.textContent="La tablet de Cocina se usa solo para recibir y actualizar comandas. Cada trabajador registra su asistencia desde su celular.";kds.querySelector(".page-header")?.insertAdjacentElement("afterend",note);}}
+function installStaffPinField(){const input=el("staffPin");if(!input||input.closest(".kuche-station-pin-field"))return;const wrap=document.createElement("div");wrap.className="field kuche-station-pin-field";input.parentNode.insertBefore(wrap,input);const label=document.createElement("label");label.textContent="PIN para estación compartida";wrap.appendChild(label);wrap.appendChild(input);input.type="password";input.inputMode="numeric";input.autocomplete="new-password";input.maxLength=6;input.placeholder="4 a 6 números";const note=document.createElement("div");note.className="kuche-station-setup-note";note.textContent="Permite que esta persona se identifique rápidamente en el PC de comandas. Déjalo vacío para conservar el PIN actual.";wrap.appendChild(note);}
+function renderStationWorkers(){ensureStationDOM();const type=stationDeviceType();el("kucheStationTitle").textContent=type==="kitchen"?"¿Quién está trabajando en Cocina?":"¿Quién va a comandar?";el("kucheStationIntro").textContent=type==="kitchen"?"Selecciona tu nombre e ingresa tu PIN. Esta tablet queda dedicada a recibir y actualizar las comandas de producción.":"Selecciona tu nombre e ingresa tu PIN. El restaurante permanece conectado y las comandas abiertas no se pierden al cambiar de turno.";el("kucheStationEnter").textContent=type==="kitchen"?"Entrar a Cocina":"Entrar a comandas";const host=el("kucheStationWorkers"),rows=stationCandidates();host.innerHTML=rows.length?rows.map(function(row){return '<button type="button" class="kuche-station-worker" data-station-worker="'+String(row.id).replace(/"/g,"&quot;")+'" '+(row.hasPin?"":"disabled")+'><strong>'+window.escapeHTML(row.name)+'</strong><span>'+window.escapeHTML(row.role)+' · '+(row.hasPin?"PIN configurado":"Falta configurar PIN")+'</span></button>';}).join(""):'<div class="login-note">No hay trabajadores activos con acceso a este dispositivo. Regístralos primero en Personal.</div>';host.querySelectorAll("[data-station-worker]").forEach(function(button){button.addEventListener("click",function(){selectStationWorker(button.dataset.stationWorker);});});}
+function selectStationWorker(id){selectedStationWorkerId=String(id);document.querySelectorAll(".kuche-station-worker").forEach(b=>b.classList.toggle("selected",b.dataset.stationWorker===selectedStationWorkerId));el("kucheStationPinBox").classList.add("open");el("kucheStationPin").value="";el("kucheStationError").textContent="";setTimeout(()=>el("kucheStationPin")?.focus(),0);}
+function selectedCandidate(){return stationCandidates().find(x=>String(x.id)===String(selectedStationWorkerId))||null;}
+async function verifyCandidatePin(candidate,pin){if(!candidate||!/^[0-9]{4,6}$/.test(pin))return false;if(candidate.isPrimaryAdmin)return String(pin)===String(appSettings?.adminPin||"");const worker=candidate.worker;if(worker.stationPinHash)return (await hashPin(pin))===worker.stationPinHash;if(worker.pin&&String(worker.pin)===String(pin)){worker.stationPinHash=await hashPin(pin);worker.pin="";if(typeof window.saveStaff==="function")window.saveStaff();return true;}return false;}
+async function enterSharedStation(){const candidate=selectedCandidate(),pin=el("kucheStationPin")?.value||"",error=el("kucheStationError");if(!candidate){error.textContent="Selecciona primero tu nombre.";return;}if(!await verifyCandidatePin(candidate,pin)){error.textContent="PIN incorrecto. Intenta nuevamente.";el("kucheStationPin").select();return;}sharedOperator={workerId:candidate.isPrimaryAdmin?"admin":candidate.id,workerName:candidate.name,accessRole:candidate.accessRole,role:candidate.role,workStations:candidate.worker?.workStations||[],startedAt:new Date().toISOString()};selectedStationWorkerId=null;el("kucheStationLock").classList.remove("open");document.body.classList.add("kuche-shared-station-mode");el("kucheStationOperator").textContent=sharedOperator.workerName+" · "+(stationDeviceType()==="kitchen"?"Tablet Cocina":roleLabel(sharedOperator.accessRole));auditStation("Inicio de turno en dispositivo compartido",stationDeviceType()==="kitchen"?"Ingreso a Cocina":"Ingreso a comandas",sharedOperator);goToStationPage();}
+function goToStationPage(){const pageId=stationDeviceType()==="kitchen"?"kds":"commandas",button=Array.from(document.querySelectorAll(".nav-item")).find(b=>(b.getAttribute("onclick")||"").includes("'"+pageId+"'"));const base=window.__kucheV20BaseShowPage;if(typeof base==="function")base(pageId,button||null);if(pageId==="kds"&&typeof window.renderKDS==="function")window.renderKDS();if(pageId==="commandas"&&typeof window.renderPOS==="function")window.renderPOS();}
+function openStationLock(){ensureStationDOM();sharedOperator=null;selectedStationWorkerId=null;document.body.classList.add("kuche-shared-station-mode");el("kucheStationPinBox").classList.remove("open");el("kucheStationError").textContent="";renderStationWorkers();el("kucheStationLock").classList.add("open");}
+function activateSharedStation(type="pos"){if(!stationConfigurator()){alert("Solo un administrador o gerente puede activar un dispositivo compartido.");return;}if(!/^[0-9]{4,6}$/.test(String(appSettings?.adminPin||""))){alert("Primero configura un PIN de autorización de 4 a 6 números en Configuración. Ese PIN permitirá cerrar de forma segura el dispositivo compartido.");const b=Array.from(document.querySelectorAll(".nav-item")).find(x=>(x.getAttribute("onclick")||"").includes("'settings'"));window.showPage("settings",b||null);return;}const eligible=activeWorkers().filter(w=>type!=="kitchen"||["cocina","admin","manager"].includes(stationRole(w)));if(!eligible.some(w=>w.stationPinHash||w.pin)){alert(type==="kitchen"?"Primero configura en Personal el PIN de al menos un trabajador de Cocina.":"Primero entra a Personal y configura un PIN de estación para al menos un trabajador.");return;}localStorage.setItem(stationModeKey(),"1");localStorage.setItem(stationTypeKey(),type);auditStation("Dispositivo compartido activado",type==="kitchen"?"Tablet de Cocina asociada al local":"PC de comandas asociado al local");openStationLock();}
+function switchStationWorker(){if(!stationModeActive())return;const previous=sharedOperator;auditStation("Cambio de trabajador","Pantalla bloqueada para el siguiente turno",previous);openStationLock();}
+function closeSharedStation(){if(!stationModeActive())return;const required=String(appSettings?.adminPin||"");const entered=prompt("Ingresa el PIN del administrador para cerrar el dispositivo compartido:");if(entered===null)return;if(!required||entered!==required){alert("PIN de administrador incorrecto.");return;}auditStation("Dispositivo compartido cerrado","Regreso a la administración");localStorage.removeItem(stationModeKey());localStorage.removeItem(stationTypeKey());sharedOperator=null;selectedStationWorkerId=null;el("kucheStationLock")?.classList.remove("open");document.body.classList.remove("kuche-shared-station-mode");if(typeof window.applyAccessMode==="function")window.applyAccessMode();const b=Array.from(document.querySelectorAll(".nav-item")).find(x=>(x.getAttribute("onclick")||"").includes("'dashboard'"));window.__kucheV20BaseShowPage?.("dashboard",b||null);}
+function refreshStationMode(){ensureStationDOM();installStationButton();installStaffPinField();const version=el("systemVersionLabel");if(version)version.textContent=V20_SHARED_VERSION;if(!currentSession||!stationModeActive())return;if(!sharedOperator)openStationLock();}
+
+const baseGetPOSWorkerIdentity=window.getPOSWorkerIdentity;
+if(typeof baseGetPOSWorkerIdentity==="function")window.getPOSWorkerIdentity=function(){if(stationModeActive()&&sharedOperator)return {workerId:sharedOperator.workerId,workerName:sharedOperator.workerName,accessRole:sharedOperator.accessRole};return baseGetPOSWorkerIdentity.apply(this,arguments);};
+
+const baseGetKDSWorkerStations=window.getKDSWorkerStations;
+if(typeof baseGetKDSWorkerStations==="function")window.getKDSWorkerStations=function(){if(stationModeActive()&&stationDeviceType()==="kitchen"&&sharedOperator){if(["admin","manager"].includes(sharedOperator.accessRole))return null;if(Array.isArray(sharedOperator.workStations)&&sharedOperator.workStations.length)return sharedOperator.workStations;return ["Cocina"];}return baseGetKDSWorkerStations.apply(this,arguments);};
+
+const baseOpenPOSTable=window.openPOSTable;
+if(typeof baseOpenPOSTable==="function")window.openPOSTable=function(tableId){if(stationModeActive()&&!sharedOperator){openStationLock();return;}const previous=typeof window.getActiveOrderForTable==="function"?window.getActiveOrderForTable(tableId):null;if(previous&&!previous.openedByName)previous.openedByName=previous.workerName;const result=baseOpenPOSTable.apply(this,arguments);const order=typeof window.getActivePOSOrder==="function"?window.getActivePOSOrder():null;if(order&&sharedOperator){order.openedByName=order.openedByName||order.workerName||sharedOperator.workerName;order.workerId=sharedOperator.workerId;order.workerName=sharedOperator.workerName;order.lastHandledBy=sharedOperator.workerName;order.lastHandledAt=new Date().toISOString();order.handlers=Array.isArray(order.handlers)?order.handlers:[];if(!order.handlers.some(h=>h.workerId===sharedOperator.workerId&&h.sessionStartedAt===sharedOperator.startedAt))order.handlers.push({workerId:sharedOperator.workerId,workerName:sharedOperator.workerName,sessionStartedAt:sharedOperator.startedAt,handledAt:new Date().toISOString()});if(typeof window.savePOSOrders==="function")window.savePOSOrders();if(typeof window.renderPOSOrder==="function")window.renderPOSOrder();}return result;};
+
+const baseRenderPOSOrder=window.renderPOSOrder;
+if(typeof baseRenderPOSOrder==="function")window.renderPOSOrder=function(){const result=baseRenderPOSOrder.apply(this,arguments);const order=typeof window.getActivePOSOrder==="function"?window.getActivePOSOrder():null,label=el("posOrderWorker");if(order&&label&&stationModeActive()&&sharedOperator)label.textContent="Abierta por "+(order.openedByName||order.workerName)+" · Ahora: "+sharedOperator.workerName;return result;};
+
+const baseSaveStaffMember=window.saveStaffMember;
+if(typeof baseSaveStaffMember==="function")window.saveStaffMember=async function(inviteAfter){const idBefore=editingStaffId,nameBefore=el("staffName")?.value.trim()||"",pin=el("staffPin")?.value.trim()||"";if(pin&&!/^[0-9]{4,6}$/.test(pin)){alert("El PIN de la estación debe tener entre 4 y 6 números.");return;}const result=await baseSaveStaffMember.apply(this,arguments);const worker=idBefore!==null&&idBefore!==undefined?(staff||[]).find(w=>String(w.id)===String(idBefore)):(staff||[]).slice().reverse().find(w=>w.name===nameBefore);if(worker){if(pin)worker.stationPinHash=await hashPin(pin);worker.pin="";if(typeof window.saveStaff==="function")window.saveStaff();if(typeof window.renderStaff==="function")window.renderStaff();}if(stationModeActive())renderStationWorkers();return result;};
+
+window.__kucheV20BaseShowPage=window.showPage;
+if(typeof window.__kucheV20BaseShowPage==="function")window.showPage=function(pageId,button){if(stationModeActive()){if(!sharedOperator){openStationLock();return false;}const allowed=stationDeviceType()==="kitchen"?"kds":"commandas";if(pageId!==allowed){alert("Este dispositivo está en modo compartido. Para abrir otras secciones, ciérralo con el PIN del administrador.");return false;}}return window.__kucheV20BaseShowPage.apply(this,arguments);};
+
+const baseHandleCloudSessionV20=window.handleCloudSession;
+if(typeof baseHandleCloudSessionV20==="function")window.handleCloudSession=async function(){const result=await baseHandleCloudSessionV20.apply(this,arguments);setTimeout(refreshStationMode,80);return result;};
+const baseLogoutKucheV20=window.logoutKuche;
+if(typeof baseLogoutKucheV20==="function")window.logoutKuche=async function(){sharedOperator=null;selectedStationWorkerId=null;el("kucheStationLock")?.classList.remove("open");document.body.classList.remove("kuche-shared-station-mode");return await baseLogoutKucheV20.apply(this,arguments);};
+
+Object.assign(window,{kucheActivateSharedStation:activateSharedStation,kucheActivateKitchenStation:function(){activateSharedStation("kitchen");},kucheSwitchStationWorker:switchStationWorker,kucheCloseSharedStation:closeSharedStation,kucheRefreshSharedStation:refreshStationMode,kucheStationModeActive:stationModeActive,kucheStationDeviceType:stationDeviceType,kucheStationCurrentOperator:function(){return sharedOperator;},kucheStationOpenLock:openStationLock,kucheStationHashPin:hashPin,kucheStationRenderWorkers:renderStationWorkers});
+function boot(){ensureStationDOM();installStationButton();installStaffPinField();setTimeout(refreshStationMode,150);}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else boot();setTimeout(boot,2500);
+})();
 </script>
 
 <script id="kuche-v19-nested-base-recipes-script">
@@ -21718,5 +21816,49 @@ function boot(){
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 if('requestIdleCallback' in window)requestIdleCallback(normalizeLegacyThemeRules,{timeout:1500});else setTimeout(normalizeLegacyThemeRules,500);
+})();
+</script>
+
+<script id="kuche-v20-final-bindings">
+(function(){
+"use strict";
+function stationActive(){return typeof window.kucheStationModeActive==="function"&&window.kucheStationModeActive();}
+function operator(){return typeof window.kucheStationCurrentOperator==="function"?window.kucheStationCurrentOperator():null;}
+function deviceType(){return typeof window.kucheStationDeviceType==="function"?window.kucheStationDeviceType():"pos";}
+
+var finalRenderPOSOrder=window.renderPOSOrder;
+if(typeof finalRenderPOSOrder==="function")window.renderPOSOrder=function(){
+ var result=finalRenderPOSOrder.apply(this,arguments),order=typeof window.getActivePOSOrder==="function"?window.getActivePOSOrder():null,label=document.getElementById("posOrderWorker"),op=operator();
+ if(order&&label&&stationActive()&&op)label.textContent="Abierta por "+(order.openedByName||order.workerName)+" · Ahora: "+op.workerName;
+ return result;
+};
+
+var finalSaveStaffMember=window.saveStaffMember;
+if(typeof finalSaveStaffMember==="function")window.saveStaffMember=async function(){
+ var idBefore=editingStaffId,nameBefore=document.getElementById("staffName")?.value.trim()||"",pin=document.getElementById("staffPin")?.value.trim()||"";
+ if(pin&&!/^[0-9]{4,6}$/.test(pin)){alert("El PIN de la estación debe tener entre 4 y 6 números.");return;}
+ var result=await finalSaveStaffMember.apply(this,arguments),worker=idBefore!==null&&idBefore!==undefined?(staff||[]).find(function(w){return String(w.id)===String(idBefore);}):(staff||[]).slice().reverse().find(function(w){return w.name===nameBefore;});
+ if(worker){if(pin&&typeof window.kucheStationHashPin==="function")worker.stationPinHash=await window.kucheStationHashPin(pin);worker.pin="";if(typeof window.saveStaff==="function")window.saveStaff();if(typeof window.renderStaff==="function")window.renderStaff();}
+ if(stationActive()&&typeof window.kucheStationRenderWorkers==="function")window.kucheStationRenderWorkers();
+ return result;
+};
+
+var finalShowPage=window.showPage;
+if(typeof finalShowPage==="function")window.showPage=function(pageId,button){
+ if(stationActive()){
+  if(!operator()){window.kucheStationOpenLock?.();return false;}
+  var allowed=deviceType()==="kitchen"?"kds":"commandas";
+  if(pageId!==allowed){alert("Este dispositivo está en modo compartido. Para abrir otras secciones, ciérralo con el PIN del administrador.");return false;}
+ }
+ return finalShowPage.apply(this,arguments);
+};
+
+var finalHandleCloudSession=window.handleCloudSession;
+if(typeof finalHandleCloudSession==="function")window.handleCloudSession=async function(){var result=await finalHandleCloudSession.apply(this,arguments);setTimeout(function(){window.kucheRefreshSharedStation?.();},100);return result;};
+var finalLogoutKuche=window.logoutKuche;
+if(typeof finalLogoutKuche==="function")window.logoutKuche=async function(){document.getElementById("kucheStationLock")?.classList.remove("open");document.body.classList.remove("kuche-shared-station-mode");return await finalLogoutKuche.apply(this,arguments);};
+
+function boot(){window.kucheRefreshSharedStation?.();var version=document.getElementById("systemVersionLabel");if(version)version.textContent="V20.1 · estaciones compartidas";}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(boot,350);},{once:true});else setTimeout(boot,350);setTimeout(boot,3200);
 })();
 </script>
