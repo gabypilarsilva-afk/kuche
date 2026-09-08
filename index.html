@@ -22096,3 +22096,42 @@ function bind(){
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(bind,900),{once:true});else setTimeout(bind,900);setTimeout(bind,4300);
 })();
 </script>
+
+<style id="kuche-v205-base-removal-style">
+.kuche-v205-without-toggle{display:flex;align-items:center;gap:8px;min-height:42px;padding:9px 10px;border:1px solid #d8e3da;border-radius:9px;background:#fff;color:#173f35;font-size:11px;font-weight:700}.kuche-v205-without-toggle input{width:auto}.kuche-v205-without-help{display:block;margin-top:4px;color:var(--muted);font-size:10px;font-weight:400}.kuche-v205-without-option{font-weight:700;color:var(--danger,#a84d43)}
+</style>
+
+<script id="kuche-v205-base-removal-script">
+(function(){
+"use strict";
+function customizableBases(recipe){return (recipe?.baseComponents||[]).filter(c=>c.showToWaiter)}
+function enhanceBaseRow(row,existing=null){if(!row)return;const details=row.querySelector(".kuche-v182-base-options"),grid=details?.querySelector(".kuche-v182-base-options-grid");if(!grid)return;let toggle=row.querySelector(".recipeBaseAllowWithout");if(!toggle){const label=document.createElement("label");label.className="kuche-v205-without-toggle kuche-v182-swap-box";label.innerHTML='<input class="recipeBaseAllowWithout" type="checkbox"><span>Permitir pedir sin esta preparación<small class="kuche-v205-without-help">El garzón podrá quitarla completamente.</small></span>';const waiter=grid.querySelector(".kuche-v182-waiter-toggle");waiter?.insertAdjacentElement("afterend",label);toggle=label.querySelector("input");toggle.addEventListener("change",()=>{if(toggle.checked){const show=row.querySelector(".recipeBaseShowWaiter");if(show&&!show.checked){show.checked=true;show.dispatchEvent(new Event("change",{bubbles:true}))}}});}
+ const show=row.querySelector(".recipeBaseShowWaiter"),label=toggle.closest("label");toggle.checked=!!(existing?.allowWithoutBase||existing?.allow_without_base||existing?.canRemoveBase);label?.classList.toggle("visible",!!show?.checked);if(!show?.dataset.v205Linked){show.dataset.v205Linked="true";show.addEventListener("change",()=>{label?.classList.toggle("visible",show.checked);if(!show.checked)toggle.checked=false})}}
+function enhanceAll(recipe=null){const saved=recipe?.baseComponents||[];document.querySelectorAll("#recipeBaseComponents .recipe-base-row").forEach((row,index)=>enhanceBaseRow(row,saved[index]||null))}
+const priorCollect=window.collectRecipeBaseComponents;
+if(typeof priorCollect==="function")window.collectRecipeBaseComponents=function(){const values=priorCollect.apply(this,arguments)||[],validRows=[...document.querySelectorAll("#recipeBaseComponents .recipe-base-row")].filter(row=>{const id=row.querySelector(".recipeBaseSelect")?.value,qty=Number(row.querySelector(".recipeBaseQty")?.value)||0;return id&&qty>0});values.forEach((item,index)=>{const row=validRows[index],allow=!!row?.querySelector(".recipeBaseAllowWithout")?.checked;item.allowWithoutBase=allow;if(allow)item.showToWaiter=true});return values};
+const priorAddBase=window.addRecipeBaseComponent;
+if(typeof priorAddBase==="function")window.addRecipeBaseComponent=function(existing=null){const out=priorAddBase.apply(this,arguments),row=[...document.querySelectorAll("#recipeBaseComponents .recipe-base-row")].at(-1);enhanceBaseRow(row,existing);return out};
+const priorEdit=window.editRecipe;
+if(typeof priorEdit==="function")window.editRecipe=function(id){const out=priorEdit.apply(this,arguments),recipe=recipes.find(x=>String(x.id)===String(id));enhanceAll(recipe);return out};
+const priorNew=window.newRecipe;
+if(typeof priorNew==="function")window.newRecipe=function(){const out=priorNew.apply(this,arguments);enhanceAll();return out};
+const priorRenderRecipes=window.renderRecipes;
+if(typeof priorRenderRecipes==="function")window.renderRecipes=function(){const out=priorRenderRecipes.apply(this,arguments);enhanceAll(editingRecipeId!=null?recipes.find(x=>String(x.id)===String(editingRecipeId)):null);return out};
+
+function addWithoutOptions(recipe){const components=customizableBases(recipe),selects=[...document.querySelectorAll(".productBaseSwapSelect")];selects.forEach((select,index)=>{select.querySelector('option[value="__without__"]')?.remove();const component=components[index];if(!component?.allowWithoutBase)return;const option=document.createElement("option");option.value="__without__";option.textContent="Pedir SIN "+component.recipeName;option.className="kuche-v205-without-option";select.appendChild(option)})}
+const priorOpen=window.openProductCustomizer;
+if(typeof priorOpen==="function")window.openProductCustomizer=function(recipe,override=false){const out=priorOpen.apply(this,arguments);addWithoutOptions(recipe);return out};
+const priorSelected=window.opsFinalSelectedCustomizer;
+if(typeof priorSelected==="function")window.opsFinalSelectedCustomizer=function(){const selected=priorSelected.apply(this,arguments);if(!selected)return selected;const components=customizableBases(selected.recipe),removals=[...document.querySelectorAll(".productBaseSwapSelect")].map((select,index)=>select.value==="__without__"&&components[index]?.allowWithoutBase?{sourceRecipeId:components[index].recipeId,sourceName:components[index].recipeName,sourceQuantity:Number(components[index].quantity||1),targetType:"remove",targetId:null,targetName:"Sin "+components[index].recipeName,targetQuantity:0,targetUnit:components[index].unit||"porción",removeBase:true}:null).filter(Boolean),existing=(selected.baseSwaps||[]).filter(x=>x.targetType!=="remove");return {...selected,baseSwaps:[...existing,...removals]}};
+const priorSummary=window.updateProductCustomizerSummary;
+if(typeof priorSummary==="function")window.updateProductCustomizerSummary=function(){const out=priorSummary.apply(this,arguments),selected=opsFinalSelectedCustomizer(),removed=(selected?.baseSwaps||[]).filter(x=>x.targetType==="remove");if(removed.length&&document.getElementById("productCustomizerSummary"))productCustomizerSummary.innerHTML+=' · SIN PREPARACIÓN: <strong>'+escapeHTML(removed.map(x=>x.sourceName).join(", "))+'</strong>';return out};
+const priorModifierText=window.opsFinalModifierText;
+if(typeof priorModifierText==="function")window.opsFinalModifierText=function(item){const swaps=item?.modifiers?.baseSwaps||[],clean={...item,modifiers:{...(item?.modifiers||{}),baseSwaps:[]}},base=priorModifierText(clean),changes=swaps.filter(x=>x.targetType!=="remove").map(x=>"CAMBIAR "+x.sourceName+" POR "+x.targetName),removed=swaps.filter(x=>x.targetType==="remove").map(x=>"SIN "+x.sourceName);return [base,...changes,...removed].filter(Boolean).join(" · ")};
+const priorConfirm=window.confirmProductCustomizer;
+if(typeof priorConfirm==="function")window.confirmProductCustomizer=function(){const order=getActivePOSOrder(),selected=opsFinalSelectedCustomizer(),before=new Set((order?.items||[]).map(x=>String(x.id))),out=priorConfirm.apply(this,arguments);if(!order||!selected)return out;const changes=(selected.baseSwaps||[]).filter(x=>x.targetType!=="remove").map(x=>"CAMBIAR "+x.sourceName+" POR "+x.targetName),removed=(selected.baseSwaps||[]).filter(x=>x.targetType==="remove").map(x=>"SIN "+x.sourceName),note=[...changes,...removed,selected.note].filter(Boolean).join(" · ");(order.items||[]).filter(x=>!before.has(String(x.id))&&String(x.recipeId)===String(selected.recipe.id)).forEach(x=>{x.notes=note;if(x.modifiers)x.modifiers.note=selected.note});savePOSOrders();renderPOS();return out};
+
+function boot(){enhanceAll(editingRecipeId!=null?recipes.find(x=>String(x.id)===String(editingRecipeId)):null);const version=document.getElementById("systemVersionLabel");if(version)version.textContent="V20.5 · cambios y retiro de preparaciones base"}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(boot,1100),{once:true});else setTimeout(boot,1100);setTimeout(boot,5000);
+})();
+</script>
