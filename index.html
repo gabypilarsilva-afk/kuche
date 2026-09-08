@@ -12166,6 +12166,8 @@ function printCurrentPOSOrder(station){const order=getActivePOSOrder();if(!order
   <div id="contextInfoText" class="context-info-text"></div>
 </div>
 
+
+<!-- KÜCHE V20.8: corrige proveedor frecuente / Bad Request al editar materia prima -->
 </body></html>`);win.document.close();order.lastPrintedAt=new Date().toISOString();savePOSOrders();setTimeout(()=>{win.focus();win.print();},250);}
 function openPOSPayment(){const order=getActivePOSOrder();if(!order||!order.items.length){alert("La comanda está vacía.");return;}const reg=getActiveCashRegister();if(!reg){alert("Debes abrir una caja antes de cobrar una mesa.");openCashFromPOS();return;}posPaymentPanel.classList.add("open");posDiscount.value=Number(order.discount||0);posTipAmount.value=0;posTipMethod.value="efectivo";payCash.value=getOrderTotal(order);payDebit.value=0;payCredit.value=0;payTransfer.value=0;posPaymentNote.value="";updatePOSPaymentCheck();}
 function closePOSPayment(){document.getElementById("posPaymentPanel")?.classList.remove("open");}
@@ -21212,7 +21214,7 @@ function materialMismatchDetails(row,expected){
  const display=v=>v===undefined?'sin campo':v===null?'vacío':JSON.stringify(v).slice(0,180);
  return Object.entries(expected).filter(([key,value])=>!materialFieldMatches(key,row?.[key],value)).map(([key,value])=>`${labels[key]||key}: enviado ${display(value)}; devuelto ${display(row?.[key])}.`).join('\n');
 }
-async function checked(query){const r=await query;if(r.error)throw Error(r.error.message||'La nube rechazó el cambio.');if(!r.data)throw Error('La nube no confirmó ningún registro. Revisa los permisos de edición.');return r.data;}
+async function checked(query){const r=await query;if(r.error){const detail=[r.error.message,r.error.details,r.error.hint,r.error.code].filter(Boolean).join(' · ');throw Error(detail||'La nube rechazó el cambio.');}if(!r.data)throw Error('La nube no confirmó ningún registro. Revisa los permisos de edición.');return r.data;}
 async function persist({p,target,locked,supplier,settings},org){
  let expected=payload(p,locked),id=p.cloudId;
  if(!id&&target){const found=await checked(kucheCloud.from('inventory_items').select('id').eq('organization_id',org).eq('name',target.name).eq('active',true).single());id=found.id;}
@@ -21227,7 +21229,21 @@ async function persist({p,target,locked,supplier,settings},org){
   if(!matches(row,expected))throw Error('La nube devolvió datos diferentes:\n'+materialMismatchDetails(row,expected)+'\nLos cambios siguen en el formulario.');
  }
  if(supplier){
-  const sid=supplier.cloudId||await ops3EnsureCloudSupplier(supplier);if(!sid)throw Error('No se pudo confirmar el proveedor seleccionado.');p.preferredSupplierCloudId=sid;
+  // Siempre resolver/validar el UUID real del proveedor antes de escribir supplier_item_terms.
+  // Un cloudId local, antiguo o con formato inválido provoca HTTP 400 (Bad Request) en Supabase.
+  let sid=await ops3EnsureCloudSupplier(supplier);
+  if(!sid||!rtIsUUID(sid))throw Error('No se pudo confirmar el proveedor seleccionado en la nube.');
+
+  // Si el UUID guardado quedó obsoleto, comprobar que pertenezca a esta organización y repararlo por nombre.
+  let supplierCheck=await kucheCloud.from('suppliers').select('id').eq('organization_id',org).eq('id',sid).maybeSingle();
+  if(supplierCheck.error)throw Error([supplierCheck.error.message,supplierCheck.error.details,supplierCheck.error.hint,supplierCheck.error.code].filter(Boolean).join(' · ')||'No se pudo validar el proveedor.');
+  if(!supplierCheck.data){
+   supplier.cloudId=null;
+   sid=await ops3EnsureCloudSupplier(supplier);
+   if(!sid||!rtIsUUID(sid))throw Error('El proveedor seleccionado no pudo vincularse correctamente con KÜCHE Cloud.');
+  }
+  supplier.cloudId=sid;
+  p.preferredSupplierCloudId=sid;
  }
  const result=await kucheCloud.from('organization_settings').select('settings').eq('organization_id',org).maybeSingle();if(result.error)throw Error(result.error.message);
  const before=result.data?.settings||{};
@@ -21239,7 +21255,7 @@ async function persist({p,target,locked,supplier,settings},org){
  if(!matches(savedSettings.settings?.inventory_count_settings_v186?.[id],countConfig))throw Error('No se pudo confirmar la configuración del inventario. Vuelve a guardar.');
  const supplierChanged=!target||String(p.preferredSupplierId||'')!==String(target.preferredSupplierId||'')||Number(p.costNet)!==Number(target.costNet);
  if(supplierChanged){
- const reset=await kucheCloud.from('supplier_item_terms').update({preferred:false}).eq('organization_id',org).eq('inventory_item_id',id);if(reset.error)throw Error(reset.error.message);
+ const reset=await kucheCloud.from('supplier_item_terms').update({preferred:false}).eq('organization_id',org).eq('inventory_item_id',id);if(reset.error)throw Error([reset.error.message,reset.error.details,reset.error.hint,reset.error.code].filter(Boolean).join(' · ')||'No se pudo actualizar el proveedor frecuente anterior.');
  if(supplier){await checked(kucheCloud.from('supplier_item_terms').upsert({organization_id:org,supplier_id:p.preferredSupplierCloudId,inventory_item_id:id,purchase_format:p.unit,pack_stock_qty:1,current_price:Number(p.costNet??p.cost??0),minimum_packs:0,preferred:true,active:true,price_updated_at:new Date().toISOString()},{onConflict:'organization_id,supplier_id,inventory_item_id'}).select('id').single());}
  }
  const verified=await checked(kucheCloud.from('inventory_items').select('*').eq('organization_id',org).eq('id',id).single());
@@ -22279,7 +22295,7 @@ const priorDesired=window.opsFinalDesiredPOSConsumptions;if(typeof priorDesired=
 const priorAvailability=window.getRecipeAvailability;if(typeof priorAvailability==="function")window.getRecipeAvailability=function(recipe){const original=priorAvailability.apply(this,arguments);if(original.status!=="out"||!configured(recipe).length)return original;const committed=typeof getOpenCommittedByProduct==="function"?getOpenCommittedByProduct():{};let portions=Infinity;for(const ing of recipe.ingredients||[]){const p=inventory.find(x=>String(x.id)===String(ing.productId));if(!p)continue;const mode=ing.consumptionMode||p.consumptionMode||"exact";if(mode==="count")continue;const need=typeof opsFinalIngredientPurchaseQty==="function"?opsFinalIngredientPurchaseQty(p,Number(ing.quantity||0)/Math.max(.01,Number(recipe.yield)||1),ing.recipeUnit||ing.unit||p.baseUnit):Number(ing.quantity||0)/Math.max(.01,Number(recipe.yield)||1);let possible=need>0?Math.floor(Math.max(0,Number(p.quantity||0)-Number(committed[p.id]||0))/need+1e-9):999;if(ing.showIngredientSwapToWaiter)for(const alt of replacements(ing))possible=Math.max(possible,possibleFor(recipe,alt));portions=Math.min(portions,possible)}if(portions>0&&Number.isFinite(portions))return {status:portions<=3?"low":"ok",portions,details:["Disponible mediante ingrediente alternativo autorizado"]};return original};
 const priorRender=window.renderRecipes;if(typeof priorRender==="function")window.renderRecipes=function(){const out=priorRender.apply(this,arguments);document.querySelectorAll("#recipeList .recipe-card").forEach(card=>{const r=recipes.find(x=>x.name===card.querySelector("h3")?.textContent.trim());card.querySelector(".kuche-v207-card-chip")?.remove();if(!r||!configured(r).length)return;const chip=document.createElement("span");chip.className="kuche-v207-card-chip";chip.textContent=`${configured(r).length} ingrediente(s) con cambio`;card.querySelector(".recipe-card-header>div")?.appendChild(chip)});return out};
 document.getElementById("recipeType")?.addEventListener("change",()=>installAll(editingRecipeId!=null?recipes.find(x=>String(x.id)===String(editingRecipeId)):null));
-function boot(){installAll(editingRecipeId!=null?recipes.find(x=>String(x.id)===String(editingRecipeId)):null);const version=document.getElementById("systemVersionLabel");if(version)version.textContent="V20.7 · cambios de ingredientes autorizados"}
+function boot(){installAll(editingRecipeId!=null?recipes.find(x=>String(x.id)===String(editingRecipeId)):null);const version=document.getElementById("systemVersionLabel");if(version)version.textContent="V20.8 · corrección proveedor frecuente"}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(boot,1500),{once:true});else setTimeout(boot,1500);setTimeout(boot,6000);
 })();
 </script>
