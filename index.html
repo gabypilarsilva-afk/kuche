@@ -16961,6 +16961,76 @@ initializeLogin();
 
 </script>
 
+<style id="kuche-v206-base-portion-style">
+.kuche-v206-portion-box{display:none;grid-column:1/-1;padding:16px;border:1px solid color-mix(in srgb,var(--primary) 25%,#d8e3da);border-radius:13px;background:color-mix(in srgb,var(--primary) 5%,#fff)}
+.kuche-v206-portion-box.visible{display:block}.kuche-v206-portion-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:12px}.kuche-v206-portion-head strong{display:block;color:var(--primary-dark,#173f35);font-size:15px;margin-bottom:3px}
+.kuche-v206-portion-grid{display:grid;grid-template-columns:minmax(150px,1fr) minmax(130px,.7fr) minmax(250px,1.7fr);gap:12px;align-items:end}.kuche-v206-preview{min-height:43px;display:flex;align-items:center;padding:10px 12px;border-radius:9px;background:#fff;border:1px solid color-mix(in srgb,var(--primary) 18%,#e2e8e4);font-size:12px;line-height:1.45;color:#40534c}.kuche-v206-preview strong{color:var(--primary-dark,#173f35)}
+.kuche-v206-portion-note{margin-top:3px;color:var(--primary-dark,#173f35);font-size:10px;font-weight:700}.kuche-v206-card-note{margin-top:6px;padding:7px 9px;border-radius:8px;background:color-mix(in srgb,var(--primary) 7%,#fff);color:var(--primary-dark,#173f35);font-size:11px;font-weight:700}.kuche-v206-base-option{font-weight:700}
+@media(max-width:760px){.kuche-v206-portion-grid{grid-template-columns:1fr 1fr}.kuche-v206-preview{grid-column:1/-1}.kuche-v206-portion-head{display:block}}
+</style>
+
+<script id="kuche-v206-base-portion-script">
+(function(){
+"use strict";
+const isBase=r=>(r?.recipeType||"sale")==="mise";
+const cleanUnit=u=>({l:"L",litro:"L",litros:"L",un:"unidad",u:"unidad",unidades:"unidad"}[String(u||"").trim().toLowerCase()]||String(u||"g"));
+function totalLabel(recipe,qty=null,unit=null){
+ const portions=Math.max(0,Number(recipe?.yield??document.getElementById("recipeYield")?.value)||0),size=Math.max(0,Number(qty??recipe?.portionSizeQty)||0),u=cleanUnit(unit??recipe?.portionSizeUnit);
+ if(!portions||!size)return "Completa el rendimiento y el tamaño para calcular el total elaborado.";
+ const total=portions*size;
+ if(u==="g")return `${formatNumber(portions)} porciones × ${formatNumber(size)} g = ${formatNumber(total/1000)} kg preparados`;
+ if(u==="ml")return `${formatNumber(portions)} porciones × ${formatNumber(size)} ml = ${formatNumber(total/1000)} L preparados`;
+ return `${formatNumber(portions)} porciones × ${formatNumber(size)} ${u} = ${formatNumber(total)} ${u} preparados`;
+}
+function portionText(recipe){const q=Number(recipe?.portionSizeQty)||0,u=cleanUnit(recipe?.portionSizeUnit);return q>0?`1 porción = ${formatNumber(q)} ${u}`:""}
+function installBox(){
+ const grid=document.querySelector("#recipeForm>.recipe-main-grid");if(!grid)return null;
+ let box=document.getElementById("kucheV206BasePortionBox");
+ if(!box){box=document.createElement("div");box.id="kucheV206BasePortionBox";box.className="kuche-v206-portion-box";box.innerHTML='<div class="kuche-v206-portion-head"><div><strong>Rendimiento y tamaño de cada porción</strong><div class="inline-note">Indica cuánto pesa o contiene una porción terminada. Ej.: la receta rinde 20 porciones y cada porción pesa 120 g.</div></div></div><div class="kuche-v206-portion-grid"><div class="field"><label>Una porción equivale a</label><input id="recipeBasePortionSize" type="number" min="0.0001" step="0.0001" placeholder="Ej. 120"></div><div class="field"><label>Unidad</label><select id="recipeBasePortionUnit"><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="L">L</option><option value="unidad">unidad</option></select></div><div id="kucheV206PortionPreview" class="kuche-v206-preview"></div></div>';
+  const yieldField=document.getElementById("recipeYield")?.closest(".field");yieldField?.insertAdjacentElement("afterend",box);if(!box.isConnected)grid.appendChild(box);
+  document.getElementById("recipeBasePortionSize")?.addEventListener("input",preview);document.getElementById("recipeBasePortionUnit")?.addEventListener("change",preview);document.getElementById("recipeYield")?.addEventListener("input",preview);
+ }
+ const old=document.getElementById("kucheV185PortionBox");if(old){const title=old.querySelector(".kuche-v185-portion-head strong"),note=old.querySelector(".inline-note");if(title)title.textContent="Otros formatos de conteo (opcional)";if(note)note.textContent="Úsalo solo si además cuentas formatos distintos, por ejemplo una porción de 3 aros y otra de 10. El peso normal de una porción se informa arriba.";}
+ return box;
+}
+function preview(){const q=Number(document.getElementById("recipeBasePortionSize")?.value)||0,u=document.getElementById("recipeBasePortionUnit")?.value||"g",el=document.getElementById("kucheV206PortionPreview"),cost=typeof getCurrentRecipeCalculation==="function"?Number(getCurrentRecipeCalculation()?.costPerPortion||0):0;if(el)el.innerHTML=`<span><strong>${escapeHTML(totalLabel(null,q,u))}</strong>${cost>0?`<br>Costo calculado por porción: <strong>$${formatMoney(cost)}</strong>`:""}</span>`}
+function setVisibility(recipe=null){const box=installBox(),base=document.getElementById("recipeType")?.value==="mise";box?.classList.toggle("visible",base);if(base&&recipe){const legacy=(recipe.portionFormats||[]).find(f=>["g","kg","ml","L"].includes(cleanUnit(f.unit))&&Number(f.quantity)>0),qty=Number(recipe.portionSizeQty)||(Number(legacy?.quantity)||0),unit=cleanUnit(recipe.portionSizeUnit||legacy?.unit||"g");document.getElementById("recipeBasePortionSize").value=qty||"";document.getElementById("recipeBasePortionUnit").value=unit;document.querySelectorAll("#kucheV185PortionRows .kuche-v185-portion-row").forEach(row=>{const rowQty=Number(row.querySelector(".v185PortionQty")?.value)||0,rowUnit=cleanUnit(row.querySelector(".v185PortionUnit")?.value);if(qty>0&&Math.abs(rowQty-qty)<.0000001&&rowUnit===unit&&["g","kg","ml","L"].includes(rowUnit))row.remove()})}else if(base&&!recipe){document.getElementById("recipeBasePortionSize").value="";document.getElementById("recipeBasePortionUnit").value="g";}preview()}
+function applyMeta(recipe,qty,unit){
+ recipe.portionSizeQty=qty;recipe.portionSizeUnit=unit;recipe.portionLabel=`1 porción = ${formatNumber(qty)} ${unit}`;
+ const p=typeof kucheV17EnsurePreparedProduct==="function"?kucheV17EnsurePreparedProduct(recipe,{useBatchStock:true}):inventory.find(x=>String(x.sourceRecipeId)===String(recipe.id));
+ if(p){p.portionSizeQty=qty;p.portionSizeUnit=unit;p.portionLabel=recipe.portionLabel;p.unit="porción";p.baseUnit="porción";}
+ saveRecipes();saveInventory();return p;
+}
+async function syncMeta(p){
+ if(!p||!kucheCloud||!cloudOrganization)return true;
+ try{const cloudId=p.cloudId||(typeof ops3EnsureCloudInventoryItem==="function"?await ops3EnsureCloudInventoryItem(p,{allowInitialMigration:false}):null);if(!cloudId)return false;const result=await kucheCloud.from("organization_settings").select("settings").eq("organization_id",cloudOrganization.id).maybeSingle();if(result.error)throw result.error;const before=result.data?.settings||{},counts={...(before.inventory_count_settings_v186||{})},current=counts[cloudId]||{};counts[cloudId]={...current,portionSizeQty:Number(p.portionSizeQty)||0,portionSizeUnit:p.portionSizeUnit||"g",portionLabel:p.portionLabel||""};const settings={...before,inventory_count_settings_v186:counts};const saved=result.data?await kucheCloud.from("organization_settings").update({settings}).eq("organization_id",cloudOrganization.id):await kucheCloud.from("organization_settings").insert({organization_id:cloudOrganization.id,settings});if(saved.error)throw saved.error;return true}catch(e){console.warn("Tamaño de porción",e.message);return false}
+}
+async function loadMeta(){
+ if(!kucheCloud||!cloudOrganization)return;
+ try{const {data,error}=await kucheCloud.from("organization_settings").select("settings").eq("organization_id",cloudOrganization.id).maybeSingle();if(error)throw error;const counts=data?.settings?.inventory_count_settings_v186||{};let changed=false;inventory.forEach(p=>{const c=counts[p.cloudId];if(!c||!(Number(c.portionSizeQty)>0))return;p.portionSizeQty=Number(c.portionSizeQty);p.portionSizeUnit=cleanUnit(c.portionSizeUnit);p.portionLabel=c.portionLabel||`1 porción = ${formatNumber(p.portionSizeQty)} ${p.portionSizeUnit}`;const r=recipes.find(x=>String(x.id)===String(p.sourceRecipeId));if(r){r.portionSizeQty=p.portionSizeQty;r.portionSizeUnit=p.portionSizeUnit;r.portionLabel=p.portionLabel}changed=true});if(changed){saveInventory();saveRecipes()}}catch(e){console.warn("Lectura tamaño de porción",e.message)}
+}
+function decorateRecipes(){document.querySelectorAll("#recipeList .recipe-card").forEach(card=>{const name=card.querySelector("h3")?.textContent.trim(),r=recipes.find(x=>x.name===name);card.querySelector(".kuche-v206-card-note")?.remove();if(!isBase(r)||!portionText(r))return;const note=document.createElement("div");note.className="kuche-v206-card-note";note.textContent=`Rinde ${formatNumber(r.yield||0)} porciones · ${portionText(r)} · ${totalLabel(r)}`;card.querySelector(".recipe-card-header")?.insertAdjacentElement("afterend",note)})}
+function decorateBook(){document.querySelectorAll("#recipeBookList .recipe-guide-card").forEach(card=>{const name=card.querySelector("h3")?.textContent.trim(),r=recipes.find(x=>x.name===name);card.querySelector(".kuche-v206-card-note")?.remove();if(!isBase(r)||!portionText(r))return;const note=document.createElement("div");note.className="kuche-v206-card-note";note.textContent=`${portionText(r)} · ${totalLabel(r)}`;card.querySelector(".role-note")?.insertAdjacentElement("afterend",note)})}
+function decorateCount(){document.querySelectorAll("#v17DailyLines .count-line").forEach(row=>{const id=row.querySelector("[data-product]")?.dataset.product,p=inventory.find(x=>String(x.id)===String(id));row.querySelector(".kuche-v206-portion-note")?.remove();if(!p||!(Number(p.portionSizeQty)>0))return;const note=document.createElement("div");note.className="kuche-v206-portion-note";note.textContent=`Conteo en porciones · ${p.portionLabel||`1 porción = ${formatNumber(p.portionSizeQty)} ${p.portionSizeUnit}`}`;row.firstElementChild?.appendChild(note)})}
+function decorateBaseOptions(row){row?.querySelectorAll(".recipeBaseSelect option").forEach(o=>{if(!o.value)return;const r=recipes.find(x=>String(x.id)===String(o.value)),label=portionText(r);if(r&&label&&!o.dataset.v206){o.textContent+=` · ${label}`;o.dataset.v206="true";o.classList.add("kuche-v206-base-option")}})}
+const priorNew=window.newRecipe;if(false)window.newRecipe=function(){const out=priorNew.apply(this,arguments);setVisibility();return out};
+const priorEdit=window.editRecipe;if(false)window.editRecipe=function(id){const out=priorEdit.apply(this,arguments),r=recipes.find(x=>String(x.id)===String(id));setVisibility(r);return out};
+const priorAdd=window.addRecipeBaseComponent;if(false&&typeof priorAdd==="function")window.addRecipeBaseComponent=function(){const out=priorAdd.apply(this,arguments);decorateBaseOptions([...document.querySelectorAll("#recipeBaseComponents .recipe-base-row")].at(-1));return out};
+const priorSave=window.saveRecipe;if(false)window.saveRecipe=async function(){
+ const base=document.getElementById("recipeType")?.value==="mise",qty=Number(document.getElementById("recipeBasePortionSize")?.value)||0,unit=cleanUnit(document.getElementById("recipeBasePortionUnit")?.value||"g"),id=editingRecipeId,name=document.getElementById("recipeName")?.value.trim(),yieldQty=Number(document.getElementById("recipeYield")?.value)||0;
+ if(base&&qty<=0){alert("Indica a cuánto equivale una porción de esta receta base. Ej.: 120 g.");document.getElementById("recipeBasePortionSize")?.focus();return}
+ await priorSave.apply(this,arguments);if(!base||document.getElementById("recipeForm")?.classList.contains("open"))return;const r=id!==null?recipes.find(x=>String(x.id)===String(id)):recipes.find(x=>String(x.name||"").trim().toLowerCase()===String(name||"").trim().toLowerCase());if(!r||Math.abs(Number(r.yield||0)-yieldQty)>.000001)return;const p=applyMeta(r,qty,unit);await syncMeta(p);renderRecipes();if(typeof renderRecipeBook==="function")renderRecipeBook();if(typeof kucheV171RenderCountPage==="function")kucheV171RenderCountPage("daily");
+ };
+const priorRender=window.renderRecipes;if(false)window.renderRecipes=function(){const out=priorRender.apply(this,arguments);decorateRecipes();return out};
+const priorBook=window.renderRecipeBook;if(false&&typeof priorBook==="function")window.renderRecipeBook=function(){const out=priorBook.apply(this,arguments);decorateBook();return out};
+const priorCount=window.kucheV171RenderCountPage;if(false&&typeof priorCount==="function")window.kucheV171RenderCountPage=function(){const out=priorCount.apply(this,arguments);if(arguments[0]==="daily")decorateCount();return out};
+const priorCloud=window.handleCloudSession;if(false&&typeof priorCloud==="function")window.handleCloudSession=async function(){const out=await priorCloud.apply(this,arguments);await loadMeta();renderRecipes();renderRecipeBook?.();kucheV171RenderCountPage?.("daily");return out};
+document.getElementById("recipeType")?.addEventListener("change",()=>setVisibility());
+function boot(){installBox();setVisibility(editingRecipeId!=null?recipes.find(x=>String(x.id)===String(editingRecipeId)):null);decorateRecipes();decorateBook();decorateCount();const version=document.getElementById("systemVersionLabel");if(version)version.textContent="V20.6 · rendimiento y tamaño de porción"}
+Object.assign(window,{kucheV206PortionPreview:preview,kucheV206TotalLabel:totalLabel,__kucheV206:{installBox,setVisibility,applyMeta,syncMeta,loadMeta,decorateRecipes,decorateBook,decorateCount,decorateBaseOptions,portionText,cleanUnit}});if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(boot,1200),{once:true});else setTimeout(boot,1200);setTimeout(boot,5200);
+})();
+</script>
+
 <style id="kuche-v204-platform-orders-style">
 .platform-order-launch{margin:16px 0;padding:18px;background:linear-gradient(135deg,var(--green-soft,#eef6f0),#fff);border:1px solid var(--border);border-radius:14px}.platform-order-launch h2{font-size:15px;color:var(--green-dark);margin:0 0 4px}.platform-order-launch p{font-size:11px;color:var(--muted);margin:0 0 13px}.platform-order-fields{display:grid;grid-template-columns:minmax(180px,1fr) minmax(150px,.7fr) minmax(160px,.8fr) auto;gap:10px;align-items:end}.platform-open-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}.platform-open-card{padding:12px;border:1px solid var(--border);border-radius:11px;background:#fff;text-align:left;cursor:pointer}.platform-open-card.selected{border-color:var(--green);box-shadow:0 0 0 2px color-mix(in srgb,var(--green) 18%,transparent)}.platform-open-card strong,.platform-open-card span{display:block}.platform-open-card span{font-size:10px;color:var(--muted);margin-top:4px}.platform-price-badge{display:inline-flex;margin-top:5px;padding:3px 7px;border-radius:999px;background:var(--blue-soft,#eaf1fb);color:var(--blue,#345a91);font-size:9px;font-weight:800}.platform-order-summary{margin:10px 0;padding:10px 12px;border-radius:9px;background:var(--blue-soft,#eef4fb);font-size:11px;line-height:1.55}.platform-manager-grid{display:grid;grid-template-columns:340px minmax(0,1fr);gap:16px}.platform-config-card,.platform-report-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px}.platform-config-row{display:grid;grid-template-columns:1fr 72px 72px auto;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:11px}.platform-config-row:last-child{border-bottom:0}.platform-config-row small{display:block;color:var(--muted);margin-top:3px}.platform-price-table input{width:120px;min-width:90px}.platform-result-positive{color:var(--success,#27805d)}.platform-result-negative{color:var(--danger,#b84343)}.platform-month-toolbar{display:flex;align-items:end;gap:10px;flex-wrap:wrap;margin-bottom:14px}.platform-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:14px}.platform-kpi{padding:13px;border:1px solid var(--border);border-radius:11px;background:#fff}.platform-kpi span{display:block;color:var(--muted);font-size:10px;margin-bottom:5px}.platform-kpi strong{font-size:17px;color:var(--green-dark)}
 @media(max-width:1050px){.platform-order-fields{grid-template-columns:1fr 1fr}.platform-open-list{grid-template-columns:repeat(2,minmax(0,1fr))}.platform-manager-grid{grid-template-columns:1fr}.platform-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -22133,5 +22203,30 @@ if(typeof priorConfirm==="function")window.confirmProductCustomizer=function(){c
 
 function boot(){enhanceAll(editingRecipeId!=null?recipes.find(x=>String(x.id)===String(editingRecipeId)):null);const version=document.getElementById("systemVersionLabel");if(version)version.textContent="V20.5 · cambios y retiro de preparaciones base"}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(boot,1100),{once:true});else setTimeout(boot,1100);setTimeout(boot,5000);
+})();
+</script>
+
+<script id="kuche-v206-final-bindings">
+(function(){
+"use strict";
+function bind(){
+ const api=window.__kucheV206;if(!api||window.__kucheV206Bound)return;window.__kucheV206Bound=true;
+ const newFinal=window.newRecipe;if(typeof newFinal==="function")window.newRecipe=function(){const out=newFinal.apply(this,arguments);api.setVisibility();return out};
+ const editFinal=window.editRecipe;if(typeof editFinal==="function")window.editRecipe=function(id){const out=editFinal.apply(this,arguments),r=recipes.find(x=>String(x.id)===String(id));api.setVisibility(r);return out};
+ const addFinal=window.addRecipeBaseComponent;if(typeof addFinal==="function")window.addRecipeBaseComponent=function(){const out=addFinal.apply(this,arguments);api.decorateBaseOptions([...document.querySelectorAll("#recipeBaseComponents .recipe-base-row")].at(-1));return out};
+ const saveFinal=window.saveRecipe;if(typeof saveFinal==="function")window.saveRecipe=async function(){
+  const base=document.getElementById("recipeType")?.value==="mise",qty=Number(document.getElementById("recipeBasePortionSize")?.value)||0,unit=api.cleanUnit(document.getElementById("recipeBasePortionUnit")?.value||"g"),id=editingRecipeId,name=document.getElementById("recipeName")?.value.trim(),yieldQty=Number(document.getElementById("recipeYield")?.value)||0;
+  if(base&&qty<=0){alert("Indica a cuánto equivale una porción de esta receta base. Ej.: 120 g.");document.getElementById("recipeBasePortionSize")?.focus();return}
+  await saveFinal.apply(this,arguments);if(!base||document.getElementById("recipeForm")?.classList.contains("open"))return;
+  const r=id!==null?recipes.find(x=>String(x.id)===String(id)):recipes.find(x=>String(x.name||"").trim().toLowerCase()===String(name||"").trim().toLowerCase());if(!r||Math.abs(Number(r.yield||0)-yieldQty)>.000001)return;
+  const p=api.applyMeta(r,qty,unit);await api.syncMeta(p);renderRecipes();if(typeof renderRecipeBook==="function")renderRecipeBook();if(typeof kucheV171RenderCountPage==="function")kucheV171RenderCountPage("daily");
+ };
+ const renderFinal=window.renderRecipes;if(typeof renderFinal==="function")window.renderRecipes=function(){const out=renderFinal.apply(this,arguments);api.decorateRecipes();return out};
+ const bookFinal=window.renderRecipeBook;if(typeof bookFinal==="function")window.renderRecipeBook=function(){const out=bookFinal.apply(this,arguments);api.decorateBook();return out};
+ const countFinal=window.kucheV171RenderCountPage;if(typeof countFinal==="function")window.kucheV171RenderCountPage=function(){const out=countFinal.apply(this,arguments);if(arguments[0]==="daily")api.decorateCount();return out};
+ const cloudFinal=window.handleCloudSession;if(typeof cloudFinal==="function")window.handleCloudSession=async function(){const out=await cloudFinal.apply(this,arguments);await api.loadMeta();renderRecipes?.();renderRecipeBook?.();kucheV171RenderCountPage?.("daily");return out};
+ api.installBox();api.setVisibility(editingRecipeId!=null?recipes.find(x=>String(x.id)===String(editingRecipeId)):null);api.decorateRecipes();api.decorateBook();api.decorateCount();const version=document.getElementById("systemVersionLabel");if(version)version.textContent="V20.6 · rendimiento y tamaño de porción";
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(bind,1400),{once:true});else setTimeout(bind,1400);setTimeout(bind,5600);
 })();
 </script>
