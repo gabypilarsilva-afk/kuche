@@ -21152,7 +21152,7 @@ install();
 </script>
 
 <style id="kuche-verified-save-style">#recipeForm{scroll-margin-top:90px}#kucheMaterialSaveStatus{margin-top:14px;white-space:pre-line}</style>
-<script id="kuche-verified-material-save">
+<script id="kuche-verified-material-save" data-fix="20.8.2">
 (function(){
 'use strict';
 const $=id=>document.getElementById(id),clone=v=>JSON.parse(JSON.stringify(v));
@@ -21214,19 +21214,49 @@ function materialMismatchDetails(row,expected){
  const display=v=>v===undefined?'sin campo':v===null?'vacío':JSON.stringify(v).slice(0,180);
  return Object.entries(expected).filter(([key,value])=>!materialFieldMatches(key,row?.[key],value)).map(([key,value])=>`${labels[key]||key}: enviado ${display(value)}; devuelto ${display(row?.[key])}.`).join('\n');
 }
-async function checked(query){const r=await query;if(r.error){const detail=[r.error.message,r.error.details,r.error.hint,r.error.code].filter(Boolean).join(' · ');throw Error(detail||'La nube rechazó el cambio.');}if(!r.data)throw Error('La nube no confirmó ningún registro. Revisa los permisos de edición.');return r.data;}
+function kucheCloudErrorDetail(error){
+ const parts=[error?.message,error?.details,error?.hint,error?.code,error?.statusText,error?.status?('HTTP '+error.status):null].filter(Boolean).map(String);
+ return [...new Set(parts)].join(' · ')||'La nube rechazó el cambio.';
+}
+async function checked(query,context='La nube'){const r=await query;if(r.error)throw Error(context+': '+kucheCloudErrorDetail(r.error));if(!r.data)throw Error(context+': la nube no confirmó ningún registro. Revisa los permisos de edición.');return r.data;}
 async function persist({p,target,locked,supplier,settings},org){
  let expected=payload(p,locked),id=p.cloudId;
- if(!id&&target){const found=await checked(kucheCloud.from('inventory_items').select('id').eq('organization_id',org).eq('name',target.name).eq('active',true).single());id=found.id;}
+ if(!id&&target){const found=await checked(kucheCloud.from('inventory_items').select('id').eq('organization_id',org).eq('name',target.name).eq('active',true).single(),'Materia prima · localizar registro');id=found.id;}
  if(!id){
   id=crypto.randomUUID();p.cloudId=id;
-  const saved=await kucheWriteInventoryCompatible(body=>kucheCloud.from('inventory_items').insert({...body,id,organization_id:org,quantity:0,active:true}).select('*').single(),expected);expected=saved.expected;
+  try{
+   const saved=await kucheWriteInventoryCompatible(body=>kucheCloud.from('inventory_items').insert({...body,id,organization_id:org,quantity:0,active:true}).select('*').single(),expected);expected=saved.expected;
+  }catch(error){throw Error('Materia prima · crear registro: '+kucheCloudErrorDetail(error));}
   // A later settings failure must retry this same row, never insert a duplicate.
   newCloudId=id;
  }else{
   p.cloudId=id;
-  const saved=await kucheWriteInventoryCompatible(body=>kucheCloud.from('inventory_items').update(body).eq('id',id).eq('organization_id',org).eq('active',true).select('*').single(),expected);expected=saved.expected;const row=saved.row;
-  if(!matches(row,expected))throw Error('La nube devolvió datos diferentes:\n'+materialMismatchDetails(row,expected)+'\nLos cambios siguen en el formulario.');
+  /*
+     20.8.2: al editar una materia prima existente no reenviamos a ciegas
+     todo el payload. Primero leemos la fila real y solo escribimos columnas
+     que existen y cuyo valor cambió. Esto evita que un campo legado/no
+     compatible provoque HTTP 400 al cambiar solamente el proveedor.
+  */
+  const current=await checked(
+   kucheCloud.from('inventory_items').select('*').eq('id',id).eq('organization_id',org).eq('active',true).single(),
+   'Materia prima · lectura previa'
+  );
+  const supportedExpected={};
+  Object.entries(expected).forEach(([key,value])=>{
+   if(Object.prototype.hasOwnProperty.call(current,key))supportedExpected[key]=value;
+  });
+  const updateBody={};
+  Object.entries(supportedExpected).forEach(([key,value])=>{
+   if(!materialFieldMatches(key,current[key],value))updateBody[key]=value;
+  });
+  if(Object.keys(updateBody).length){
+   const row=await checked(
+    kucheCloud.from('inventory_items').update(updateBody).eq('id',id).eq('organization_id',org).eq('active',true).select('*').single(),
+    'Materia prima · actualizar datos'
+   );
+   if(!matches(row,supportedExpected))throw Error('La nube devolvió datos diferentes:\n'+materialMismatchDetails(row,supportedExpected)+'\nLos cambios siguen en el formulario.');
+  }
+  expected=supportedExpected;
  }
  if(supplier){
   // Siempre resolver/validar el UUID real del proveedor antes de escribir supplier_item_terms.
@@ -21245,20 +21275,38 @@ async function persist({p,target,locked,supplier,settings},org){
   supplier.cloudId=sid;
   p.preferredSupplierCloudId=sid;
  }
- const result=await kucheCloud.from('organization_settings').select('settings').eq('organization_id',org).maybeSingle();if(result.error)throw Error(result.error.message);
+ const result=await kucheCloud.from('organization_settings').select('settings').eq('organization_id',org).maybeSingle();if(result.error)throw Error('Configuración de inventario · lectura: '+kucheCloudErrorDetail(result.error));
  const before=result.data?.settings||{};
- const countConfig={...before.inventory_count_settings_v186?.[id],...kucheInventoryClassification(p),weeklyInventoryEnabled:p.weeklyInventoryEnabled===true,inventoryCountMode:p.inventoryCountMode,portionFormats:p.portionFormats||[],primaryArea:p.primaryArea};
+ const previousCountConfig=before.inventory_count_settings_v186?.[id]||{};
+ const countConfig={...previousCountConfig,...kucheInventoryClassification(p),weeklyInventoryEnabled:p.weeklyInventoryEnabled===true,inventoryCountMode:p.inventoryCountMode,portionFormats:p.portionFormats||[],primaryArea:p.primaryArea};
  const next={...before,inventory_count_settings_v186:{...(before.inventory_count_settings_v186||{}),[id]:countConfig}};
- let query=result.data?kucheCloud.from('organization_settings').update({settings:next}).eq('organization_id',org):kucheCloud.from('organization_settings').insert({organization_id:org,settings:next});
- if(result.data?.settings)query=query.eq('settings',JSON.stringify(before));
- const savedSettings=await checked(query.select('settings').single());
- if(!matches(savedSettings.settings?.inventory_count_settings_v186?.[id],countConfig))throw Error('No se pudo confirmar la configuración del inventario. Vuelve a guardar.');
+ /* Si esta configuración no cambió, no hacemos una escritura innecesaria. */
+ if(JSON.stringify(canonical(previousCountConfig))!==JSON.stringify(canonical(countConfig))){
+  let query=result.data?kucheCloud.from('organization_settings').update({settings:next}).eq('organization_id',org):kucheCloud.from('organization_settings').insert({organization_id:org,settings:next});
+  const savedSettings=await checked(query.select('settings').single(),'Configuración de inventario');
+  if(!matches(savedSettings.settings?.inventory_count_settings_v186?.[id],countConfig))throw Error('No se pudo confirmar la configuración del inventario. Vuelve a guardar.');
+ }
  const supplierChanged=!target||String(p.preferredSupplierId||'')!==String(target.preferredSupplierId||'')||Number(p.costNet)!==Number(target.costNet);
  if(supplierChanged){
- const reset=await kucheCloud.from('supplier_item_terms').update({preferred:false}).eq('organization_id',org).eq('inventory_item_id',id);if(reset.error)throw Error([reset.error.message,reset.error.details,reset.error.hint,reset.error.code].filter(Boolean).join(' · ')||'No se pudo actualizar el proveedor frecuente anterior.');
- if(supplier){await checked(kucheCloud.from('supplier_item_terms').upsert({organization_id:org,supplier_id:p.preferredSupplierCloudId,inventory_item_id:id,purchase_format:p.unit,pack_stock_qty:1,current_price:Number(p.costNet??p.cost??0),minimum_packs:0,preferred:true,active:true,price_updated_at:new Date().toISOString()},{onConflict:'organization_id,supplier_id,inventory_item_id'}).select('id').single());}
+  // Conservar historial y dejar solamente un proveedor frecuente para esta materia prima.
+  // No usamos UPSERT con onConflict: si la base aún no tiene la restricción UNIQUE esperada,
+  // PostgREST responde 400. Primero buscamos el vínculo y luego actualizamos o insertamos.
+  const reset=await kucheCloud.from('supplier_item_terms').update({preferred:false}).eq('organization_id',org).eq('inventory_item_id',id);
+  if(reset.error)throw Error('Proveedor frecuente · desmarcar anterior: '+kucheCloudErrorDetail(reset.error));
+  if(supplier){
+   const sid=p.preferredSupplierCloudId;
+   if(!rtIsUUID(id)||!rtIsUUID(sid))throw Error('Proveedor frecuente: KÜCHE no obtuvo identificadores UUID válidos para la materia prima y el proveedor.');
+   const lookup=await kucheCloud.from('supplier_item_terms').select('id').eq('organization_id',org).eq('supplier_id',sid).eq('inventory_item_id',id).limit(1);
+   if(lookup.error)throw Error('Proveedor frecuente · buscar vínculo: '+kucheCloudErrorDetail(lookup.error));
+   const termBody={purchase_format:p.unit,pack_stock_qty:1,current_price:Number(p.costNet??p.cost??0),minimum_packs:0,preferred:true,active:true,price_updated_at:new Date().toISOString()};
+   if(lookup.data?.length){
+    await checked(kucheCloud.from('supplier_item_terms').update(termBody).eq('id',lookup.data[0].id).eq('organization_id',org).select('id').single(),'Proveedor frecuente · actualizar vínculo');
+   }else{
+    await checked(kucheCloud.from('supplier_item_terms').insert({organization_id:org,supplier_id:sid,inventory_item_id:id,...termBody}).select('id').single(),'Proveedor frecuente · crear vínculo');
+   }
+  }
  }
- const verified=await checked(kucheCloud.from('inventory_items').select('*').eq('organization_id',org).eq('id',id).single());
+ const verified=await checked(kucheCloud.from('inventory_items').select('*').eq('organization_id',org).eq('id',id).single(),'Materia prima · verificación final');
  if(!matches(verified,expected))throw Error('La materia prima cambió durante el guardado:\n'+materialMismatchDetails(verified,expected)+'\nLos cambios siguen en el formulario.');
  return verified;
 }
