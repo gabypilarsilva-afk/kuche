@@ -16995,17 +16995,17 @@ window.kucheRenderSimpleInventory=render;
 window.kucheOpenSimpleInventory=function(section){current=labels[section]?section:"general";ensurePage();window.showPage("simpleinventory",null);render();};
 window.kucheNewSimpleInventoryItem=function(){if(typeof window.kucheV171OpenNewCatalogItem==="function")window.kucheV171OpenNewCatalogItem("ingredient");else window.newProduct?.();};
 window.kucheEditSimpleInventoryItem=function(id){if(typeof window.kucheV171OpenEditCatalogItem==="function")window.kucheV171OpenEditCatalogItem(id);else window.editProduct?.(id);};
-function navButton(key){const button=document.createElement("button");button.className="nav-item";button.dataset.simpleInventory=key;button.innerHTML="<span>"+labels[key]+"</span>";button.onclick=()=>window.kucheOpenSimpleInventory(key);return button;}
+function navButton(key){const button=document.createElement("button");button.className="nav-item";button.dataset.simpleInventory=key;button.dataset.simpleInventoryGenerated="true";button.innerHTML="<span>"+labels[key]+"</span>";button.onclick=()=>window.kucheOpenSimpleInventory(key);return button;}
 function repairNav(){
  ensurePage();const nav=document.querySelector(".sidebar .nav");if(!nav)return;
- document.querySelectorAll(".nav-item[data-simple-inventory]").forEach(button=>button.remove());
+ document.querySelectorAll(".nav-item[data-simple-inventory-generated]").forEach(button=>button.remove());
  const targets={ingredients:"general",dailyinventory:"cocina",weeklyinventory:"bebestibles"};
  Object.entries(targets).forEach(([page,key])=>{const button=[...nav.querySelectorAll(".nav-item")].find(item=>(item.getAttribute("onclick")||"").includes("'"+page+"'"));if(button){button.dataset.simpleInventory=key;button.innerHTML="<span>"+labels[key]+"</span>";button.removeAttribute("onclick");button.onclick=()=>window.kucheOpenSimpleInventory(key);}});
  const anchor=[...nav.querySelectorAll(".nav-item")].find(button=>button.dataset.simpleInventory==="bebestibles");if(anchor)anchor.after(navButton("aseoyotros"));
  const oldArea=[...nav.querySelectorAll(".nav-item")].find(button=>(button.getAttribute("onclick")||"").includes("'inventoryareas'"));if(oldArea)oldArea.hidden=true;
  }
 function bind(){repairNav();const previousShow=window.showPage;if(typeof previousShow==="function"&&!window.__simpleInventoryShow){window.__simpleInventoryShow=true;window.showPage=function(page,button){if(page==="simpleinventory")ensurePage();const out=previousShow.apply(this,arguments);if(page==="simpleinventory")render();return out;};}}
-setTimeout(bind,16000);setTimeout(repairNav,19000);
+setTimeout(bind,800);setTimeout(repairNav,1800);
 })();
 </script>
 <script id="kuche-agenda-route-fix">
