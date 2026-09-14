@@ -16962,6 +16962,188 @@ normalizeKDSData();
 initializeLogin();
 
 </script>
+<style id="kuche-agreement-products-style">
+.agreement-product-rules{margin-top:12px;padding:12px;border:1px solid var(--border,#dfe4df);border-radius:10px;background:#fafcfb}.agreement-product-rules summary{cursor:pointer;color:var(--green-dark,#173f35);font-size:12px;font-weight:800}.agreement-product-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:7px;margin-top:10px;max-height:210px;overflow:auto}.agreement-product-list label{display:flex;align-items:center;gap:6px;padding:7px;border:1px solid var(--border,#dfe4df);border-radius:7px;background:#fff;font-size:11px}.agreement-product-list input{width:auto}.agreement-rule-note{margin-top:8px;color:var(--muted,#6e7772);font-size:11px;line-height:1.4}
+</style>
+<script id="kuche-agreement-products-script">
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+function installProductRule(){
+ const form=$("agreementFormPanel");if(!form||$("agreementProductRule"))return;
+ const promotions=$("agreementAllowPromotions")?.closest(".field");if(!promotions)return;
+ const box=document.createElement("details");box.id="agreementProductRule";box.className="agreement-product-rules";box.innerHTML='<summary>Restringir descuento a productos seleccionados</summary><div class="agreement-rule-note">Si no marcas productos, el convenio aplica al total de la comanda. Si marcas productos, la compra mínima se calcula sobre el total de la comanda, pero el descuento se calcula solo sobre esos productos.</div><div id="agreementAllowedProducts" class="agreement-product-list"></div>';
+ promotions.after(box);
+}
+function renderProductChoices(selected=[]){
+ const list=$("agreementAllowedProducts");if(!list)return;const choices=(recipes||[]).filter(recipe=>(recipe.recipeType||"sale")!=="mise").sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"es"));list.innerHTML=choices.length?choices.map(recipe=>'<label><input type="checkbox" value="'+escapeHTML(recipe.id)+'" '+(selected.some(id=>String(id)===String(recipe.id))?"checked":"")+'> '+escapeHTML(recipe.name)+(recipe.variantLabel?" · "+escapeHTML(recipe.variantLabel):"")+'</label>').join(""):'<span class="inline-note">Primero crea productos de venta en Recetas.</span>';
+}
+function selectedProducts(){return [...document.querySelectorAll("#agreementAllowedProducts input:checked")].map(input=>input.value);}
+function eligibleSubtotal(order,ids){return (order?.items||[]).filter(item=>!item.promotionComponent&&!item.commercialOnly&&ids.some(id=>String(id)===String(item.recipeId))).reduce((sum,item)=>sum+Number(item.quantity||0)*Number(item.unitPrice||0),0);}
+function bind(){
+ if(window.__kucheAgreementProductsBound)return;window.__kucheAgreementProductsBound=true;installProductRule();
+ const open=window.openAgreementForm;window.openAgreementForm=function(id=null){const result=open.apply(this,arguments),agreement=id?discountAgreements.find(item=>String(item.id)===String(id)):null;installProductRule();renderProductChoices(agreement?.allowedRecipeIds||[]);const box=$("agreementProductRule");if(box)box.open=!!(agreement?.allowedRecipeIds||[]).length;return result;};
+ const save=window.saveAgreement;window.saveAgreement=async function(){const code=$("agreementCode")?.value.trim().toUpperCase(),allowed=selectedProducts(),result=await save.apply(this,arguments);const agreement=discountAgreements.find(item=>item.code===code);if(agreement){agreement.allowedRecipeIds=allowed;agreement.updatedAt=new Date().toISOString();saveCommercialLocal();renderAgreements();}return result;};
+ const check=window.checkAgreement;window.checkAgreement=async function(code,subtotal,order){const agreement=discountAgreements.find(item=>item.active!==false&&item.code===String(code||"").trim().toUpperCase()),allowed=agreement?.allowedRecipeIds||[];const result=await check.apply(this,arguments);if(!result.valid||!allowed.length)return result;const eligible=eligibleSubtotal(order,allowed);if(eligible<=0)return {valid:false,reason:"Este descuento solo aplica a productos seleccionados que no están en la comanda."};let amount=agreement.discountType==="percent"?eligible*Number(agreement.discountValue||0)/100:Number(agreement.discountValue||0);if(Number(agreement.maxDiscount||0)>0)amount=Math.min(amount,Number(agreement.maxDiscount));return {...result,discountAmount:Math.max(0,Math.min(eligible,Math.round(amount))),eligibleSubtotal:eligible};};
+ const render=window.renderAgreements;window.renderAgreements=function(){const result=render.apply(this,arguments);document.querySelectorAll(".agreement-card").forEach(card=>{const code=card.querySelector(".agreement-code")?.textContent.trim(),agreement=discountAgreements.find(item=>item.code===code),grid=card.querySelector(".agreement-card-grid");if(!agreement||!grid||card.querySelector(".agreement-products-summary"))return;const note=document.createElement("div");note.className="agreement-card-metric agreement-products-summary";note.innerHTML='<span>Productos autorizados</span><strong>'+((agreement.allowedRecipeIds||[]).length?String((agreement.allowedRecipeIds||[]).length):"Todos")+'</strong>';grid.appendChild(note);});return result;};
+ renderProductChoices([]);
+ }
+ setTimeout(bind,10000);
+})();
+</script>
+<style id="kuche-recipe-variants-style">
+.recipe-variant-box{grid-column:1/-1;padding:13px 14px;border:1px solid #cbdccf;border-radius:12px;background:#f7fbf8}
+.recipe-variant-box>label{display:flex;align-items:center;gap:8px;color:var(--green-dark,#173f35);font-size:13px;font-weight:800}.recipe-variant-box input[type="checkbox"]{width:auto}
+.recipe-variant-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:11px}.recipe-variant-help{margin-top:8px;color:var(--muted,#6e7772);font-size:11px;line-height:1.45}
+.recipe-variant-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}.pos-variant-options{display:grid;gap:7px;margin-top:10px}.pos-variant-option{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px;border:1px solid var(--border,#dfe4df);border-radius:8px;background:#fafcfb}.pos-variant-option strong{font-size:12px}.pos-variant-option button{padding:6px 9px;font-size:11px}
+@media(max-width:760px){.recipe-variant-fields{grid-template-columns:1fr}.pos-variant-option{align-items:flex-start;flex-direction:column}}
+</style>
+<script id="kuche-recipe-variants-script">
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+function formBox(){
+ const form=$("recipeForm"),grid=form?.querySelector(".recipe-main-grid");if(!form||!grid)return null;
+ let box=$("recipeVariantBox");if(box)return box;
+ box=document.createElement("div");box.id="recipeVariantBox";box.className="recipe-variant-box";
+ box.innerHTML='<label><input id="recipeHasVariants" type="checkbox"> Ofrecer opciones al garzón (por ejemplo, Normal y XL)</label><div id="recipeVariantFields" class="recipe-variant-fields" hidden><div class="field"><label>Nombre del producto para la comanda</label><input id="recipeVariantGroup" type="text" placeholder="Ej. Street Bacon"></div><div class="field"><label>Esta opción</label><input id="recipeVariantLabel" type="text" value="Normal" placeholder="Ej. Normal, XL, Doble"></div></div><div id="recipeVariantHelp" class="recipe-variant-help" hidden>Guarda primero la versión Normal. Luego usa “Crear variante” para copiarla y ajustar los ingredientes; por ejemplo, cambia la hamburguesa y el queso a cantidad 2 para la versión XL.</div>';
+ grid.after(box);const check=$("recipeHasVariants"),fields=$("recipeVariantFields"),help=$("recipeVariantHelp");check.onchange=()=>{const show=check.checked;fields.hidden=!show;help.hidden=!show;};return box;
+}
+function setForm(recipe){formBox();const enabled=!!recipe?.variantGroup;$("recipeHasVariants").checked=enabled;$("recipeVariantFields").hidden=!enabled;$("recipeVariantHelp").hidden=!enabled;$("recipeVariantGroup").value=recipe?.variantGroup||"";$("recipeVariantLabel").value=recipe?.variantLabel||"Normal";}
+function groupRecipes(){const map=new Map();(recipes||[]).forEach(recipe=>{if(recipe.variantGroup){const key=String(recipe.variantGroup).trim().toLowerCase();if(!map.has(key))map.set(key,[]);map.get(key).push(recipe);}});return map;}
+window.kucheCreateRecipeVariant=function(id){
+ const source=recipes.find(recipe=>String(recipe.id)===String(id));if(!source)return;const label=prompt("Nombre de la nueva opción para el garzón:","XL");if(label===null||!label.trim())return;
+ const copy=JSON.parse(JSON.stringify(source));copy.id=Date.now()+Math.random();copy.variantGroup=source.variantGroup||source.name;copy.variantLabel=label.trim();copy.name=source.name;copy.cloudId=null;copy.createdAt=new Date().toISOString();recipes.push(copy);saveRecipes();editRecipe(copy.id);setTimeout(()=>{setForm(copy);alert("La variante fue copiada. Ajusta los ingredientes —por ejemplo, hamburguesa y queso a cantidad 2— y guarda la receta.");},0);
+};
+function decorateRecipeCards(){
+ document.querySelectorAll("#recipeList .recipe-card").forEach(card=>{const title=card.querySelector("h3")?.textContent.trim(),recipe=(recipes||[]).find(item=>item.name===title);if(!recipe?.variantGroup||card.querySelector(".recipe-variant-actions"))return;const actions=document.createElement("div");actions.className="recipe-variant-actions";actions.innerHTML='<span class="badge badge-info">Opción: '+escapeHTML(recipe.variantLabel||"Normal")+'</span><button type="button" class="secondary-button">Crear variante</button>';actions.querySelector("button").onclick=()=>window.kucheCreateRecipeVariant(recipe.id);card.appendChild(actions);});
+}
+function renderPOSVariants(){
+ const grid=$("posProductGrid");if(!grid)return;renderPOSCategories();const query=($('posProductSearch')?.value||"").toLowerCase(),category=$('posCategoryFilter')?.value||"",groups=groupRecipes(),handled=new Set(),cards=[];
+ for(const recipe of recipes||[]){
+  if(recipe.variantGroup){const key=String(recipe.variantGroup).trim().toLowerCase();if(handled.has(key))continue;handled.add(key);const variants=(groups.get(key)||[]).filter(item=>item.name.toLowerCase().includes(query)&&(!category||item.category===category));if(!variants.length)continue;cards.push('<div class="pos-product"><div class="pos-product-name">'+escapeHTML(recipe.variantGroup)+'</div><span class="station-badge">'+escapeHTML(getRecipeStation(recipe))+'</span><div class="pos-variant-options">'+variants.map(item=>{const availability=getRecipeAvailability(item),calc=calculateSavedRecipe(item),out=availability.status==="out";return '<div class="pos-variant-option"><div><strong>'+escapeHTML(item.variantLabel||"Opción")+'</strong><div class="pos-product-price">$'+formatMoney(Math.round(Number(calc.finalPerPortion||0)))+'</div></div><button class="'+(out?'danger-button':'primary-button')+'" onclick="addPOSItem('+JSON.stringify(item.id)+')">'+(out?'Sin stock':'Agregar')+'</button></div>';}).join("")+'</div></div>');
+  }else if(recipe.name.toLowerCase().includes(query)&&(!category||recipe.category===category)){
+   const availability=getRecipeAvailability(recipe),calc=calculateSavedRecipe(recipe),out=availability.status==="out";cards.push('<div class="pos-product '+(out?'out':'')+'"><div class="pos-product-name">'+escapeHTML(recipe.name)+'</div><span class="station-badge">'+escapeHTML(getRecipeStation(recipe))+'</span><div class="pos-product-price">$'+formatMoney(Math.round(Number(calc.finalPerPortion||0)))+'</div><button class="'+(out?'danger-button':'primary-button')+'" onclick="addPOSItem('+JSON.stringify(recipe.id)+')">'+(out?'Agregar con PIN':'Agregar')+'</button></div>');
+  }
+ }
+ grid.innerHTML=cards.join("")||'<div class="pos-empty">No hay productos para mostrar.</div>';
+}
+function bind(){
+ if(window.__kucheRecipeVariantsBound)return;window.__kucheRecipeVariantsBound=true;formBox();
+ const save=window.saveRecipe;window.saveRecipe=async function(){const active=$("recipeHasVariants")?.checked,group=$("recipeVariantGroup")?.value.trim(),label=$("recipeVariantLabel")?.value.trim()||"Normal",id=editingRecipeId,name=$("recipeName")?.value.trim();const result=await save.apply(this,arguments);const recipe=id!==null?recipes.find(item=>String(item.id)===String(id)):recipes.find(item=>item.name===name);if(recipe){if(active){recipe.variantGroup=group||recipe.name;recipe.variantLabel=label;}else{delete recipe.variantGroup;delete recipe.variantLabel;}saveRecipes();}return result;};
+ const create=window.newRecipe;window.newRecipe=function(){const result=create.apply(this,arguments);setForm(null);return result;};
+ const edit=window.editRecipe;window.editRecipe=function(id){const result=edit.apply(this,arguments);setForm(recipes.find(item=>String(item.id)===String(id)));return result;};
+ const recipeRender=window.renderRecipes;window.renderRecipes=function(){const result=recipeRender.apply(this,arguments);decorateRecipeCards();return result;};
+ const posRender=window.renderPOSCatalog;window.renderPOSCatalog=function(){renderPOSVariants();};
+ setForm(editingRecipeId!==null?recipes.find(item=>String(item.id)===String(editingRecipeId)):null);decorateRecipeCards();
+ }
+ setTimeout(bind,8500);
+})();
+</script>
+
+<!-- V20.8.2 · Inventarios operativos por categoría -->
+<style id="kuche-inventory-sections-style">
+.inventory-section-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+.inventory-section-tab{border:1px solid var(--line,#dfe4df);border-radius:999px;background:#fff;color:var(--green-dark,#173f35);padding:9px 14px;font:inherit;font-size:13px;cursor:pointer}
+.inventory-section-tab.active{background:var(--green-dark,#173f35);border-color:var(--green-dark,#173f35);color:#fff;font-weight:700}
+.inventory-section-tab .inventory-section-count{display:inline-block;min-width:18px;margin-left:5px;padding:1px 5px;border-radius:99px;background:#eef4f0;color:var(--green-dark,#173f35);font-size:11px;text-align:center}
+.inventory-section-tab.active .inventory-section-count{background:rgba(255,255,255,.2);color:#fff}
+.inventory-section-note{margin:-5px 0 14px;color:var(--muted,#6e7772);font-size:12px;line-height:1.45}
+</style>
+
+<script id="kuche-inventory-sections-script">
+(function(){
+"use strict";
+const SECTIONS=[
+ {key:"general",name:"Inventario general"},
+ {key:"cocina",name:"Cocina"},
+ {key:"bebestibles",name:"Bebestibles"},
+ {key:"aseo",name:"Útiles de aseo"},
+ {key:"otros",name:"Otros"}
+];
+let activeInventorySection="general";
+const byId=id=>document.getElementById(id);
+const clean=value=>String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+function inferredSection(product){
+ const area=clean(product?.primaryArea),category=clean(product?.category);
+ if(area==="bebestibles"||area==="barra"||area==="alcohol"||category.includes("bebestible")||category.includes("cafe")||category.includes("infusion")||category.includes("cerveza")||category.includes("vino")||category.includes("licor")||category==="alcohol")return "bebestibles";
+ if(area==="aseo"||category.includes("aseo"))return "aseo";
+ if(area==="bodega"||area==="salon"||area==="caja"||category.includes("otros")||category.includes("envase")||category.includes("embalaje")||category.includes("salon")||category.includes("caja"))return "otros";
+ if(area==="cocina"||area==="panaderia"||area==="postres"||category)return "cocina";
+ return "otros";
+}
+function normalizeSections(){
+ let changed=false;
+ (inventory||[]).forEach(product=>{
+  if(!SECTIONS.some(section=>section.key===product.inventorySection&&section.key!=="general")){
+   product.inventorySection=inferredSection(product);changed=true;
+  }
+ });
+ if(changed&&typeof saveInventory==="function")saveInventory();
+}
+function sectionName(key){return SECTIONS.find(section=>section.key===key)?.name||"Otros";}
+function sectionSelect(value){return '<option value="cocina">Cocina</option><option value="bebestibles">Bebestibles</option><option value="aseo">Útiles de aseo</option><option value="otros">Otros</option>'.replace('value="'+value+'"','value="'+value+'" selected');}
+function ensureProductSectionField(){
+ const areaField=byId("productArea")?.closest(".field");
+ if(!areaField||byId("inventorySection"))return;
+ const field=document.createElement("div");field.className="field";
+ field.innerHTML='<label>Inventario de destino</label><select id="inventorySection">'+sectionSelect("cocina")+'</select><div class="inline-note">El producto quedará siempre en el inventario general y también en esta sección.</div>';
+ areaField.before(field);
+}
+function ensureQuickSectionField(){
+ const areaField=byId("quickPurchaseItemArea")?.closest(".field");
+ if(!areaField||byId("quickPurchaseItemSection"))return;
+ const field=document.createElement("div");field.className="field";
+ field.innerHTML='<label>Inventario de destino</label><select id="quickPurchaseItemSection">'+sectionSelect("cocina")+'</select>';
+ areaField.before(field);
+}
+function setFormSection(value){const select=byId("inventorySection");if(select)select.value=SECTIONS.some(x=>x.key===value)?value:"cocina";}
+function renderSectionTabs(){
+ const page=byId("inventory"),toolbar=page?.querySelector(".toolbar");if(!page||!toolbar)return;
+ let box=byId("inventorySectionTabs");
+ if(!box){box=document.createElement("div");box.id="inventorySectionTabs";box.className="inventory-section-tabs";toolbar.before(box);const note=document.createElement("div");note.id="inventorySectionNote";note.className="inventory-section-note";box.after(note);}
+ box.innerHTML=SECTIONS.map(section=>{const count=section.key==="general"?inventory.length:inventory.filter(product=>product.inventorySection===section.key).length;return '<button type="button" class="inventory-section-tab '+(section.key===activeInventorySection?"active":"")+'" data-section="'+section.key+'">'+section.name+' <span class="inventory-section-count">'+count+'</span></button>';}).join("");
+ box.querySelectorAll("button").forEach(button=>button.onclick=()=>{activeInventorySection=button.dataset.section;renderInventory();});
+ const note=byId("inventorySectionNote");if(note)note.textContent=activeInventorySection==="general"?"El inventario general reúne todos los productos. Cada producto aparece además en una sola sección operativa.":"Mostrando productos asignados a "+sectionName(activeInventorySection)+". Para cambiarlo, edita el producto desde el inventario general.";
+}
+function install(){ensureProductSectionField();ensureQuickSectionField();normalizeSections();renderSectionTabs();}
+const previousNewProduct=window.newProduct;
+window.newProduct=function(){const result=previousNewProduct.apply(this,arguments);install();setFormSection("cocina");return result;};
+const previousEditProduct=window.editProduct;
+window.editProduct=function(id){const result=previousEditProduct.apply(this,arguments);install();const product=inventory.find(item=>String(item.id)===String(id));setFormSection(product?.inventorySection||inferredSection(product));return result;};
+const previousSaveProduct=window.saveProduct;
+window.saveProduct=async function(){
+ const selected=byId("inventorySection")?.value||"cocina",editing=editingId;
+ const result=await previousSaveProduct.apply(this,arguments);
+ const product=editing!==null?inventory.find(item=>String(item.id)===String(editing)):inventory.at(-1);
+ if(product){product.inventorySection=selected;saveInventory();}
+ renderInventory();return result;
+};
+const previousQuickSave=window.saveQuickPurchaseItem;
+window.saveQuickPurchaseItem=async function(){
+ const selected=byId("quickPurchaseItemSection")?.value||"cocina",name=byId("quickPurchaseItemName")?.value.trim();
+ const result=await previousQuickSave.apply(this,arguments);
+ const product=inventory.find(item=>item.name===name);
+ if(product){product.inventorySection=selected;saveInventory();renderInventory();}
+ return result;
+};
+const previousRender=window.renderInventory;
+window.renderInventory=function(){
+ normalizeSections();renderSectionTabs();
+ const table=byId("inventoryTable");if(!table)return;
+ const search=(byId("searchInput")?.value||"").toLowerCase();
+ let list=inventory.filter(product=>String(product.name||"").toLowerCase().includes(search));
+ if(activeInventorySection!=="general")list=list.filter(product=>product.inventorySection===activeInventorySection);
+ if(typeof lowStockFilter!=="undefined"&&lowStockFilter)list=list.filter(product=>Number(product.quantity)<=Number(product.minimum));
+ if(!list.length){table.innerHTML='<tr><td colspan="8"><div class="empty-state"><strong>No hay insumos en '+sectionName(activeInventorySection)+'</strong><span>Registra un producto o asigna uno existente a esta sección.</span></div></td></tr>';return;}
+ table.innerHTML=list.map(product=>{const low=Number(product.quantity)<=Number(product.minimum);return '<tr><td><div class="product-name">'+escapeHTML(product.name)+'</div></td><td>'+escapeHTML(product.category||"—")+'</td><td><span class="badge badge-info">'+escapeHTML(sectionName(product.inventorySection))+'</span></td><td>'+Number(product.quantity||0)+' '+escapeHTML(product.unit||"")+'</td><td>'+Number(product.minimum||0)+' '+escapeHTML(product.unit||"")+'</td><td>$'+formatMoney(product.cost)+' / '+escapeHTML(product.unit||"")+'</td><td><span class="badge '+(low?"badge-danger":"badge-success")+'">'+(low?"Stock crítico":"Normal")+'</span></td><td><div class="actions"><button class="secondary-button" onclick="editProduct('+JSON.stringify(product.id)+')">Editar</button><button class="danger-button" onclick="deleteProduct('+JSON.stringify(product.id)+')">Eliminar</button></div></td></tr>';}).join("");
+ };
+const previousShowPage=window.showPage;
+window.showPage=function(page,button){const result=previousShowPage.apply(this,arguments);if(page==="inventory"||page==="purchases")install();if(page==="inventory")renderInventory();return result;};
+function boot(){install();renderInventory();const header=byId("inventory")?.querySelector(".page-header p");if(header)header.textContent="El inventario general reúne todos los productos. Al crear o editar un producto, asígnalo a Cocina, Bebestibles, Útiles de aseo u Otros.";}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(boot,1900),{once:true});else setTimeout(boot,1900);setTimeout(boot,6500);
+})();
+</script>
 
 <style id="kuche-v206-base-portion-style">
 .kuche-v206-portion-box{display:none;grid-column:1/-1;padding:16px;border:1px solid color-mix(in srgb,var(--primary) 25%,#d8e3da);border-radius:13px;background:color-mix(in srgb,var(--primary) 5%,#fff)}
@@ -22345,5 +22527,33 @@ const priorRender=window.renderRecipes;if(typeof priorRender==="function")window
 document.getElementById("recipeType")?.addEventListener("change",()=>installAll(editingRecipeId!=null?recipes.find(x=>String(x.id)===String(editingRecipeId)):null));
 function boot(){installAll(editingRecipeId!=null?recipes.find(x=>String(x.id)===String(editingRecipeId)):null);const version=document.getElementById("systemVersionLabel");if(version)version.textContent="V20.8 · corrección proveedor frecuente"}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(boot,1500),{once:true});else setTimeout(boot,1500);setTimeout(boot,6000);
+})();
+</script>
+<script id="kuche-inventory-sections-final-bindings">
+/* Se ejecuta al final para conservar esta funcionalidad frente a extensiones anteriores del archivo. */
+(function(){
+"use strict";
+const sections={cocina:"Cocina",bebestibles:"Bebestibles",aseo:"Útiles de aseo",otros:"Otros"};
+const field=()=>document.getElementById("inventorySection");
+const infer=p=>{const t=String((p?.primaryArea||"")+" "+(p?.category||"")).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();return /bebestible|barra|alcohol|cafe|infusion|cerveza|vino|licor/.test(t)?"bebestibles":/aseo/.test(t)?"aseo":/bodega|salon|caja|otros|envase|embalaje/.test(t)?"otros":p?.primaryArea?"cocina":"otros";};
+function normalize(){let changed=false;(inventory||[]).forEach(p=>{if(!sections[p.inventorySection]){p.inventorySection=infer(p);changed=true;}});if(changed)saveInventory();}
+function addField(){if(field())return;const anchor=document.getElementById("productArea")?.closest(".field");if(!anchor)return;const box=document.createElement("div");box.className="field";box.innerHTML='<label>Inventario de destino</label><select id="inventorySection"><option value="cocina">Cocina</option><option value="bebestibles">Bebestibles</option><option value="aseo">Útiles de aseo</option><option value="otros">Otros</option></select><div class="inline-note">También permanecerá disponible en el inventario general.</div>';anchor.before(box);}
+function draw(){
+ normalize();addField();const page=document.getElementById("inventory"),toolbar=page?.querySelector(".toolbar"),table=document.getElementById("inventoryTable");if(!page||!toolbar||!table)return;
+ let tab=document.getElementById("inventorySectionTabs");if(!tab){tab=document.createElement("div");tab.id="inventorySectionTabs";tab.className="inventory-section-tabs";toolbar.before(tab);}
+ let active=tab.dataset.active||"general";const choices={general:"Inventario general",...sections};tab.innerHTML=Object.entries(choices).map(([key,label])=>'<button type="button" class="inventory-section-tab '+(key===active?"active":"")+'" data-key="'+key+'">'+label+' <span class="inventory-section-count">'+(key==="general"?inventory.length:inventory.filter(p=>p.inventorySection===key).length)+'</span></button>').join("");tab.querySelectorAll("button").forEach(b=>b.onclick=()=>{tab.dataset.active=b.dataset.key;draw();});
+ const q=(document.getElementById("searchInput")?.value||"").toLowerCase();let list=inventory.filter(p=>String(p.name||"").toLowerCase().includes(q));if(active!=="general")list=list.filter(p=>p.inventorySection===active);if(lowStockFilter)list=list.filter(p=>Number(p.quantity)<=Number(p.minimum));
+ if(!list.length){table.innerHTML='<tr><td colspan="8"><div class="empty-state"><strong>No hay insumos</strong><span>Registra o asigna un producto a esta sección.</span></div></td></tr>';return;}
+ table.innerHTML=list.map(p=>{const low=Number(p.quantity)<=Number(p.minimum);return '<tr><td><div class="product-name">'+escapeHTML(p.name)+'</div></td><td>'+escapeHTML(p.category||"—")+'</td><td><span class="badge badge-info">'+escapeHTML(sections[p.inventorySection])+'</span></td><td>'+Number(p.quantity||0)+' '+escapeHTML(p.unit||"")+'</td><td>'+Number(p.minimum||0)+' '+escapeHTML(p.unit||"")+'</td><td>$'+formatMoney(p.cost)+' / '+escapeHTML(p.unit||"")+'</td><td><span class="badge '+(low?"badge-danger":"badge-success")+'">'+(low?"Stock crítico":"Normal")+'</span></td><td><div class="actions"><button class="secondary-button" onclick="editProduct('+JSON.stringify(p.id)+')">Editar</button><button class="danger-button" onclick="deleteProduct('+JSON.stringify(p.id)+')">Eliminar</button></div></td></tr>';}).join("");
+ }
+ function bind(){
+  if(window.__kucheInventorySectionsBound)return;window.__kucheInventorySectionsBound=true;normalize();addField();
+  const originalSave=window.saveProduct;window.saveProduct=async function(){const destination=field()?.value||"cocina",id=editingId,result=await originalSave.apply(this,arguments),product=id!==null?inventory.find(p=>String(p.id)===String(id)):inventory.at(-1);if(product){product.inventorySection=destination;saveInventory();}draw();return result;};
+  const originalNew=window.newProduct;window.newProduct=function(){const result=originalNew.apply(this,arguments);addField();if(field())field().value="cocina";return result;};
+  const originalEdit=window.editProduct;window.editProduct=function(id){const result=originalEdit.apply(this,arguments),product=inventory.find(p=>String(p.id)===String(id));addField();if(field())field().value=product?.inventorySection||infer(product);return result;};
+  const originalShow=window.showPage;window.showPage=function(page,button){const result=originalShow.apply(this,arguments);if(page==="inventory")draw();return result;};
+  window.renderInventory=draw;draw();
+ }
+ setTimeout(bind,7200);
 })();
 </script>
