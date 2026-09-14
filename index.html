@@ -16962,6 +16962,35 @@ normalizeKDSData();
 initializeLogin();
 
 </script>
+<script id="kuche-agenda-route-fix">
+/* Compatibilidad para enlaces antiguos que aún apuntan a la página inexistente “agenda”. */
+(function(){
+"use strict";
+function openAgenda(){
+ if(typeof window.kucheAgenda?.install==="function")window.kucheAgenda.install();
+ if(typeof window.kucheUX?.go==="function")return window.kucheUX.go("adminagenda");
+ return window.showPage?.("adminagenda",null);
+}
+function repair(){
+ const oldShow=window.showPage;
+ if(typeof oldShow==="function"&&!window.__kucheAgendaAliasInstalled){
+  window.__kucheAgendaAliasInstalled=true;
+  window.showPage=function(page,button){return oldShow.call(this,page==="agenda"?"adminagenda":page,button);};
+ }
+ document.querySelectorAll(".sidebar .nav-item").forEach(button=>{
+  const text=String(button.textContent||"").trim().toLowerCase();
+  const target=button.dataset?.uxPage||"";
+  if(text==="mi agenda"||target==="agenda"){
+   button.dataset.uxPage="adminagenda";
+   button.removeAttribute("onclick");
+   button.onclick=openAgenda;
+  }
+ });
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(repair,11000),{once:true});else setTimeout(repair,11000);
+setTimeout(repair,14500);
+})();
+</script>
 <style id="kuche-agreement-products-style">
 .agreement-product-rules{margin-top:12px;padding:12px;border:1px solid var(--border,#dfe4df);border-radius:10px;background:#fafcfb}.agreement-product-rules summary{cursor:pointer;color:var(--green-dark,#173f35);font-size:12px;font-weight:800}.agreement-product-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:7px;margin-top:10px;max-height:210px;overflow:auto}.agreement-product-list label{display:flex;align-items:center;gap:6px;padding:7px;border:1px solid var(--border,#dfe4df);border-radius:7px;background:#fff;font-size:11px}.agreement-product-list input{width:auto}.agreement-rule-note{margin-top:8px;color:var(--muted,#6e7772);font-size:11px;line-height:1.4}
 </style>
