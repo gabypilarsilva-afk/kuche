@@ -12166,8 +12166,6 @@ function printCurrentPOSOrder(station){const order=getActivePOSOrder();if(!order
   <div id="contextInfoText" class="context-info-text"></div>
 </div>
 
-
-<!-- KÜCHE V20.8: corrige proveedor frecuente / Bad Request al editar materia prima -->
 </body></html>`);win.document.close();order.lastPrintedAt=new Date().toISOString();savePOSOrders();setTimeout(()=>{win.focus();win.print();},250);}
 function openPOSPayment(){const order=getActivePOSOrder();if(!order||!order.items.length){alert("La comanda está vacía.");return;}const reg=getActiveCashRegister();if(!reg){alert("Debes abrir una caja antes de cobrar una mesa.");openCashFromPOS();return;}posPaymentPanel.classList.add("open");posDiscount.value=Number(order.discount||0);posTipAmount.value=0;posTipMethod.value="efectivo";payCash.value=getOrderTotal(order);payDebit.value=0;payCredit.value=0;payTransfer.value=0;posPaymentNote.value="";updatePOSPaymentCheck();}
 function closePOSPayment(){document.getElementById("posPaymentPanel")?.classList.remove("open");}
@@ -21152,7 +21150,7 @@ install();
 </script>
 
 <style id="kuche-verified-save-style">#recipeForm{scroll-margin-top:90px}#kucheMaterialSaveStatus{margin-top:14px;white-space:pre-line}</style>
-<script id="kuche-verified-material-save" data-fix="20.8.2">
+<script id="kuche-verified-material-save">
 (function(){
 'use strict';
 const $=id=>document.getElementById(id),clone=v=>JSON.parse(JSON.stringify(v));
@@ -21214,99 +21212,37 @@ function materialMismatchDetails(row,expected){
  const display=v=>v===undefined?'sin campo':v===null?'vacío':JSON.stringify(v).slice(0,180);
  return Object.entries(expected).filter(([key,value])=>!materialFieldMatches(key,row?.[key],value)).map(([key,value])=>`${labels[key]||key}: enviado ${display(value)}; devuelto ${display(row?.[key])}.`).join('\n');
 }
-function kucheCloudErrorDetail(error){
- const parts=[error?.message,error?.details,error?.hint,error?.code,error?.statusText,error?.status?('HTTP '+error.status):null].filter(Boolean).map(String);
- return [...new Set(parts)].join(' · ')||'La nube rechazó el cambio.';
-}
-async function checked(query,context='La nube'){const r=await query;if(r.error)throw Error(context+': '+kucheCloudErrorDetail(r.error));if(!r.data)throw Error(context+': la nube no confirmó ningún registro. Revisa los permisos de edición.');return r.data;}
+async function checked(query){const r=await query;if(r.error)throw Error(r.error.message||'La nube rechazó el cambio.');if(!r.data)throw Error('La nube no confirmó ningún registro. Revisa los permisos de edición.');return r.data;}
 async function persist({p,target,locked,supplier,settings},org){
  let expected=payload(p,locked),id=p.cloudId;
- if(!id&&target){const found=await checked(kucheCloud.from('inventory_items').select('id').eq('organization_id',org).eq('name',target.name).eq('active',true).single(),'Materia prima · localizar registro');id=found.id;}
+ if(!id&&target){const found=await checked(kucheCloud.from('inventory_items').select('id').eq('organization_id',org).eq('name',target.name).eq('active',true).single());id=found.id;}
  if(!id){
   id=crypto.randomUUID();p.cloudId=id;
-  try{
-   const saved=await kucheWriteInventoryCompatible(body=>kucheCloud.from('inventory_items').insert({...body,id,organization_id:org,quantity:0,active:true}).select('*').single(),expected);expected=saved.expected;
-  }catch(error){throw Error('Materia prima · crear registro: '+kucheCloudErrorDetail(error));}
+  const saved=await kucheWriteInventoryCompatible(body=>kucheCloud.from('inventory_items').insert({...body,id,organization_id:org,quantity:0,active:true}).select('*').single(),expected);expected=saved.expected;
   // A later settings failure must retry this same row, never insert a duplicate.
   newCloudId=id;
  }else{
   p.cloudId=id;
-  /*
-     20.8.2: al editar una materia prima existente no reenviamos a ciegas
-     todo el payload. Primero leemos la fila real y solo escribimos columnas
-     que existen y cuyo valor cambió. Esto evita que un campo legado/no
-     compatible provoque HTTP 400 al cambiar solamente el proveedor.
-  */
-  const current=await checked(
-   kucheCloud.from('inventory_items').select('*').eq('id',id).eq('organization_id',org).eq('active',true).single(),
-   'Materia prima · lectura previa'
-  );
-  const supportedExpected={};
-  Object.entries(expected).forEach(([key,value])=>{
-   if(Object.prototype.hasOwnProperty.call(current,key))supportedExpected[key]=value;
-  });
-  const updateBody={};
-  Object.entries(supportedExpected).forEach(([key,value])=>{
-   if(!materialFieldMatches(key,current[key],value))updateBody[key]=value;
-  });
-  if(Object.keys(updateBody).length){
-   const row=await checked(
-    kucheCloud.from('inventory_items').update(updateBody).eq('id',id).eq('organization_id',org).eq('active',true).select('*').single(),
-    'Materia prima · actualizar datos'
-   );
-   if(!matches(row,supportedExpected))throw Error('La nube devolvió datos diferentes:\n'+materialMismatchDetails(row,supportedExpected)+'\nLos cambios siguen en el formulario.');
-  }
-  expected=supportedExpected;
+  const saved=await kucheWriteInventoryCompatible(body=>kucheCloud.from('inventory_items').update(body).eq('id',id).eq('organization_id',org).eq('active',true).select('*').single(),expected);expected=saved.expected;const row=saved.row;
+  if(!matches(row,expected))throw Error('La nube devolvió datos diferentes:\n'+materialMismatchDetails(row,expected)+'\nLos cambios siguen en el formulario.');
  }
  if(supplier){
-  // Siempre resolver/validar el UUID real del proveedor antes de escribir supplier_item_terms.
-  // Un cloudId local, antiguo o con formato inválido provoca HTTP 400 (Bad Request) en Supabase.
-  let sid=await ops3EnsureCloudSupplier(supplier);
-  if(!sid||!rtIsUUID(sid))throw Error('No se pudo confirmar el proveedor seleccionado en la nube.');
-
-  // Si el UUID guardado quedó obsoleto, comprobar que pertenezca a esta organización y repararlo por nombre.
-  let supplierCheck=await kucheCloud.from('suppliers').select('id').eq('organization_id',org).eq('id',sid).maybeSingle();
-  if(supplierCheck.error)throw Error([supplierCheck.error.message,supplierCheck.error.details,supplierCheck.error.hint,supplierCheck.error.code].filter(Boolean).join(' · ')||'No se pudo validar el proveedor.');
-  if(!supplierCheck.data){
-   supplier.cloudId=null;
-   sid=await ops3EnsureCloudSupplier(supplier);
-   if(!sid||!rtIsUUID(sid))throw Error('El proveedor seleccionado no pudo vincularse correctamente con KÜCHE Cloud.');
-  }
-  supplier.cloudId=sid;
-  p.preferredSupplierCloudId=sid;
+  const sid=supplier.cloudId||await ops3EnsureCloudSupplier(supplier);if(!sid)throw Error('No se pudo confirmar el proveedor seleccionado.');p.preferredSupplierCloudId=sid;
  }
- const result=await kucheCloud.from('organization_settings').select('settings').eq('organization_id',org).maybeSingle();if(result.error)throw Error('Configuración de inventario · lectura: '+kucheCloudErrorDetail(result.error));
+ const result=await kucheCloud.from('organization_settings').select('settings').eq('organization_id',org).maybeSingle();if(result.error)throw Error(result.error.message);
  const before=result.data?.settings||{};
- const previousCountConfig=before.inventory_count_settings_v186?.[id]||{};
- const countConfig={...previousCountConfig,...kucheInventoryClassification(p),weeklyInventoryEnabled:p.weeklyInventoryEnabled===true,inventoryCountMode:p.inventoryCountMode,portionFormats:p.portionFormats||[],primaryArea:p.primaryArea};
+ const countConfig={...before.inventory_count_settings_v186?.[id],...kucheInventoryClassification(p),weeklyInventoryEnabled:p.weeklyInventoryEnabled===true,inventoryCountMode:p.inventoryCountMode,portionFormats:p.portionFormats||[],primaryArea:p.primaryArea};
  const next={...before,inventory_count_settings_v186:{...(before.inventory_count_settings_v186||{}),[id]:countConfig}};
- /* Si esta configuración no cambió, no hacemos una escritura innecesaria. */
- if(JSON.stringify(canonical(previousCountConfig))!==JSON.stringify(canonical(countConfig))){
-  let query=result.data?kucheCloud.from('organization_settings').update({settings:next}).eq('organization_id',org):kucheCloud.from('organization_settings').insert({organization_id:org,settings:next});
-  const savedSettings=await checked(query.select('settings').single(),'Configuración de inventario');
-  if(!matches(savedSettings.settings?.inventory_count_settings_v186?.[id],countConfig))throw Error('No se pudo confirmar la configuración del inventario. Vuelve a guardar.');
- }
+ let query=result.data?kucheCloud.from('organization_settings').update({settings:next}).eq('organization_id',org):kucheCloud.from('organization_settings').insert({organization_id:org,settings:next});
+ if(result.data?.settings)query=query.eq('settings',JSON.stringify(before));
+ const savedSettings=await checked(query.select('settings').single());
+ if(!matches(savedSettings.settings?.inventory_count_settings_v186?.[id],countConfig))throw Error('No se pudo confirmar la configuración del inventario. Vuelve a guardar.');
  const supplierChanged=!target||String(p.preferredSupplierId||'')!==String(target.preferredSupplierId||'')||Number(p.costNet)!==Number(target.costNet);
  if(supplierChanged){
-  // Conservar historial y dejar solamente un proveedor frecuente para esta materia prima.
-  // No usamos UPSERT con onConflict: si la base aún no tiene la restricción UNIQUE esperada,
-  // PostgREST responde 400. Primero buscamos el vínculo y luego actualizamos o insertamos.
-  const reset=await kucheCloud.from('supplier_item_terms').update({preferred:false}).eq('organization_id',org).eq('inventory_item_id',id);
-  if(reset.error)throw Error('Proveedor frecuente · desmarcar anterior: '+kucheCloudErrorDetail(reset.error));
-  if(supplier){
-   const sid=p.preferredSupplierCloudId;
-   if(!rtIsUUID(id)||!rtIsUUID(sid))throw Error('Proveedor frecuente: KÜCHE no obtuvo identificadores UUID válidos para la materia prima y el proveedor.');
-   const lookup=await kucheCloud.from('supplier_item_terms').select('id').eq('organization_id',org).eq('supplier_id',sid).eq('inventory_item_id',id).limit(1);
-   if(lookup.error)throw Error('Proveedor frecuente · buscar vínculo: '+kucheCloudErrorDetail(lookup.error));
-   const termBody={purchase_format:p.unit,pack_stock_qty:1,current_price:Number(p.costNet??p.cost??0),minimum_packs:0,preferred:true,active:true,price_updated_at:new Date().toISOString()};
-   if(lookup.data?.length){
-    await checked(kucheCloud.from('supplier_item_terms').update(termBody).eq('id',lookup.data[0].id).eq('organization_id',org).select('id').single(),'Proveedor frecuente · actualizar vínculo');
-   }else{
-    await checked(kucheCloud.from('supplier_item_terms').insert({organization_id:org,supplier_id:sid,inventory_item_id:id,...termBody}).select('id').single(),'Proveedor frecuente · crear vínculo');
-   }
-  }
+ const reset=await kucheCloud.from('supplier_item_terms').update({preferred:false}).eq('organization_id',org).eq('inventory_item_id',id);if(reset.error)throw Error(reset.error.message);
+ if(supplier){await checked(kucheCloud.from('supplier_item_terms').upsert({organization_id:org,supplier_id:p.preferredSupplierCloudId,inventory_item_id:id,purchase_format:p.unit,pack_stock_qty:1,current_price:Number(p.costNet??p.cost??0),minimum_packs:0,preferred:true,active:true,price_updated_at:new Date().toISOString()},{onConflict:'organization_id,supplier_id,inventory_item_id'}).select('id').single());}
  }
- const verified=await checked(kucheCloud.from('inventory_items').select('*').eq('organization_id',org).eq('id',id).single(),'Materia prima · verificación final');
+ const verified=await checked(kucheCloud.from('inventory_items').select('*').eq('organization_id',org).eq('id',id).single());
  if(!matches(verified,expected))throw Error('La materia prima cambió durante el guardado:\n'+materialMismatchDetails(verified,expected)+'\nLos cambios siguen en el formulario.');
  return verified;
 }
@@ -22343,7 +22279,82 @@ const priorDesired=window.opsFinalDesiredPOSConsumptions;if(typeof priorDesired=
 const priorAvailability=window.getRecipeAvailability;if(typeof priorAvailability==="function")window.getRecipeAvailability=function(recipe){const original=priorAvailability.apply(this,arguments);if(original.status!=="out"||!configured(recipe).length)return original;const committed=typeof getOpenCommittedByProduct==="function"?getOpenCommittedByProduct():{};let portions=Infinity;for(const ing of recipe.ingredients||[]){const p=inventory.find(x=>String(x.id)===String(ing.productId));if(!p)continue;const mode=ing.consumptionMode||p.consumptionMode||"exact";if(mode==="count")continue;const need=typeof opsFinalIngredientPurchaseQty==="function"?opsFinalIngredientPurchaseQty(p,Number(ing.quantity||0)/Math.max(.01,Number(recipe.yield)||1),ing.recipeUnit||ing.unit||p.baseUnit):Number(ing.quantity||0)/Math.max(.01,Number(recipe.yield)||1);let possible=need>0?Math.floor(Math.max(0,Number(p.quantity||0)-Number(committed[p.id]||0))/need+1e-9):999;if(ing.showIngredientSwapToWaiter)for(const alt of replacements(ing))possible=Math.max(possible,possibleFor(recipe,alt));portions=Math.min(portions,possible)}if(portions>0&&Number.isFinite(portions))return {status:portions<=3?"low":"ok",portions,details:["Disponible mediante ingrediente alternativo autorizado"]};return original};
 const priorRender=window.renderRecipes;if(typeof priorRender==="function")window.renderRecipes=function(){const out=priorRender.apply(this,arguments);document.querySelectorAll("#recipeList .recipe-card").forEach(card=>{const r=recipes.find(x=>x.name===card.querySelector("h3")?.textContent.trim());card.querySelector(".kuche-v207-card-chip")?.remove();if(!r||!configured(r).length)return;const chip=document.createElement("span");chip.className="kuche-v207-card-chip";chip.textContent=`${configured(r).length} ingrediente(s) con cambio`;card.querySelector(".recipe-card-header>div")?.appendChild(chip)});return out};
 document.getElementById("recipeType")?.addEventListener("change",()=>installAll(editingRecipeId!=null?recipes.find(x=>String(x.id)===String(editingRecipeId)):null));
-function boot(){installAll(editingRecipeId!=null?recipes.find(x=>String(x.id)===String(editingRecipeId)):null);const version=document.getElementById("systemVersionLabel");if(version)version.textContent="V20.8 · corrección proveedor frecuente"}
+function boot(){installAll(editingRecipeId!=null?recipes.find(x=>String(x.id)===String(editingRecipeId)):null);const version=document.getElementById("systemVersionLabel");if(version)version.textContent="V20.7 · cambios de ingredientes autorizados"}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(boot,1500),{once:true});else setTimeout(boot,1500);setTimeout(boot,6000);
+})();
+</script>
+
+<style id="kuche-v208-personal-purchases-style">
+.v208-private-box{margin:14px 0;padding:14px;border:1px solid color-mix(in srgb,var(--primary) 22%,#d9e4dc);border-radius:12px;background:color-mix(in srgb,var(--primary) 4%,#fff)}
+.v208-private-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.v208-private-head h3{margin:0 0 4px}.v208-private-head p{margin:0;color:var(--muted,#6e7772);font-size:11px}
+.v208-private-toggle{display:flex;align-items:center;gap:8px;font-weight:800;color:var(--primary-dark,#173f35)}.v208-private-toggle input{width:auto}
+.v208-personal-area{display:none;margin-top:13px}.v208-personal-area.open{display:block}.v208-personal-lines{display:grid;gap:9px;margin-top:10px}
+.v208-personal-line{display:grid;grid-template-columns:minmax(150px,1fr) minmax(150px,1fr) minmax(130px,.8fr) minmax(110px,.55fr) auto;gap:8px;align-items:end;padding:10px;border:1px solid var(--border,#dfe6e1);border-radius:10px;background:var(--card,#fff)}
+.v208-split-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:12px}.v208-split-summary>div{padding:11px;border-radius:9px;background:var(--surface,#f5f8f6);border:1px solid var(--border,#dfe6e1)}.v208-split-summary span{display:block;font-size:10px;color:var(--muted,#6e7772);font-weight:700}.v208-split-summary strong{display:block;margin-top:4px;font-size:16px}.v208-split-summary .personal strong{color:var(--warning,#9a6a17)}
+.v208-page-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px}.v208-kpi{grid-column:span 3;padding:15px;border-radius:12px;border:1px solid var(--border,#dfe6e1);background:var(--card,#fff)}.v208-kpi span{display:block;color:var(--muted,#6e7772);font-size:11px;font-weight:700}.v208-kpi strong{display:block;font-size:21px;margin-top:5px}.v208-kpi small{display:block;color:var(--muted,#6e7772);margin-top:4px}.v208-kpi.personal strong,.v208-balance{color:var(--warning,#9a6a17)}
+.v208-card{margin-top:14px;padding:15px;border:1px solid var(--border,#dfe6e1);border-radius:12px;background:var(--card,#fff)}.v208-card-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}.v208-card-head h2{margin:0;font-size:16px}.v208-filters{display:flex;gap:8px;flex-wrap:wrap}.v208-filters input,.v208-filters select{min-width:160px}
+.v208-table-wrap{overflow:auto}.v208-table{width:100%;border-collapse:collapse}.v208-table th,.v208-table td{text-align:left;padding:10px;border-bottom:1px solid var(--border,#e5e9e6);vertical-align:top;font-size:11px}.v208-table th{color:var(--muted,#6e7772);font-size:10px;text-transform:uppercase}.v208-table .actions{min-width:155px}
+.v208-source-chip{display:inline-block;margin-top:5px;padding:4px 7px;border-radius:999px;background:var(--surface,#eef3ef);font-size:9px;font-weight:800}.v208-report-note{margin-top:14px}.v208-hide{display:none!important}
+@media(max-width:1000px){.v208-kpi{grid-column:span 6}.v208-personal-line{grid-template-columns:1fr 1fr}.v208-personal-line .v208-wide{grid-column:1/-1}}
+@media(max-width:650px){.v208-kpi{grid-column:span 12}.v208-personal-line,.v208-split-summary{grid-template-columns:1fr}.v208-private-head,.v208-card-head{flex-direction:column}.v208-filters{width:100%}.v208-filters input,.v208-filters select{width:100%}}
+</style>
+
+<script id="kuche-v208-personal-purchases-script">
+(function(){
+"use strict";
+const VERSION="V20.8 · compras personales separadas";
+const $=id=>document.getElementById(id);
+const esc=value=>typeof escapeHTML==="function"?escapeHTML(String(value??"")):String(value??"").replace(/[&<>\"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+const money=value=>"$"+(typeof formatMoney==="function"?formatMoney(Number(value)||0):new Intl.NumberFormat("es-CL").format(Math.round(Number(value)||0)));
+const today=()=>new Date().toISOString().slice(0,10);
+const monthNow=()=>today().slice(0,7);
+const uid=prefix=>prefix+"_"+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const organization=()=>{try{return String(cloudOrganization?.id||appSettings?.businessName||"local")}catch(e){return "local"}};
+const storageKey=()=>"kucheV208:"+encodeURIComponent(organization())+":personalPurchases";
+const defaults=()=>({version:1,records:[],settings:{defaultFundingSource:"company_card"}});
+function load(){let raw=null;try{raw=JSON.parse(localStorage.getItem(storageKey())||"null")}catch(e){}const data=Object.assign(defaults(),raw||{});if(!Array.isArray(data.records))data.records=[];if(!data.settings||typeof data.settings!=="object")data.settings=defaults().settings;return data}
+function save(data){localStorage.setItem(storageKey(),JSON.stringify(data))}
+function audit(action,detail){if(typeof v18Audit==="function")v18Audit(action,detail)}
+function sourceLabel(source){return ({company_card:"Tarjeta/cuenta de la empresa",business_cash:"Caja del local",owner_funds:"Dinero personal del dueño",other:"Otro origen"})[source]||source||"Sin especificar"}
+function categoryLabel(value){return ({home:"Hogar",food:"Alimentación personal",health:"Salud",transport:"Transporte personal",clothing:"Vestuario",leisure:"Ocio",other:"Otro"})[value]||value||"Otro"}
+function recordTotal(record){return Number(record.total)||0}
+function reimbursed(record){return (record.reimbursements||[]).reduce((sum,row)=>sum+Number(row.amount||0),0)}
+function balance(record){return Math.max(0,recordTotal(record)-reimbursed(record))}
+function active(record){return record.status!=="void"}
+function affectsCompany(record){return ["company_card","business_cash"].includes(record.fundingSource)}
+function dateLabel(value){if(!value)return "—";return new Date(value+"T12:00:00").toLocaleDateString("es-CL")}
+function purchaseBusinessTotal(){try{return (getPurchaseLines()||[]).reduce((sum,line)=>sum+Number(line.subtotal||0),0)}catch(e){return 0}}
+function personalFormLines(){return [...document.querySelectorAll("#v208PersonalLines .v208-personal-line")].map(row=>({description:row.querySelector(".v208-description")?.value.trim()||"",owner:row.querySelector(".v208-owner")?.value.trim()||"",category:row.querySelector(".v208-category")?.value||"other",amount:Math.max(0,Number(row.querySelector(".v208-amount")?.value)||0)})).filter(row=>row.description||row.owner||row.amount)}
+function personalFormTotal(){return personalFormLines().reduce((sum,row)=>sum+row.amount,0)}
+function addPersonalLine(existing={}){const host=$("v208PersonalLines");if(!host)return;const row=document.createElement("div");row.className="v208-personal-line";row.innerHTML=`<div class="field v208-wide"><label>Detalle personal</label><input class="v208-description" placeholder="Ej. artículos del hogar" value="${esc(existing.description||"")}"></div><div class="field"><label>Dueño / responsable</label><input class="v208-owner" placeholder="Nombre" value="${esc(existing.owner||"")}"></div><div class="field"><label>Categoría</label><select class="v208-category"><option value="home">Hogar</option><option value="food">Alimentación personal</option><option value="health">Salud</option><option value="transport">Transporte personal</option><option value="clothing">Vestuario</option><option value="leisure">Ocio</option><option value="other">Otro</option></select></div><div class="field"><label>Monto incluido $</label><input class="v208-amount" type="number" min="1" step="1" value="${Number(existing.amount)||""}"></div><button type="button" class="danger-button">Eliminar</button>`;host.appendChild(row);row.querySelector(".v208-category").value=existing.category||"other";row.querySelectorAll("input,select").forEach(input=>input.addEventListener("input",updateSplitPreview));row.querySelector(".danger-button").onclick=()=>{row.remove();if(!host.children.length)addPersonalLine();updateSplitPreview()}}
+function updateSplitPreview(){const business=purchaseBusinessTotal(),personal=personalFormTotal(),invoice=business+personal;if($("v208BusinessTotal"))$("v208BusinessTotal").textContent=money(business);if($("v208PersonalTotal"))$("v208PersonalTotal").textContent=money(personal);if($("v208InvoiceTotal"))$("v208InvoiceTotal").textContent=money(invoice)}
+function personalToggle(){const on=!!$("v208HasPersonal")?.checked;$("v208PersonalArea")?.classList.toggle("open",on);updateSplitPreview()}
+function installPurchaseSplit(){const form=$("purchaseForm");if(!form||$("v208PurchaseSplit"))return;const notes=$("purchaseNotes")?.closest(".field");const box=document.createElement("div");box.id="v208PurchaseSplit";box.className="v208-private-box";box.innerHTML=`<div class="v208-private-head"><div><h3>Separación de la factura</h3><p>La parte personal no aumenta inventario ni se considera costo operativo del negocio.</p></div><label class="v208-private-toggle"><input id="v208HasPersonal" type="checkbox"> Incluye compras personales</label></div><div class="module-grid" style="margin-top:12px"><div class="field"><label>Origen del dinero de la factura</label><select id="v208FundingSource"><option value="company_card">Tarjeta/cuenta de la empresa</option><option value="business_cash">Caja del local</option><option value="owner_funds">Dinero personal del dueño</option><option value="other">Otro origen</option></select></div></div><div id="v208PersonalArea" class="v208-personal-area"><div class="inline-note">Lo personal quedará separado del presupuesto del negocio y, si se pagó con fondos de la empresa, se registrará como dinero por recuperar.</div><div class="purchase-line-header" style="margin-top:12px"><strong>Productos o gastos personales incluidos</strong><button id="v208AddPersonalLine" type="button" class="secondary-button">+ Agregar gasto personal</button></div><div id="v208PersonalLines" class="v208-personal-lines"></div><div class="v208-split-summary"><div><span>Compra real del negocio</span><strong id="v208BusinessTotal">$0</strong></div><div class="personal"><span>Consumo personal</span><strong id="v208PersonalTotal">$0</strong></div><div><span>Total factura / cargo</span><strong id="v208InvoiceTotal">$0</strong></div></div></div>`;if(notes)notes.before(box);else form.appendChild(box);$("v208HasPersonal").onchange=personalToggle;$("v208AddPersonalLine").onclick=()=>addPersonalLine();form.addEventListener("input",event=>{if(event.target.closest(".purchase-line"))setTimeout(updateSplitPreview,0)});addPersonalLine()}
+function resetPurchaseSplit(){installPurchaseSplit();if(!$("v208HasPersonal"))return;$("v208HasPersonal").checked=false;$("v208FundingSource").value=load().settings.defaultFundingSource||"company_card";$("v208PersonalLines").innerHTML="";addPersonalLine();personalToggle()}
+function validateSplit(){const fundingSource=$("v208FundingSource")?.value||"company_card";if(!$("v208HasPersonal")?.checked)return {enabled:false,lines:[],total:0,fundingSource};const lines=personalFormLines();if(!lines.length)throw Error("Agrega al menos un gasto personal incluido en la factura.");if(lines.some(row=>!row.description||!row.owner||row.amount<=0))throw Error("Completa el detalle, responsable y monto de cada compra personal.");return {enabled:true,lines,total:lines.reduce((sum,row)=>sum+row.amount,0),fundingSource}}
+function addLinkedRecord(purchase,split){const data=load();const record={id:uid("personal"),source:"mixed_invoice",purchaseId:String(purchase.id),date:purchase.date||today(),store:purchase.supplierName||"Proveedor",document:purchase.document||"",paymentMethod:purchase.paymentMethod||"",fundingSource:split.fundingSource,lines:split.lines,total:split.total,status:"active",reimbursements:[],createdAt:new Date().toISOString(),createdBy:currentSession?.name||"Administrador"};data.records.unshift(record);save(data);return record}
+function installNavigation(){if($("personalpurchases"))return;const purchaseButton=[...document.querySelectorAll(".nav-item")].find(button=>(button.getAttribute("onclick")||"").includes("'purchases'"));if(purchaseButton&&!document.querySelector(".nav-item[onclick*=\"personalpurchases\"]")){const button=document.createElement("button");button.className="nav-item admin-sensitive";button.setAttribute("onclick","showPage('personalpurchases',this)");button.innerHTML="<span>Compras personales</span>";purchaseButton.after(button)}const purchasePage=$("purchases");if(!purchasePage)return;const page=document.createElement("section");page.id="personalpurchases";page.className="page";page.innerHTML=`<div class="page-header"><div><h1>Compras personales</h1><p>Separa el consumo de dueños o socios de los costos reales del local.</p></div><button class="primary-button" onclick="v208OpenManual()">+ Compra personal</button></div><div class="inline-note">Pantalla administrativa privada. Los montos personales no modifican inventario ni costos operativos; si se pagaron con fondos de la empresa, quedan como dinero por recuperar.</div><div id="v208PersonalSummary" class="v208-page-grid" style="margin-top:14px"></div><div id="v208ManualForm" class="form-panel"><div class="form-title">Registrar compra personal pagada con fondos del negocio</div><div class="module-grid"><div class="field"><label>Fecha</label><input id="v208ManualDate" type="date"></div><div class="field"><label>Dueño / responsable</label><input id="v208ManualOwner"></div><div class="field"><label>Comercio</label><input id="v208ManualStore"></div><div class="field"><label>N° factura / boleta</label><input id="v208ManualDocument"></div><div class="field"><label>Categoría</label><select id="v208ManualCategory"><option value="home">Hogar</option><option value="food">Alimentación personal</option><option value="health">Salud</option><option value="transport">Transporte personal</option><option value="clothing">Vestuario</option><option value="leisure">Ocio</option><option value="other">Otro</option></select></div><div class="field"><label>Monto $</label><input id="v208ManualAmount" type="number" min="1" step="1"></div><div class="field"><label>Medio de pago</label><select id="v208ManualMethod"><option>Débito</option><option>Crédito</option><option>Transferencia</option><option>Efectivo</option><option>Otro</option></select></div><div class="field"><label>Origen del dinero</label><select id="v208ManualSource"><option value="company_card">Tarjeta/cuenta de la empresa</option><option value="business_cash">Caja del local</option><option value="owner_funds">Dinero personal del dueño</option><option value="other">Otro origen</option></select></div></div><div class="field" style="margin-top:10px"><label>Detalle</label><input id="v208ManualDetail" placeholder="Qué se compró o motivo"></div><div class="form-actions"><button class="primary-button" onclick="v208SaveManual()">Guardar compra personal</button><button class="secondary-button" onclick="v208CloseManual()">Cancelar</button></div></div><div class="v208-card"><div class="v208-card-head"><h2>Historial y devoluciones</h2><div class="v208-filters"><input id="v208Month" type="month" oninput="v208Render()"><input id="v208Search" type="search" placeholder="Buscar dueño, comercio o documento" oninput="v208Render()"><select id="v208Status" onchange="v208Render()"><option value="all">Todos los estados</option><option value="pending">Pendiente de devolución</option><option value="reimbursed">Devuelto</option><option value="void">Anulado</option></select></div></div><div class="v208-table-wrap"><table class="v208-table"><thead><tr><th>Fecha</th><th>Responsable</th><th>Comercio / documento</th><th>Detalle</th><th>Origen</th><th>Personal</th><th>Devuelto</th><th>Saldo</th><th>Acciones</th></tr></thead><tbody id="v208Table"></tbody></table></div></div>`;purchasePage.after(page);$("v208Month").value=monthNow()}
+function ownerNames(record){return [...new Set((record.lines||[]).map(line=>line.owner).filter(Boolean))].join(", ")||"Sin responsable"}
+function details(record){return (record.lines||[]).map(line=>line.description+" ("+categoryLabel(line.category)+")").join(" · ")||"—"}
+function recordsForView(){const data=load(),month=$("v208Month")?.value||monthNow(),query=($("v208Search")?.value||"").trim().toLowerCase(),status=$("v208Status")?.value||"all";return data.records.filter(record=>{if(month&&!(record.date||"").startsWith(month))return false;const haystack=(ownerNames(record)+" "+record.store+" "+record.document+" "+details(record)).toLowerCase();if(query&&!haystack.includes(query))return false;if(status==="void")return record.status==="void";if(status==="pending")return active(record)&&affectsCompany(record)&&balance(record)>0;if(status==="reimbursed")return active(record)&&(!affectsCompany(record)||balance(record)<=0);return true}).sort((a,b)=>String(b.date||"").localeCompare(String(a.date||"")))}
+function renderPage(){if(!$("v208PersonalSummary"))return;const month=$("v208Month")?.value||monthNow(),data=load(),personal=data.records.filter(record=>active(record)&&(record.date||"").startsWith(month)),personalTotal=personal.reduce((sum,row)=>sum+recordTotal(row),0),repaid=personal.reduce((sum,row)=>sum+reimbursed(row),0),outstanding=personal.filter(affectsCompany).reduce((sum,row)=>sum+balance(row),0),businessPurchases=(purchases||[]).filter(p=>p.status!=="anulada"&&(p.date||"").startsWith(month)).reduce((sum,p)=>sum+Number(p.businessTotal??p.total??0),0),companyCharges=(purchases||[]).filter(p=>p.status!=="anulada"&&(p.date||"").startsWith(month)&&["company_card","business_cash"].includes(p.fundingSource||"company_card")).reduce((sum,p)=>sum+Number(p.invoiceTotal??p.total??0),0)+personal.filter(record=>record.source==="manual"&&affectsCompany(record)).reduce((sum,row)=>sum+recordTotal(row),0);$("v208PersonalSummary").innerHTML=`<div class="v208-kpi"><span>Total cargado a fondos empresa</span><strong>${money(companyCharges)}</strong><small>Facturas y compras personales del mes.</small></div><div class="v208-kpi"><span>Compra real del negocio</span><strong>${money(businessPurchases)}</strong><small>Base para costos e inventario.</small></div><div class="v208-kpi personal"><span>Consumo personal separado</span><strong>${money(personalTotal)}</strong><small>No afecta el resultado operativo.</small></div><div class="v208-kpi personal"><span>Pendiente de devolución</span><strong>${money(outstanding)}</strong><small>Devuelto durante el mes: ${money(repaid)}.</small></div>`;const rows=recordsForView(),table=$("v208Table");if(!rows.length){table.innerHTML='<tr><td colspan="9"><div class="empty-state"><strong>No hay compras personales para este filtro</strong></div></td></tr>';return}table.innerHTML=rows.map(record=>{const paid=reimbursed(record),due=balance(record),isVoid=record.status==="void",linked=record.source==="mixed_invoice";return `<tr><td>${dateLabel(record.date)}</td><td><strong>${esc(ownerNames(record))}</strong></td><td><strong>${esc(record.store||"—")}</strong><div class="category">${esc(record.document||"Sin documento")}</div></td><td>${esc(details(record))}</td><td>${esc(sourceLabel(record.fundingSource))}<div class="v208-source-chip">${linked?"Factura mixta":"Registro independiente"}</div></td><td><strong>${money(recordTotal(record))}</strong></td><td>${money(paid)}</td><td><strong class="${due&&!isVoid?"v208-balance":""}">${isVoid?"Anulado":money(due)}</strong></td><td><div class="actions">${!isVoid&&affectsCompany(record)&&due>0?`<button class="primary-button" onclick="v208Reimburse('${esc(record.id)}')">Registrar devolución</button>`:""}${!isVoid&&!linked?`<button class="danger-button" onclick="v208Void('${esc(record.id)}')">Anular</button>`:""}</div></td></tr>`}).join("")}
+function openManual(){installNavigation();$("v208ManualDate").value=today();$("v208ManualOwner").value="";$("v208ManualStore").value="";$("v208ManualDocument").value="";$("v208ManualAmount").value="";$("v208ManualDetail").value="";$("v208ManualSource").value=load().settings.defaultFundingSource||"company_card";$("v208ManualForm").classList.add("open")}
+function closeManual(){$("v208ManualForm")?.classList.remove("open")}
+function saveManual(){const date=$("v208ManualDate").value,owner=$("v208ManualOwner").value.trim(),store=$("v208ManualStore").value.trim(),detail=$("v208ManualDetail").value.trim(),amount=Math.max(0,Number($("v208ManualAmount").value)||0);if(!date||!owner||!store||!detail||amount<=0){alert("Completa fecha, responsable, comercio, detalle y monto.");return}const data=load();data.records.unshift({id:uid("personal"),source:"manual",date,store,document:$("v208ManualDocument").value.trim(),paymentMethod:$("v208ManualMethod").value,fundingSource:$("v208ManualSource").value,lines:[{description:detail,owner,category:$("v208ManualCategory").value,amount}],total:amount,status:"active",reimbursements:[],createdAt:new Date().toISOString(),createdBy:currentSession?.name||"Administrador"});save(data);closeManual();audit("Compra personal registrada",owner+" · "+money(amount));renderPage()}
+function reimburse(id){const data=load(),record=data.records.find(row=>row.id===id);if(!record||!active(record))return;const due=balance(record),input=prompt("Monto que el dueño devuelve a la empresa",String(Math.round(due)));if(input===null)return;const amount=Number(String(input).replace(/[^0-9.-]/g,""));if(!Number.isFinite(amount)||amount<=0||amount>due+0.01){alert("Ingresa un monto válido, igual o menor al saldo pendiente.");return}const method=prompt("Medio de devolución: Transferencia, Efectivo u Otro","Transferencia");if(method===null)return;record.reimbursements=record.reimbursements||[];record.reimbursements.unshift({id:uid("refund"),amount,date:today(),method:method.trim()||"Otro",registeredAt:new Date().toISOString(),registeredBy:currentSession?.name||"Administrador"});save(data);audit("Devolución de compra personal",ownerNames(record)+" · "+money(amount));renderPage()}
+function voidRecord(id){const data=load(),record=data.records.find(row=>row.id===id);if(!record||record.source!=="manual"||!active(record))return;if(!confirm("¿Anular esta compra personal? El registro se conservará para trazabilidad."))return;record.status="void";record.voidedAt=new Date().toISOString();record.voidedBy=currentSession?.name||"Administrador";save(data);audit("Compra personal anulada",ownerNames(record)+" · "+money(record.total));renderPage()}
+function decoratePurchaseTable(){const table=$("purchaseTable");if(!table)return;const q=($("purchaseSearch")?.value||"").toLowerCase();let list=(purchases||[]).filter(p=>String((p.supplierName||"")+" "+(p.document||"")).toLowerCase().includes(q));if(typeof purchaseFilter!=="undefined"&&purchaseFilter==="pending")list=list.filter(p=>p.paymentStatus==="pendiente"&&p.status!=="anulada");[...table.querySelectorAll("tr")].forEach((row,index)=>{const p=list[index];if(!p||!Number(p.personalTotal||0))return;const cell=row.children[4];if(cell)cell.innerHTML=`<strong>${money(p.invoiceTotal||Number(p.total||0)+Number(p.personalTotal||0))}</strong><div class="category">Negocio ${money(p.businessTotal??p.total)} · Personal ${money(p.personalTotal)}</div>`})}
+function installReport(){const page=$("reports");if(!page||$("v208ReportPersonal"))return;const section=document.createElement("div");section.id="v208ReportPersonal";section.className="report-section v208-report-note";section.innerHTML='<div class="report-section-header"><h3>Separación negocio y consumo personal</h3><span>Período seleccionado</span></div><div class="report-kpis"><div class="report-kpi"><span>Consumo personal</span><strong id="v208ReportPersonalAmount">$0</strong></div><div class="report-kpi"><span>Pendiente de devolución</span><strong id="v208ReportOutstanding">$0</strong></div><div class="report-kpi"><span>Cargos totales en facturas mixtas</span><strong id="v208ReportMixedInvoices">$0</strong></div></div><div class="inline-note">Estos montos se muestran para control de caja, pero el consumo personal está excluido del resultado operativo.</div>';page.appendChild(section)}
+function renderReport(){installReport();if(!$("v208ReportPersonalAmount"))return;let start=$("reportStartDate")?.value||"0000-00-00",end=$("reportEndDate")?.value||"9999-99-99";const inRange=date=>date>=start&&date<=end,records=load().records.filter(record=>active(record)&&inRange(record.date||"")),personal=records.reduce((sum,row)=>sum+recordTotal(row),0),outstanding=records.filter(affectsCompany).reduce((sum,row)=>sum+balance(row),0),mixed=(purchases||[]).filter(p=>p.status!=="anulada"&&Number(p.personalTotal||0)>0&&inRange(p.date||"")).reduce((sum,p)=>sum+Number(p.invoiceTotal||0),0);$("v208ReportPersonalAmount").textContent=money(personal);$("v208ReportOutstanding").textContent=money(outstanding);$("v208ReportMixedInvoices").textContent=money(mixed)}
+const priorOpen=window.openPurchaseForm;if(typeof priorOpen==="function")window.openPurchaseForm=function(){const out=priorOpen.apply(this,arguments);installPurchaseSplit();resetPurchaseSplit();return out};
+function adjustInstallmentPlan(purchase,personalAmount){if(!personalAmount)return;const key="kucheV19:"+encodeURIComponent(organization())+":control";let data=null;try{data=JSON.parse(localStorage.getItem(key)||"null")}catch(e){}const plan=data?.purchasePlans?.[String(purchase.id)];if(!plan||!Array.isArray(plan.rows)||!plan.rows.length)return;plan.total=Number(purchase.invoiceTotal)||0;plan.rows[plan.rows.length-1].amount=Number(plan.rows[plan.rows.length-1].amount||0)+Number(personalAmount||0);localStorage.setItem(key,JSON.stringify(data))}
+const priorSave=window.savePurchase;if(typeof priorSave==="function")window.savePurchase=async function(){let split;try{split=validateSplit()}catch(error){alert(error.message);return}const before=new Set((purchases||[]).map(p=>String(p.id))),business=purchaseBusinessTotal();await priorSave.apply(this,arguments);const purchase=(purchases||[]).find(p=>!before.has(String(p.id)));if(!purchase)return;purchase.businessTotal=Number(purchase.total||business);purchase.personalTotal=split.enabled?split.total:0;purchase.invoiceTotal=purchase.businessTotal+purchase.personalTotal;purchase.fundingSource=split.fundingSource;if(split.enabled){addLinkedRecord(purchase,split);adjustInstallmentPlan(purchase,split.total)}savePurchases();renderPurchases();renderPage();audit("Factura separada",purchase.supplierName+" · negocio "+money(purchase.businessTotal)+" · personal "+money(purchase.personalTotal))};
+const priorCancel=window.cancelPurchase;if(typeof priorCancel==="function")window.cancelPurchase=function(id){const purchase=(purchases||[]).find(p=>String(p.id)===String(id)),wasActive=purchase&&purchase.status!=="anulada";const out=priorCancel.apply(this,arguments);if(wasActive&&purchase?.status==="anulada"){const data=load();data.records.filter(record=>String(record.purchaseId)===String(id)&&active(record)).forEach(record=>{record.status="void";record.voidedAt=new Date().toISOString();record.voidedBy=currentSession?.name||"Administrador"});save(data);renderPage()}return out};
+const priorRender=window.renderPurchases;if(typeof priorRender==="function")window.renderPurchases=function(){const out=priorRender.apply(this,arguments);decoratePurchaseTable();return out};
+const priorReports=window.renderExtendedReports;if(typeof priorReports==="function")window.renderExtendedReports=function(){const out=priorReports.apply(this,arguments);renderReport();return out};
+const priorShow=window.showPage;if(typeof priorShow==="function")window.showPage=function(page,button){const out=priorShow.apply(this,arguments);if(page==="purchases"){installPurchaseSplit();decoratePurchaseTable()}if(page==="personalpurchases")renderPage();if(page==="reports")renderReport();return out};
+function boot(){installNavigation();installPurchaseSplit();installReport();decoratePurchaseTable();renderPage();const label=$("systemVersionLabel");if(label)label.textContent=VERSION}
+Object.assign(window,{v208OpenManual:openManual,v208CloseManual:closeManual,v208SaveManual:saveManual,v208Reimburse:reimburse,v208Void:voidRecord,v208Render:renderPage,v208AddPersonalLine:addPersonalLine});
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(boot,1800),{once:true});else setTimeout(boot,1800);setTimeout(boot,6500);
 })();
 </script>
