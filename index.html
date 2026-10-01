@@ -23053,3 +23053,13 @@ Object.assign(window,{v293OpenPackaging:openPackaging,v293ClosePackaging:closePa
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(boot,18000),{once:true});else setTimeout(boot,18000);
 })();
 </script>
+<script id="kuche-v294-operational-navigation-fix">
+(function(){
+"use strict";
+function controlButton(){return document.getElementById("kucheControlOperationalNav")}function openControl(){const b=controlButton();if(typeof window.showPage==="function")window.showPage("operations29",b||null);setTimeout(()=>{const head=document.querySelector('.sidebar .nav .ux-group-title[data-ux-group="team"]');if(head&&head.getAttribute("aria-expanded")!=="true")head.click();document.querySelectorAll(".sidebar .nav .nav-item").forEach(x=>x.classList.toggle("active",x===b));},0)}
+function repair(){const nav=document.querySelector(".sidebar .nav")||document.querySelector(".nav");if(!nav)return;let legacy=[...nav.querySelectorAll('.nav-item[onclick*="operations29"]')].find(x=>x.id!=="kucheControlOperationalNav");if(legacy){if(!legacy.hidden)legacy.hidden=true;if(legacy.style.display!=="none")legacy.style.display="none";if(legacy.getAttribute("aria-hidden")!=="true")legacy.setAttribute("aria-hidden","true");legacy.dataset.v294Sentinel="true";}let b=controlButton();if(!b){b=document.createElement("button");b.id="kucheControlOperationalNav";b.type="button";b.className="nav-item";b.dataset.uxPage="checklists";b.dataset.uxGroup="team";b.innerHTML="<span>Control operativo</span>";b.onclick=openControl;const team=[...nav.querySelectorAll('.ux-group-title,.nav-title')].find(x=>String(x.textContent||"").includes("Equipo y operación"));if(team)team.after(b);else nav.appendChild(b);}else{b.dataset.uxPage="checklists";b.dataset.uxGroup="team";if(b.hidden)b.hidden=false;if(b.style.display==="none")b.style.removeProperty("display");if(b.getAttribute("aria-hidden")!=="false")b.setAttribute("aria-hidden","false");}}
+function boot(){repair();const nav=document.querySelector(".sidebar .nav")||document.querySelector(".nav");if(nav&&!nav.__v294Observed){nav.__v294Observed=true;new MutationObserver(()=>queueMicrotask(repair)).observe(nav,{childList:true,subtree:true,attributes:true,attributeFilter:["hidden","style"]});}setInterval(repair,2500)}
+window.v294OpenOperational=openControl;
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(boot,20500),{once:true});else setTimeout(boot,20500);
+})();
+</script>
