@@ -1084,9 +1084,10 @@ COMPRAS / MERMAS / VENTAS / IA
     <div class="field" style="margin-top:10px"><label>Contraseña</label><input id="adminLoginPassword" type="password" autocomplete="current-password"></div>
 
     <button id="loginSubmitButton" class="primary-button" style="width:100%;margin-top:18px" onclick="loginKuche()">Ingresar</button>
-    <button class="login-link" onclick="requestPasswordRecovery()">Olvidé mi contraseña</button>
+    <button id="passwordRecoveryButton" type="button" class="login-link" onclick="requestPasswordRecovery()">Olvidé mi contraseña</button>
 
     <div class="login-note">KÜCHE reconoce automáticamente tus permisos según la empresa y el cargo asociado a tu cuenta.</div>
+    <div class="login-note" style="margin-top:8px">Si olvidaste tu contraseña: escribe primero tu correo y luego presiona <strong>Olvidé mi contraseña</strong>. KÜCHE mostrará aquí mismo si el correo fue enviado o qué configuración falta.</div>
     <div id="loginError" class="login-error"></div>
   </div>
 </div>
@@ -11706,15 +11707,48 @@ function clearLoginError(){const el=document.getElementById("loginError");if(el)
 function getCloudRedirectURL(){return window.location.origin+window.location.pathname;}
 
 async function requestPasswordRecovery(emailOverride=""){
- if(!kucheCloud){showLoginError("No fue posible conectar con Supabase. Revisa tu conexión a internet.");return;}
- const email=(emailOverride||document.getElementById("adminLoginEmail")?.value||"").trim();
- if(!email){showLoginError("Escribe primero tu correo.");return;}
- clearLoginError();setCloudStatus("Enviando recuperación…");
- const {error}=await kucheCloud.auth.resetPasswordForEmail(email,{redirectTo:getCloudRedirectURL()});
- if(error){setCloudStatus("Nube disponible","online");showLoginError("No se pudo enviar el correo: "+error.message);return;}
- setCloudStatus("Nube disponible","online");
- showLoginError("Correo enviado. Abre el mensaje más reciente de Supabase para crear una nueva contraseña.");
- const el=document.getElementById("loginError");if(el){el.style.background="var(--success-soft)";el.style.color="var(--success)";}
+ const btn=document.getElementById("passwordRecoveryButton");
+ const originalText=btn?.textContent||"Olvidé mi contraseña";
+ const email=(emailOverride||document.getElementById("adminLoginEmail")?.value||"").trim().toLowerCase();
+ const finish=()=>{if(btn){btn.disabled=false;btn.textContent=originalText;}};
+ const fail=(msg)=>{setCloudStatus(kucheCloud?"Nube disponible":"Sin conexión",kucheCloud?"online":"offline");showLoginError(msg);};
+
+ if(!email){showLoginError("Escribe primero el correo de tu cuenta y vuelve a presionar ‘Olvidé mi contraseña’. ");return;}
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){showLoginError("El correo no tiene un formato válido.");return;}
+ if(!navigator.onLine){showLoginError("No hay conexión a internet. Conéctate e inténtalo nuevamente.");return;}
+ if(!kucheCloud?.auth?.resetPasswordForEmail){showLoginError("KÜCHE no pudo cargar el servicio de recuperación de Supabase. Recarga la página e inténtalo nuevamente.");return;}
+
+ clearLoginError();
+ if(btn){btn.disabled=true;btn.textContent="Enviando correo…";}
+ setCloudStatus("Enviando recuperación…");
+ const loginMessage=document.getElementById("loginError");
+ if(loginMessage){loginMessage.textContent="Solicitando un enlace seguro de recuperación…";loginMessage.style.display="block";loginMessage.style.background="var(--warning-soft)";loginMessage.style.color="var(--warning)";}
+
+ try{
+   const redirectTo=getCloudRedirectURL();
+   const timeout=new Promise((_,reject)=>setTimeout(()=>reject(new Error("La solicitud tardó demasiado. Revisa tu conexión e inténtalo nuevamente.")),15000));
+   const request=kucheCloud.auth.resetPasswordForEmail(email,{redirectTo});
+   const result=await Promise.race([request,timeout]);
+   const error=result?.error;
+   if(error){
+     const raw=String(error.message||error.error_description||error.code||"Error desconocido");
+     let friendly=raw;
+     if(/rate limit|security purposes|too many/i.test(raw))friendly="Se solicitaron demasiados correos de recuperación en poco tiempo. Espera unos minutos antes de volver a intentarlo.";
+     else if(/email.*not.*found|user.*not.*found/i.test(raw))friendly="No encontramos una cuenta asociada a ese correo.";
+     else if(/redirect|url.*allowed|not allowed/i.test(raw))friendly="La URL de recuperación de KÜCHE no está autorizada en Supabase. Hay que agregar la dirección de GitHub Pages en Authentication → URL Configuration.";
+     fail("No se pudo enviar el correo de recuperación. "+friendly);
+     return;
+   }
+   setCloudStatus("Nube disponible","online");
+   showLoginError("✓ Solicitud enviada. Revisa tu correo, Spam y Promociones. Abre el enlace más reciente para crear una contraseña nueva.");
+   const el=document.getElementById("loginError");
+   if(el){el.style.background="var(--success-soft)";el.style.color="var(--success)";el.style.border="1px solid color-mix(in srgb,var(--success) 25%,transparent)";}
+ }catch(error){
+   console.error("Password recovery",error);
+   fail("No se pudo completar la recuperación: "+(error?.message||"error de conexión con Supabase")+". Si el problema continúa, revisa Authentication → URL Configuration en Supabase.");
+ }finally{
+   finish();
+ }
 }
 async function sendCloudPasswordRecoveryFromSettings(){
  const email=cloudAuthSession?.user?.email||"";
