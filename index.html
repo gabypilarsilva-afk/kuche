@@ -12195,6 +12195,117 @@ function cancelCurrentPOSOrder(){const order=getActivePOSOrder();if(!order)retur
 function printCurrentPOSOrder(station){const order=getActivePOSOrder();if(!order||!order.items.length){alert("No hay productos en la comanda.");return;}const groups={};order.items.forEach(i=>{const st=i.station||'Cocina';if(station!=="all"&&st!==station)return;(groups[st]||(groups[st]=[])).push(i);});if(!Object.keys(groups).length){alert("No hay productos para esa estación.");return;}const win=window.open("","_blank","width=430,height=720");if(!win){alert("El navegador bloqueó la ventana de impresión.");return;}const sections=Object.entries(groups).map(([st,items])=>`<section style="page-break-after:always"><h2>${escapeHTML(st)}</h2><div>Mesa: <strong>${escapeHTML(order.tableName)}</strong> · Personas: ${order.people||1}</div><div>Garzón: ${escapeHTML(order.workerName)} · ${new Date().toLocaleString('es-CL')}</div><hr>${items.map(i=>`<div style="font-size:18px;margin:12px 0"><strong>${i.quantity} × ${escapeHTML(i.recipeName)}</strong>${i.notes?`<div style="font-size:14px">Obs: ${escapeHTML(i.notes)}</div>`:''}</div>`).join('')}</section>`).join('');win.document.write(`<!doctype html><html><head><title>Comanda ${escapeHTML(order.tableName)}</title><style>body{font-family:Arial,sans-serif;padding:16px;color:#111}h2{font-size:22px;margin:0 0 8px}hr{border:0;border-top:1px dashed #333;margin:14px 0}@media print{body{padding:0}section:last-child{page-break-after:auto}}</style></head><body>${sections}
 
 
+
+
+<!-- =====================================================
+     KÜCHE V20.11.6 · RECUPERACIÓN DE RECETAS DESDE NUBE
+     Evita que las recetas base desaparezcan del módulo Recetas
+     cuando su espejo de inventario sí permanece sincronizado.
+====================================================== -->
+<script id="kuche-v20116-recipe-recovery">
+(function(){
+"use strict";
+const BACKUP_KEY="kucheRecipesBackupV20116";
+const asId=value=>{
+  const s=String(value??"").trim();
+  if(!s)return null;
+  return /^\d+(?:\.\d+)?$/.test(s)?Number(s):s;
+};
+function recipeFromGuide(g){
+  const source=g?.source_local_id??g?.sourceLocalId??null;
+  if(source===null||source===undefined||String(source).trim()==="")return null;
+  return {
+    id:asId(source),
+    cloudGuideId:g.id||null,
+    name:g.name||"Receta recuperada",
+    category:g.category||((g.recipe_type||g.recipeType)==="mise"?"Preparación base":"Otro"),
+    recipeType:g.recipe_type||g.recipeType||"sale",
+    station:g.station||"Cocina",
+    yield:Number(g.yield_qty??g.yield??1)||1,
+    outputUnit:g.output_unit||g.outputUnit||"porción",
+    storageMethod:g.storage_method||g.storageMethod||"Uso inmediato",
+    shelfLifeDays:Number(g.shelf_life_days??g.shelfLifeDays??0)||0,
+    ingredients:Array.isArray(g.ingredients)?g.ingredients:[],
+    baseComponents:Array.isArray(g.base_components)?g.base_components:(Array.isArray(g.baseComponents)?g.baseComponents:[]),
+    instructions:g.instructions||"",
+    allergens:Array.isArray(g.allergens)?g.allergens:[],
+    crossAllergens:Array.isArray(g.cross_contact_allergens)?g.cross_contact_allergens:(Array.isArray(g.crossAllergens)?g.crossAllergens:[]),
+    operationalNotes:g.notes||"",
+    expectedYieldPct:Number(g.expected_yield_pct??100)||100,
+    prepMinutes:Number(g.prep_active_minutes??0)||0,
+    cookMinutes:Number(g.cook_minutes??0)||0,
+    assemblyMinutes:Number(g.assembly_minutes??0)||0,
+    serviceTargetMinutes:Number(g.service_target_minutes??10)||10,
+    extras:Array.isArray(g.extras)?g.extras:[],
+    recoveredFromCloud:true
+  };
+}
+function recipeExists(id){return (recipes||[]).some(r=>String(r?.id)===String(id));}
+function backupRecipes(){
+  try{
+    if(Array.isArray(recipes)&&recipes.length)localStorage.setItem(BACKUP_KEY,JSON.stringify(recipes));
+  }catch(e){console.warn("KÜCHE respaldo recetas",e?.message||e);}
+}
+function restoreRecipes({render=true}={}){
+  let changed=false,restoredBackup=0,restoredCloud=0,repaired=0;
+  try{
+    const backup=JSON.parse(localStorage.getItem(BACKUP_KEY)||"[]");
+    if(Array.isArray(backup)){
+      backup.forEach(r=>{
+        if(r?.id!==undefined&&!recipeExists(r.id)){recipes.push(r);changed=true;restoredBackup++;}
+      });
+    }
+  }catch(e){console.warn("KÜCHE lectura respaldo recetas",e?.message||e);}
+
+  const guides=(typeof recipeGuidesCloud!=="undefined"&&Array.isArray(recipeGuidesCloud))?recipeGuidesCloud:[];
+  guides.filter(g=>g&&g.active!==false).forEach(g=>{
+    const incoming=recipeFromGuide(g);if(!incoming)return;
+    const existing=(recipes||[]).find(r=>String(r?.id)===String(incoming.id));
+    if(!existing){recipes.push(incoming);changed=true;restoredCloud++;return;}
+    let localChanged=false;
+    if(!existing.recipeType&&incoming.recipeType){existing.recipeType=incoming.recipeType;localChanged=true;}
+    if((!existing.category||String(existing.category).trim()==="")&&incoming.category){existing.category=incoming.category;localChanged=true;}
+    if(!existing.cloudGuideId&&incoming.cloudGuideId){existing.cloudGuideId=incoming.cloudGuideId;localChanged=true;}
+    if(localChanged){changed=true;repaired++;}
+  });
+
+  if(changed){
+    try{localStorage.setItem("kucheRecipes",JSON.stringify(recipes));}catch(e){console.warn(e);}
+    backupRecipes();
+    if(typeof kucheV17EnsureAllPreparedProducts==="function")kucheV17EnsureAllPreparedProducts({useBatchStock:true});
+    if(render&&typeof renderRecipes==="function")renderRecipes();
+    if(typeof renderPreparations==="function")renderPreparations();
+  }
+  return {changed,restoredBackup,restoredCloud,repaired,total:(recipes||[]).length};
+}
+
+const originalSaveRecipes=window.saveRecipes;
+if(typeof originalSaveRecipes==="function")window.saveRecipes=function(){
+  const out=originalSaveRecipes.apply(this,arguments);backupRecipes();return out;
+};
+
+const originalLoadIntegralCloudData=window.loadIntegralCloudData;
+if(typeof originalLoadIntegralCloudData==="function")window.loadIntegralCloudData=async function(){
+  const out=await originalLoadIntegralCloudData.apply(this,arguments);
+  const result=restoreRecipes({render:true});
+  if(result.restoredCloud||result.restoredBackup)console.info("KÜCHE recuperó recetas",result);
+  return out;
+};
+
+const originalShowPage=window.showPage;
+if(typeof originalShowPage==="function")window.showPage=function(pageId,button){
+  if(pageId==="recipes")restoreRecipes({render:false});
+  const out=originalShowPage.apply(this,arguments);
+  if(pageId==="recipes"&&typeof renderRecipes==="function")renderRecipes();
+  return out;
+};
+
+window.kucheRestoreRecipesFromCloud=()=>restoreRecipes({render:true});
+backupRecipes();
+restoreRecipes({render:false});
+})();
+</script>
+
 </body></html>`);win.document.close();order.lastPrintedAt=new Date().toISOString();savePOSOrders();setTimeout(()=>{win.focus();win.print();},250);}
 function openPOSPayment(){const order=getActivePOSOrder();if(!order||!order.items.length){alert("La comanda está vacía.");return;}const reg=getActiveCashRegister();if(!reg){alert("Debes abrir una caja antes de cobrar una mesa.");openCashFromPOS();return;}posPaymentPanel.classList.add("open");posDiscount.value=Number(order.discount||0);posTipAmount.value=0;posTipMethod.value="efectivo";payCash.value=getOrderTotal(order);payDebit.value=0;payCredit.value=0;payTransfer.value=0;posPaymentNote.value="";updatePOSPaymentCheck();}
 function closePOSPayment(){document.getElementById("posPaymentPanel")?.classList.remove("open");}
