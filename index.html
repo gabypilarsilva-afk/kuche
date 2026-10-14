@@ -12168,6 +12168,32 @@ function printCurrentPOSOrder(station){const order=getActivePOSOrder();if(!order
 
 
 <!-- KÜCHE V20.8: corrige proveedor frecuente / Bad Request al editar materia prima -->
+
+<script id="kuche-v20112-agenda-hotfix">
+(function(){
+'use strict';
+function ensureAgendaShell(){
+  if(document.getElementById('adminagenda'))return true;
+  const content=document.querySelector('main .content');
+  if(!content)return false;
+  const page=document.createElement('section');
+  page.id='adminagenda';
+  page.className='page';
+  content.appendChild(page);
+  return true;
+}
+function healAgenda(){
+  ensureAgendaShell();
+  try{window.kucheAgenda?.install?.();}catch(e){console.warn('KÜCHE agenda hotfix',e);}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',healAgenda,{once:true});else healAgenda();
+document.addEventListener('click',function(e){
+  const b=e.target.closest?.('#uxAgendaNav,[data-ux-page="adminagenda"]');
+  if(b)healAgenda();
+},true);
+})();
+</script>
+
 </body></html>`);win.document.close();order.lastPrintedAt=new Date().toISOString();savePOSOrders();setTimeout(()=>{win.focus();win.print();},250);}
 function openPOSPayment(){const order=getActivePOSOrder();if(!order||!order.items.length){alert("La comanda está vacía.");return;}const reg=getActiveCashRegister();if(!reg){alert("Debes abrir una caja antes de cobrar una mesa.");openCashFromPOS();return;}posPaymentPanel.classList.add("open");posDiscount.value=Number(order.discount||0);posTipAmount.value=0;posTipMethod.value="efectivo";payCash.value=getOrderTotal(order);payDebit.value=0;payCredit.value=0;payTransfer.value=0;posPaymentNote.value="";updatePOSPaymentCheck();}
 function closePOSPayment(){document.getElementById("posPaymentPanel")?.classList.remove("open");}
@@ -22161,6 +22187,12 @@ if(typeof previousTheme==='function')window.applyThemeColor=function(){
 var previousShowPage=window.showPage;
 if(typeof previousShowPage==='function')window.showPage=function(pageId,button){
  var page=document.getElementById(pageId);
+ /* V20.11.2: Mi agenda se crea dinámicamente. El guard de navegación V20
+    no debe bloquearla antes de que kucheAgenda.install() pueda crear la sección. */
+ if(pageId==='adminagenda'&&(!page||!page.classList.contains('page'))){
+  try{if(window.kucheAgenda&&typeof window.kucheAgenda.install==='function')window.kucheAgenda.install();}catch(e){console.warn('KÜCHE agenda: no se pudo preparar la sección',e);}
+  page=document.getElementById(pageId);
+ }
  if(!page||!page.classList.contains('page')){
   alert('Esta sección no está disponible. KÜCHE mantuvo abierta la pantalla actual.');
   return false;
@@ -22674,7 +22706,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 <script id="kuche-v2011-script">
 (function(){
 'use strict';
-const VERSION='V20.11 · Control físico, carátulas e iconos';
+const VERSION='V20.11.2 · Agenda reparada + control físico, carátulas e iconos';
 const $=id=>document.getElementById(id);
 const esc=v=>typeof escapeHTML==='function'?escapeHTML(String(v??'')):String(v??'').replace(/[&<>\"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[m]));
 const attr=v=>esc(v).replace(/'/g,'&#39;');
@@ -22822,3 +22854,87 @@ setTimeout(install,2600);setTimeout(install,9000);
 })();
 </script>
 
+
+
+<!-- =====================================================
+     KÜCHE V20.11.3 · EQUIVALENCIA CLARA DEL FORMATO
+     Ej.: 1 bolsa = 3 kg / 1 bidón = 5 L
+====================================================== -->
+<style id="kuche-v20113-equivalence-style">
+#kucheFormatEquivalenceCard{
+  grid-column:1/-1;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:linear-gradient(180deg,#fff,#fafbf9);
+  padding:14px 16px;
+  margin:2px 0 4px;
+}
+.kuche-format-equivalence-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:12px}
+.kuche-format-equivalence-head strong{display:block;color:var(--green-dark);font-size:13px}
+.kuche-format-equivalence-head span{display:block;color:var(--muted);font-size:10px;line-height:1.5;margin-top:3px}
+.kuche-format-equation{display:grid;grid-template-columns:auto minmax(120px,.75fr) auto minmax(120px,.75fr) minmax(110px,.55fr);gap:9px;align-items:center}
+.kuche-format-fixed,.kuche-format-sign{font-size:18px;font-weight:850;color:var(--green-dark);text-align:center}
+#kucheFormatName{min-height:42px;display:flex;align-items:center;padding:0 12px;border:1px solid var(--border);border-radius:8px;background:var(--cream);font-size:13px;font-weight:750;color:var(--green-dark)}
+#kucheFormatEquivQty,#kucheFormatEquivUnit{width:100%;min-height:42px;border:1px solid var(--border);border-radius:8px;background:#fff;padding:9px 11px;font-size:13px}
+#kucheFormatEquivQty:focus,#kucheFormatEquivUnit:focus{outline:none;border-color:var(--green)}
+#kucheFormatEquivQty:disabled,#kucheFormatEquivUnit:disabled{background:#f3f3ef;color:var(--muted)}
+#kucheFormatEquivalencePreview{margin-top:10px;padding:9px 11px;border-radius:8px;background:var(--green-soft);color:var(--green-dark);font-size:11px;line-height:1.5}
+.kuche-equivalence-source-hidden{display:none!important}
+@media(max-width:760px){.kuche-format-equivalence-head{display:block}.kuche-format-equation{grid-template-columns:auto 1fr auto}.kuche-format-equation #kucheFormatEquivQty,.kuche-format-equation #kucheFormatEquivUnit{grid-column:2/-1}.kuche-format-sign{grid-column:1}.kuche-format-fixed{align-self:start;padding-top:10px}}
+</style>
+<script id="kuche-v20113-equivalence-script">
+(function(){
+'use strict';
+const VERSION='V20.11.3 · Equivalencias de formato + agenda reparada + control físico';
+const $=id=>document.getElementById(id);
+let syncing=false;
+function fmt(n){const x=Number(n);return Number.isFinite(x)?x.toLocaleString('es-CL',{maximumFractionDigits:6}):''}
+function formatName(){return String($('unit')?.value||'formato').trim()||'formato'}
+function isAutomatic(){return !!$('kuchePackEnabled')?.checked}
+function install(){
+ const grid=$('inventoryForm')?.querySelector('.form-grid'),unit=$('unit'),qty=$('productBasePerPurchase'),base=$('productBaseUnit');
+ if(!grid||!unit||!qty||!base)return;
+ let card=$('kucheFormatEquivalenceCard');
+ if(!card){
+  card=document.createElement('div');card.id='kucheFormatEquivalenceCard';
+  card.innerHTML=`<div class="kuche-format-equivalence-head"><div><strong>Equivalencia del formato de compra</strong><span>Indica cuánto producto real contiene 1 unidad del formato que compras. Ej.: 1 bolsa = 3 kg; 1 bidón = 5 L; 1 caja = 24 unidades.</span></div></div><div class="kuche-format-equation"><div class="kuche-format-fixed">1</div><div id="kucheFormatName">formato</div><div class="kuche-format-sign">=</div><input id="kucheFormatEquivQty" type="number" min="0.0001" step="any" placeholder="Ej. 3"><select id="kucheFormatEquivUnit"><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="L">L</option><option value="unidad">unidad</option><option value="porción">porción</option></select></div><div id="kucheFormatEquivalencePreview">Completa la equivalencia del formato.</div>`;
+  const unitField=unit.closest('.field');
+  if(unitField)unitField.insertAdjacentElement('afterend',card);else grid.prepend(card);
+  $('kucheFormatEquivQty').addEventListener('input',syncToSource);
+  $('kucheFormatEquivUnit').addEventListener('change',syncToSource);
+ }
+ qty.closest('.field')?.classList.add('kuche-equivalence-source-hidden');
+ base.closest('.field')?.classList.add('kuche-equivalence-source-hidden');
+ if(!unit.dataset.v20113Bound){unit.dataset.v20113Bound='1';unit.addEventListener('change',()=>{syncFromSource();updatePreview()})}
+ const pack=$('kuchePackEnabled');if(pack&&!pack.dataset.v20113Bound){pack.dataset.v20113Bound='1';pack.addEventListener('change',()=>setTimeout(syncFromSource,0))}
+ syncFromSource();
+ const label=$('systemVersionLabel');if(label)label.textContent=VERSION;
+}
+function syncFromSource(){
+ if(syncing)return;const qty=$('productBasePerPurchase'),base=$('productBaseUnit'),mq=$('kucheFormatEquivQty'),mu=$('kucheFormatEquivUnit'),name=$('kucheFormatName');if(!qty||!base||!mq||!mu||!name)return;
+ syncing=true;try{
+  name.textContent=formatName();
+  mq.value=qty.value||'';mu.value=base.value||'unidad';
+  const auto=isAutomatic()||qty.readOnly||base.disabled;mq.disabled=auto;mu.disabled=auto;
+  updatePreview();
+ }finally{syncing=false}
+}
+function syncToSource(){
+ if(syncing||isAutomatic())return;const qty=$('productBasePerPurchase'),base=$('productBaseUnit'),mq=$('kucheFormatEquivQty'),mu=$('kucheFormatEquivUnit');if(!qty||!base||!mq||!mu)return;
+ syncing=true;try{qty.value=mq.value;base.value=mu.value;qty.dispatchEvent(new Event('input',{bubbles:true}));base.dispatchEvent(new Event('change',{bubbles:true}));}finally{syncing=false}
+ updatePreview();if(typeof window.kucheV173UpdatePurchaseFormatPreview==='function')setTimeout(()=>window.kucheV173UpdatePurchaseFormatPreview(),0);
+}
+function updatePreview(){
+ const box=$('kucheFormatEquivalencePreview'),name=$('kucheFormatName'),mq=$('kucheFormatEquivQty'),mu=$('kucheFormatEquivUnit');if(!box||!name||!mq||!mu)return;
+ const n=Number(mq.value),format=formatName(),unit=mu.value||'unidad';
+ if(!Number.isFinite(n)||n<=0){box.textContent=`Define cuánto equivale 1 ${format}.`;return}
+ box.innerHTML=`<strong>1 ${escapeHTML(format)} = ${escapeHTML(fmt(n))} ${escapeHTML(unit)}</strong> · KÜCHE usará esta equivalencia para convertir compras, stock, recetas y conteos.`+(isAutomatic()?' <span style="opacity:.75">Calculado automáticamente desde el contenido interno del formato.</span>':'');
+}
+function wrap(name){const old=window[name];if(typeof old!=='function'||old.__v20113)return;const fn=function(){const r=old.apply(this,arguments);setTimeout(()=>{install();syncFromSource()},0);return r};fn.__v20113=true;window[name]=fn}
+['newProduct','editProduct','kucheV174PrepareMaterialForm'].forEach(wrap);
+if(typeof window.kucheV173UpdatePurchaseFormatPreview==='function'&&!window.kucheV173UpdatePurchaseFormatPreview.__v20113){const old=window.kucheV173UpdatePurchaseFormatPreview;const fn=function(){const r=old.apply(this,arguments);setTimeout(syncFromSource,0);return r};fn.__v20113=true;window.kucheV173UpdatePurchaseFormatPreview=fn}
+const oldShow=window.showPage;if(typeof oldShow==='function'&&!oldShow.__v20113){const fn=function(page,button){const r=oldShow.apply(this,arguments);if(page==='ingredients')setTimeout(install,0);return r};fn.__v20113=true;window.showPage=fn}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(install,700),{once:true});else setTimeout(install,700);
+setTimeout(install,2800);setTimeout(install,9000);
+})();
+</script>
