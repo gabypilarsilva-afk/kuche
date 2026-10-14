@@ -23033,3 +23033,144 @@ window.kucheRestoreRecipesFromCloud=()=>restore({render:true});
 backupRecipes();setTimeout(backupRecipes,1800);setTimeout(()=>{const v=$('systemVersionLabel');if(v)v.textContent='V20.11.7 · Login y recetas reparados';},900);
 })();
 </script>
+
+
+<!-- KÜCHE V20.11.8 · RECUPERACIÓN ROBUSTA DE RECETAS BASE -->
+<script id="kuche-v20118-robust-recipe-recovery">
+(function(){
+'use strict';
+const VERSION='V20.11.8 · Recetas base recuperadas';
+const BACKUP_KEYS=['kucheRecipes','kucheRecipesBackupV20117','kucheRecipesBackupV20118'];
+const $=id=>document.getElementById(id);
+const norm=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
+const normId=v=>{const s=String(v??'').trim();return /^\d+$/.test(s)?Number(s):s;};
+function recipeArray(){return typeof recipes!=='undefined'&&Array.isArray(recipes)?recipes:null;}
+function isPreparedInventoryFor(source,name=''){
+ try{
+  if(typeof inventory==='undefined'||!Array.isArray(inventory))return false;
+  return inventory.some(p=>{
+   const pid=p?.sourceRecipeId??p?.source_recipe_local_id;
+   const kind=norm(p?.inventoryKind||p?.item_kind||p?.inventoryClass||p?.inventory_class||p?.category);
+   const sameId=source!==undefined&&source!==null&&String(pid)===String(source);
+   const sameName=name&&norm(p?.name)===norm(name);
+   return (sameId||(!source&&sameName))&&(kind.includes('prepared')||kind.includes('preparacion')||kind.includes('preparaciones base'));
+  });
+ }catch(e){return false;}
+}
+function isBaseLike(x){
+ const type=norm(x?.recipe_type??x?.recipeType);
+ const category=norm(x?.category);
+ const source=x?.source_local_id??x?.sourceLocalId??x?.id;
+ return type==='mise'||type==='base'||category==='preparacion base'||category==='preparaciones base'||category.includes('preparacion base')||isPreparedInventoryFor(source,x?.name||'');
+}
+function guideToRecipe(g){
+ const source=g?.source_local_id??g?.sourceLocalId;
+ if(source===undefined||source===null||String(source).trim()==='')return null;
+ const base=isBaseLike(g);
+ return {
+  id:normId(source),cloudGuideId:g.id||null,name:g.name||'Receta recuperada',
+  category:g.category||(base?'Preparación base':'Otro'),recipeType:base?'mise':(g.recipe_type||g.recipeType||'sale'),
+  station:g.station||'Cocina',yield:Number(g.yield_qty??g.yield??1)||1,outputUnit:g.output_unit||g.outputUnit||'porción',
+  storageMethod:g.storage_method||g.storageMethod||'Uso inmediato',shelfLifeDays:Number(g.shelf_life_days??g.shelfLifeDays??0)||0,
+  ingredients:Array.isArray(g.ingredients)?g.ingredients:[],baseComponents:Array.isArray(g.base_components)?g.base_components:(Array.isArray(g.baseComponents)?g.baseComponents:[]),
+  instructions:g.instructions||'',allergens:Array.isArray(g.allergens)?g.allergens:[],
+  crossAllergens:Array.isArray(g.cross_contact_allergens)?g.cross_contact_allergens:(Array.isArray(g.crossAllergens)?g.crossAllergens:[]),
+  operationalNotes:g.notes||'',expectedYieldPct:Number(g.expected_yield_pct??100)||100,
+  prepMinutes:Number(g.prep_active_minutes??0)||0,cookMinutes:Number(g.cook_minutes??0)||0,assemblyMinutes:Number(g.assembly_minutes??0)||0,
+  serviceTargetMinutes:Number(g.service_target_minutes??10)||10,extras:Array.isArray(g.extras)?g.extras:[],recoveredFromCloud:true
+ };
+}
+function looksLikeRecipe(r){return !!r&&typeof r==='object'&&typeof r.name==='string'&&(Array.isArray(r.ingredients)||Array.isArray(r.baseComponents)||'recipeType' in r||'yield' in r);}
+function mergeOne(incoming,stats){
+ const list=recipeArray();if(!list||!incoming||incoming.id===undefined||incoming.id===null)return false;
+ let cur=list.find(r=>String(r?.id)===String(incoming.id));
+ if(!cur&&incoming.name)cur=list.find(r=>norm(r?.name)===norm(incoming.name));
+ if(!cur){list.push(incoming);stats.added++;return true;}
+ let changed=false;
+ const base=isBaseLike(incoming)||isBaseLike(cur);
+ if(base&&cur.recipeType!=='mise'){cur.recipeType='mise';changed=true;stats.reclassified++;}
+ if(base&&(!cur.category||!norm(cur.category).includes('preparacion base'))){cur.category='Preparación base';changed=true;}
+ for(const key of ['cloudGuideId','station','outputUnit','storageMethod','instructions','operationalNotes']){
+  if((cur[key]===undefined||cur[key]===null||cur[key]==='')&&incoming[key]){cur[key]=incoming[key];changed=true;}
+ }
+ for(const key of ['ingredients','baseComponents','allergens','crossAllergens','extras']){
+  if((!Array.isArray(cur[key])||!cur[key].length)&&Array.isArray(incoming[key])&&incoming[key].length){cur[key]=incoming[key];changed=true;}
+ }
+ for(const key of ['yield','shelfLifeDays','expectedYieldPct','prepMinutes','cookMinutes','assemblyMinutes','serviceTargetMinutes']){
+  if((cur[key]===undefined||cur[key]===null)&&incoming[key]!==undefined){cur[key]=incoming[key];changed=true;}
+ }
+ if(changed)stats.updated++;
+ return changed;
+}
+function recoverLocal(stats){
+ const seen=new Set();
+ const tryArray=(arr,key)=>{if(!Array.isArray(arr))return;arr.filter(looksLikeRecipe).forEach(r=>{const k=String(r.id??norm(r.name));if(seen.has(k))return;seen.add(k);if(mergeOne({...r},stats))stats.local++;});};
+ for(const key of BACKUP_KEYS){try{tryArray(JSON.parse(localStorage.getItem(key)||'[]'),key);}catch(e){}}
+ try{
+  for(let i=0;i<localStorage.length;i++){
+   const key=localStorage.key(i);if(!key||!/recipe|receta/i.test(key)||BACKUP_KEYS.includes(key))continue;
+   try{tryArray(JSON.parse(localStorage.getItem(key)||'[]'),key);}catch(e){}
+  }
+ }catch(e){}
+}
+function reclassifyExisting(stats){
+ const list=recipeArray();if(!list)return;
+ for(const r of list){if(isBaseLike(r)&&r.recipeType!=='mise'){r.recipeType='mise';if(!r.category||!norm(r.category).includes('preparacion base'))r.category='Preparación base';stats.reclassified++;stats.updated++;}}
+}
+function persistAndRender(){
+ const list=recipeArray();if(!list)return;
+ try{localStorage.setItem('kucheRecipes',JSON.stringify(list));localStorage.setItem('kucheRecipesBackupV20118',JSON.stringify(list));}catch(e){console.warn('KÜCHE respaldo recetas',e);}
+ try{if(typeof saveRecipes==='function')saveRecipes();}catch(e){console.warn(e);}
+ try{if(typeof migrateExistingBaseRecipes==='function')migrateExistingBaseRecipes();}catch(e){console.warn(e);}
+ try{if(typeof kucheV17EnsureAllPreparedProducts==='function')kucheV17EnsureAllPreparedProducts({useBatchStock:true});}catch(e){console.warn(e);}
+ try{if(typeof renderRecipes==='function')renderRecipes();}catch(e){console.warn(e);}
+ try{if(typeof renderRecipeBook==='function')renderRecipeBook();}catch(e){console.warn(e);}
+ try{if(typeof renderPreparations==='function')renderPreparations();}catch(e){console.warn(e);}
+}
+function statusBox(){
+ let el=$('kucheV20118RecipeRecoveryStatus');
+ if(el)return el;
+ const page=$('recipes');if(!page)return null;
+ el=document.createElement('div');el.id='kucheV20118RecipeRecoveryStatus';el.className='status-box';el.style.marginBottom='14px';el.style.display='none';
+ const header=page.querySelector('.page-header');header?.insertAdjacentElement('afterend',el);return el;
+}
+function setStatus(message,bad=false){const el=statusBox();if(!el)return;el.style.display='block';el.className='status-box'+(bad?' danger':'');el.textContent=message;}
+async function recover({announce=false}={}){
+ const list=recipeArray();if(!list)return {error:'El catálogo de recetas todavía no está cargado.'};
+ const stats={added:0,updated:0,reclassified:0,local:0,cloudRows:0,cloudMerged:0,cloudError:''};
+ recoverLocal(stats);reclassifyExisting(stats);
+ if(typeof kucheCloud!=='undefined'&&kucheCloud&&typeof cloudOrganization!=='undefined'&&cloudOrganization?.id){
+  try{
+   const {data,error}=await kucheCloud.from('recipe_guides').select('*').eq('organization_id',cloudOrganization.id);
+   if(error)throw error;
+   const rows=Array.isArray(data)?data.filter(g=>g&&g.active!==false):[];stats.cloudRows=rows.length;
+   try{if(typeof recipeGuidesCloud!=='undefined')recipeGuidesCloud=rows;}catch(e){}
+   for(const g of rows){const r=guideToRecipe(g);if(r&&mergeOne(r,stats))stats.cloudMerged++;}
+   reclassifyExisting(stats);
+  }catch(e){stats.cloudError=[e?.message,e?.details,e?.hint,e?.code].filter(Boolean).join(' · ')||String(e);}
+ }
+ persistAndRender();
+ const total=list.length,base=list.filter(r=>isBaseLike(r)).length;
+ const result={...stats,total,base};
+ if(announce){
+  if(stats.cloudError)setStatus(`No pude leer recipe_guides de KÜCHE Cloud: ${stats.cloudError}`,true);
+  else if(stats.cloudRows===0&&stats.local===0)setStatus('No encontré recetas completas guardadas en KÜCHE Cloud ni en los respaldos del navegador. Las preparaciones que ves en Materia prima conservan stock y vínculo, pero no contienen por sí solas los ingredientes completos de la receta.',true);
+  else setStatus(`Recuperación terminada: ${total} receta(s) cargadas, ${base} receta(s) base. Nube: ${stats.cloudRows} registro(s). Recuperadas/actualizadas en esta revisión: ${stats.added+stats.updated}.`);
+ }
+ return result;
+}
+function installButton(){
+ const page=$('recipes');if(!page||$('kucheV20118RecoverRecipes'))return;
+ const actions=page.querySelector('.page-header .staff-actions')||page.querySelector('.page-header');if(!actions)return;
+ const b=document.createElement('button');b.id='kucheV20118RecoverRecipes';b.type='button';b.className='secondary-button admin-only';b.textContent='Recuperar recetas guardadas';b.onclick=async()=>{b.disabled=true;const old=b.textContent;b.textContent='Buscando…';try{await recover({announce:true});}finally{b.disabled=false;b.textContent=old;}};actions.prepend(b);
+ statusBox();
+}
+const previousShow=window.showPage;if(typeof previousShow==='function'&&!previousShow.__v20118){const fn=function(page,button){const out=previousShow.apply(this,arguments);if(page==='recipes'){setTimeout(()=>{installButton();recover({announce:false});},80);}return out;};fn.__v20118=true;window.showPage=fn;}
+const previousSession=window.handleCloudSession;if(typeof previousSession==='function'&&!previousSession.__v20118){const fn=async function(){const out=await previousSession.apply(this,arguments);setTimeout(()=>recover({announce:false}),150);return out;};fn.__v20118=true;window.handleCloudSession=fn;}
+window.kucheRecoverAllRecipes=()=>recover({announce:true});
+function boot(){installButton();reclassifyExisting({added:0,updated:0,reclassified:0,local:0});persistAndRender();const v=$('systemVersionLabel');if(v)v.textContent=VERSION;}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,1200),{once:true});else setTimeout(boot,1200);
+setTimeout(installButton,4200);
+})();
+
+</script>
