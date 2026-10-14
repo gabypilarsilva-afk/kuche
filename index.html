@@ -1073,6 +1073,7 @@ COMPRAS / MERMAS / VENTAS / IA
 </head>
 
 <body>
+<!-- KÜCHE V20.11.5 · estructura principal y recuperación de contraseña reparadas -->
 
 
 <div id="loginOverlay" class="login-overlay">
@@ -12192,41 +12193,7 @@ function updatePOSPeople(){const order=getActivePOSOrder();if(!order)return;orde
 function renderPOSOrder(){const order=getActivePOSOrder(),empty=document.getElementById("posNoOrder"),content=document.getElementById("posOrderContent");if(!empty||!content)return;if(!order){empty.style.display="block";content.style.display="none";return;}empty.style.display="none";content.style.display="block";posOrderTableName.textContent=order.tableName;posOrderWorker.textContent=order.workerName+" · abierta "+new Date(order.openedAt).toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});posPeople.value=order.people||1;posCart.innerHTML=order.items.length?order.items.map(i=>`<div class="pos-cart-row"><div><div class="pos-cart-name">${escapeHTML(i.recipeName)} ${i.override?'<span class="badge badge-danger">PIN</span>':''}</div><span class="station-badge">${escapeHTML(i.station||'Cocina')}</span><div class="pos-cart-note">${escapeHTML(i.notes||'Sin observaciones')}</div><button class="secondary-button" style="margin-top:5px;padding:4px 7px;font-size:10px" onclick="editPOSItemNote('${i.id}')">Nota</button></div><div><div class="pos-cart-controls"><button class="qty-btn" onclick="changePOSQty('${i.id}',-1)">−</button><strong>${i.quantity}</strong><button class="qty-btn" onclick="changePOSQty('${i.id}',1)">+</button></div><div style="text-align:right;font-size:11px;margin-top:5px">$${formatMoney(i.quantity*i.unitPrice)}</div></div></div>`).join(""):'<div class="pos-empty">Aún no agregas productos.</div>';posSubtotal.textContent="$"+formatMoney(getOrderSubtotal(order));posTotal.textContent="$"+formatMoney(getOrderTotal(order));}
 function cancelCurrentPOSOrder(){const order=getActivePOSOrder();if(!order)return;if(order.items.length&&order.lastPrintedAt&&!authorizeAdminOverride("Cancelar comanda enviada",order.tableName,"Cancelación posterior a impresión"))return;if(!confirm("¿Cancelar esta comanda?"))return;order.status="cancelled";order.cancelledAt=new Date().toISOString();savePOSOrders();activePOSOrderId=null;renderPOS();}
 function printCurrentPOSOrder(station){const order=getActivePOSOrder();if(!order||!order.items.length){alert("No hay productos en la comanda.");return;}const groups={};order.items.forEach(i=>{const st=i.station||'Cocina';if(station!=="all"&&st!==station)return;(groups[st]||(groups[st]=[])).push(i);});if(!Object.keys(groups).length){alert("No hay productos para esa estación.");return;}const win=window.open("","_blank","width=430,height=720");if(!win){alert("El navegador bloqueó la ventana de impresión.");return;}const sections=Object.entries(groups).map(([st,items])=>`<section style="page-break-after:always"><h2>${escapeHTML(st)}</h2><div>Mesa: <strong>${escapeHTML(order.tableName)}</strong> · Personas: ${order.people||1}</div><div>Garzón: ${escapeHTML(order.workerName)} · ${new Date().toLocaleString('es-CL')}</div><hr>${items.map(i=>`<div style="font-size:18px;margin:12px 0"><strong>${i.quantity} × ${escapeHTML(i.recipeName)}</strong>${i.notes?`<div style="font-size:14px">Obs: ${escapeHTML(i.notes)}</div>`:''}</div>`).join('')}</section>`).join('');win.document.write(`<!doctype html><html><head><title>Comanda ${escapeHTML(order.tableName)}</title><style>body{font-family:Arial,sans-serif;padding:16px;color:#111}h2{font-size:22px;margin:0 0 8px}hr{border:0;border-top:1px dashed #333;margin:14px 0}@media print{body{padding:0}section:last-child{page-break-after:auto}}</style></head><body>${sections}
-<div id="contextInfoPopover" class="context-info-popover" role="dialog" aria-live="polite">
-  <div class="context-info-head">
-    <strong id="contextInfoTitle">Información</strong>
-    <button type="button" class="context-info-close" onclick="closeContextInfo()" aria-label="Cerrar">×</button>
-  </div>
-  <div id="contextInfoText" class="context-info-text"></div>
-</div>
 
-
-<!-- KÜCHE V20.8: corrige proveedor frecuente / Bad Request al editar materia prima -->
-
-<script id="kuche-v20112-agenda-hotfix">
-(function(){
-'use strict';
-function ensureAgendaShell(){
-  if(document.getElementById('adminagenda'))return true;
-  const content=document.querySelector('main .content');
-  if(!content)return false;
-  const page=document.createElement('section');
-  page.id='adminagenda';
-  page.className='page';
-  content.appendChild(page);
-  return true;
-}
-function healAgenda(){
-  ensureAgendaShell();
-  try{window.kucheAgenda?.install?.();}catch(e){console.warn('KÜCHE agenda hotfix',e);}
-}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',healAgenda,{once:true});else healAgenda();
-document.addEventListener('click',function(e){
-  const b=e.target.closest?.('#uxAgendaNav,[data-ux-page="adminagenda"]');
-  if(b)healAgenda();
-},true);
-})();
-</script>
 
 </body></html>`);win.document.close();order.lastPrintedAt=new Date().toISOString();savePOSOrders();setTimeout(()=>{win.focus();win.print();},250);}
 function openPOSPayment(){const order=getActivePOSOrder();if(!order||!order.items.length){alert("La comanda está vacía.");return;}const reg=getActiveCashRegister();if(!reg){alert("Debes abrir una caja antes de cobrar una mesa.");openCashFromPOS();return;}posPaymentPanel.classList.add("open");posDiscount.value=Number(order.discount||0);posTipAmount.value=0;posTipMethod.value="efectivo";payCash.value=getOrderTotal(order);payDebit.value=0;payCredit.value=0;payTransfer.value=0;posPaymentNote.value="";updatePOSPaymentCheck();}
@@ -17022,6 +16989,67 @@ normalizeKDSData();
 initializeLogin();
 
 </script>
+
+<!-- KÜCHE UI global: ayuda contextual -->
+<div id="contextInfoPopover" class="context-info-popover" role="dialog" aria-live="polite">
+  <div class="context-info-head">
+    <strong id="contextInfoTitle">Información</strong>
+    <button type="button" class="context-info-close" onclick="closeContextInfo()" aria-label="Cerrar">×</button>
+  </div>
+  <div id="contextInfoText" class="context-info-text"></div>
+</div>
+
+
+<!-- KÜCHE V20.8: corrige proveedor frecuente / Bad Request al editar materia prima -->
+
+<!-- KÜCHE V20.11.2: agenda hotfix, fuera del script principal -->
+<script id="kuche-v20112-agenda-hotfix">
+(function(){
+'use strict';
+function ensureAgendaShell(){
+  if(document.getElementById('adminagenda'))return true;
+  const content=document.querySelector('main .content');
+  if(!content)return false;
+  const page=document.createElement('section');
+  page.id='adminagenda';
+  page.className='page';
+  content.appendChild(page);
+  return true;
+}
+function healAgenda(){
+  ensureAgendaShell();
+  try{window.kucheAgenda?.install?.();}catch(e){console.warn('KÜCHE agenda hotfix',e);}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',healAgenda,{once:true});else healAgenda();
+document.addEventListener('click',function(e){
+  const b=e.target.closest?.('#uxAgendaNav,[data-ux-page="adminagenda"]');
+  if(b)healAgenda();
+},true);
+})();
+</script>
+<script id="kuche-v20115-login-recovery-guard">
+(function(){
+  'use strict';
+  function bind(){
+    const btn=document.getElementById('passwordRecoveryButton');
+    if(!btn || btn.dataset.kucheRecoveryBound==='1') return;
+    btn.dataset.kucheRecoveryBound='1';
+    btn.addEventListener('click', function(ev){
+      // Inline onclick remains the primary path. This listener only diagnoses when the handler is unavailable.
+      if(typeof window.requestPasswordRecovery!=='function'){
+        ev.preventDefault();
+        const box=document.getElementById('loginError');
+        if(box){
+          box.textContent='KÜCHE no pudo cargar el módulo de recuperación. Recarga la página con ⌘R. Si continúa, usa la versión 20.11.5.';
+          box.style.display='block';
+        }
+      }
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind,{once:true}); else bind();
+})();
+</script>\n
+
 
 <style id="kuche-v206-base-portion-style">
 .kuche-v206-portion-box{display:none;grid-column:1/-1;padding:16px;border:1px solid color-mix(in srgb,var(--primary) 25%,#d8e3da);border-radius:13px;background:color-mix(in srgb,var(--primary) 5%,#fff)}
