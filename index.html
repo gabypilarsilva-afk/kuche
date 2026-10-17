@@ -23344,7 +23344,7 @@ let busy=false,queued=false,selected='',query='';
 function basePage(key){return key.split(':')[0]}
 function label(b,text){let span=b.querySelector('span');if(!span){span=document.createElement('span');b.replaceChildren(span)}if(span.textContent!==text)span.textContent=text;const key=pageOf(b);if(['dashboard','adminagenda'].includes(key)&&!b.querySelector('.kuche-menu-icon'))b.insertAdjacentHTML('afterbegin',menuIcon(key))}
 function can(page){try{if(currentSession?.role==='worker'&&window.kuche297PageAllowed)return window.kuche297PageAllowed(page);if(page==='supplyusage')return currentSession?.role==='worker';if(!currentSession)return true;if(page==='adminagenda')return currentSession.accessRole==='admin'||currentSession.ownershipRole==='owner'||(!currentSession.accessRole&&currentSession.role==='admin');return currentSession.role!=='worker'||workerCanAccess(page)}catch(e){return false}}
-function go(key,b){const page=basePage(key);if(currentSession?.role==='worker'&&window.kuche297NavAllowed&&!window.kuche297NavAllowed(key)){alert('Esta área no está habilitada para tu perfil.');return false}if(!can(page)){alert('Tu perfil no tiene acceso a esta sección.');return false}if(page==='adminagenda')window.kucheAgenda?.install?.();if(page==='controlcenter33')window.v33Tab?.('panel');if(!$(page)){alert('Esta función todavía no está disponible.');return false}selected=key;window.showPage(page,b);if(!$(page)?.classList.contains('active'))return false;
+function go(key,b){const page=basePage(key);if(currentSession?.role==='worker'&&window.kuche297NavAllowed&&!window.kuche297NavAllowed(key)){alert('Esta área no está habilitada para tu perfil.');return false}if(!can(page)){alert('Tu perfil no tiene acceso a esta sección.');return false}if(page==='adminagenda')window.kucheAgenda?.install?.();if(page==='controlcenter33')window.v33Tab?.('panel');if(!$(page)){alert('Esta función todavía no está disponible.');return false}selected=key;if(page==='operations29'&&!key.includes(':'))window.v29Tab?.('agenda',document.querySelector('[data-v29="agenda"]'));window.showPage(page,b);if(!$(page)?.classList.contains('active'))return false;
 const tab=key.split(':')[1];if(page==='operations29'&&tab){const countFrequency=['weekly','semiannual','annual'].includes(tab),actual=countFrequency?'supplies':tab;window.v29Tab?.(actual,document.querySelector('[data-v29="'+actual+'"]'));if(countFrequency)setTimeout(()=>{if($('operations29')?.classList.contains('active')&&selected===key)window.v292StartCount?.(tab)},80);else if(tab==='supplies'||tab==='assets')requestAnimationFrame(()=>$(tab==='supplies'?'v29Supplies':'v29Assets')?.scrollIntoView({behavior:'smooth',block:'start'}))}
 if(page==='finance'&&tab){window.v19RenderFinance?.();requestAnimationFrame(()=>{const panel=$('v292FinancialIndicators');panel?.scrollIntoView({behavior:'smooth',block:'start'});const cards=panel?.querySelectorAll('.v19-kpi');cards?.[tab==='roi'?0:1]?.setAttribute('tabindex','-1');cards?.[tab==='roi'?0:1]?.focus({preventScroll:true})})}sync();return true}
 window.kuche293Go=go;
@@ -23814,3 +23814,11 @@ window.kucheSupplyCatalogMarkup=markup;window.kucheSupplyCommercial={attach,read
 })();
 
 </script>
+
+<style id="kuche-standalone-article-catalog">
+/* The supplies catalog opens directly. The general dashboard remains in Centro operativo. */
+#operations29:has(#v29Supplies.active) > .v29-hero,
+#operations29:has(#v29Supplies.active) > #kuche291Start,
+#operations29:has(#v29Supplies.active) > .v29-tabs{display:none!important}
+#operations29:has(#v29Supplies.active) > #v29Supplies{margin-top:0}
+</style>
