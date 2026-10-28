@@ -6538,13 +6538,13 @@ updateRecipeStats();
 function editRecipe(id){
 
 const recipe=
-recipes.find(item=>item.id===id);
+recipes.find(item=>String(item.id)===String(id));
 
 if(!recipe){
 return;
 }
 
-editingRecipeId=id;
+editingRecipeId=recipe.id;
 
 recipeFormTitle.textContent="Editar receta";
 
@@ -6593,7 +6593,7 @@ calculateRecipe();
 function deleteRecipe(id){
 
 const recipe=
-recipes.find(item=>item.id===id);
+recipes.find(item=>String(item.id)===String(id));
 
 if(!recipe){
 return;
@@ -6606,7 +6606,7 @@ return;
 
 
 recipes=
-recipes.filter(item=>item.id!==id);
+recipes.filter(item=>String(item.id)!==String(id));
 
 saveRecipes();
 
@@ -6754,12 +6754,12 @@ Food Cost ${recipe.foodCost.toFixed(1)}%
 <div class="recipe-card-footer">
 
 <button class="secondary-button"
-onclick="editRecipe(${recipe.id})">
+onclick="editRecipe(${ops2EscapeAttr(JSON.stringify(recipe.id))})">
 Editar
 </button>
 
 <button class="danger-button"
-onclick="deleteRecipe(${recipe.id})">
+onclick="deleteRecipe(${ops2EscapeAttr(JSON.stringify(recipe.id))})">
 Eliminar
 </button>
 
@@ -15224,7 +15224,7 @@ calculateSavedRecipe=function(recipe){
 };
 function opsFinalRecipeCostChange(recipe){const hist=opsFinalPurchaseCostHistory.filter(h=>(recipe.ingredients||[]).some(i=>String(i.productId)===String(h.productId))).filter(h=>Date.now()-new Date(h.date).getTime()<=30*86400000);if(hist.length<2)return null;const newest=hist[0],oldest=hist[hist.length-1];if(!oldest.costNet)return null;return (newest.costNet-oldest.costNet)/oldest.costNet*100;}
 renderRecipes=function(){
- const container=document.getElementById("recipeList");if(!container)return;recipes=recipes.map(calculateSavedRecipe);saveRecipes();const q=(recipeSearch?.value||"").toLowerCase(),list=recipes.filter(r=>r.name.toLowerCase().includes(q));if(!list.length){container.innerHTML='<div class="table-card" style="grid-column:1/-1"><div class="empty-state"><strong>No hay recetas</strong><span>Crea tu primera receta.</span></div></div>';return;}container.innerHTML=list.map(r=>{const badge=r.foodCost<=30?"badge-success":r.foodCost<=40?"badge-warning":"badge-danger",change=opsFinalRecipeCostChange(r);return `<div class="recipe-card"><div class="recipe-card-header"><div><h3>${escapeHTML(r.name)}</h3><p>${escapeHTML(r.category)} · ${formatNumber(r.yield)} ${escapeHTML(r.outputUnit||"porción")} · objetivo ${Number(r.serviceTargetMinutes||10)} min</p></div><span class="badge ${badge}">Food Cost ${r.foodCost.toFixed(1)}%</span></div><div class="recipe-card-body"><div class="recipe-card-metrics"><div class="recipe-metric"><span>MP neta</span><strong>$${formatMoney(r.rawCost)}</strong></div><div class="recipe-metric"><span>MP con IVA</span><strong>$${formatMoney(r.rawGross)}</strong></div><div class="recipe-metric"><span>Costo real neto</span><strong>$${formatMoney(r.realCost)}</strong></div><div class="recipe-metric"><span>Precio neto / porción</span><strong>$${formatMoney(r.netPrice/Math.max(.01,Number(r.yield||1)))}</strong></div><div class="recipe-metric"><span>Precio con IVA / porción</span><strong>$${formatMoney(r.finalPerPortion)}</strong></div><div class="recipe-metric"><span>Rendimiento esperado</span><strong>${Number(r.expectedYieldPct||100).toFixed(0)}%</strong></div></div>${change!==null&&Math.abs(change)>=5?`<div class="cost-change-alert">Costo de insumos relacionado cambió aprox. ${change>0?"+":""}${change.toFixed(1)}% en 30 días. Revisar precio.</div>`:""}</div><div class="recipe-card-footer"><button class="secondary-button" onclick="editRecipe(${JSON.stringify(r.id)})">Editar</button><button class="danger-button" onclick="deleteRecipe(${JSON.stringify(r.id)})">Eliminar</button></div></div>`;}).join("");
+ const container=document.getElementById("recipeList");if(!container)return;recipes=recipes.map(calculateSavedRecipe);saveRecipes();const q=(recipeSearch?.value||"").toLowerCase(),list=recipes.filter(r=>r.name.toLowerCase().includes(q));if(!list.length){container.innerHTML='<div class="table-card" style="grid-column:1/-1"><div class="empty-state"><strong>No hay recetas</strong><span>Crea tu primera receta.</span></div></div>';return;}container.innerHTML=list.map(r=>{const badge=r.foodCost<=30?"badge-success":r.foodCost<=40?"badge-warning":"badge-danger",change=opsFinalRecipeCostChange(r);return `<div class="recipe-card"><div class="recipe-card-header"><div><h3>${escapeHTML(r.name)}</h3><p>${escapeHTML(r.category)} · ${formatNumber(r.yield)} ${escapeHTML(r.outputUnit||"porción")} · objetivo ${Number(r.serviceTargetMinutes||10)} min</p></div><span class="badge ${badge}">Food Cost ${r.foodCost.toFixed(1)}%</span></div><div class="recipe-card-body"><div class="recipe-card-metrics"><div class="recipe-metric"><span>MP neta</span><strong>$${formatMoney(r.rawCost)}</strong></div><div class="recipe-metric"><span>MP con IVA</span><strong>$${formatMoney(r.rawGross)}</strong></div><div class="recipe-metric"><span>Costo real neto</span><strong>$${formatMoney(r.realCost)}</strong></div><div class="recipe-metric"><span>Precio neto / porción</span><strong>$${formatMoney(r.netPrice/Math.max(.01,Number(r.yield||1)))}</strong></div><div class="recipe-metric"><span>Precio con IVA / porción</span><strong>$${formatMoney(r.finalPerPortion)}</strong></div><div class="recipe-metric"><span>Rendimiento esperado</span><strong>${Number(r.expectedYieldPct||100).toFixed(0)}%</strong></div></div>${change!==null&&Math.abs(change)>=5?`<div class="cost-change-alert">Costo de insumos relacionado cambió aprox. ${change>0?"+":""}${change.toFixed(1)}% en 30 días. Revisar precio.</div>`:""}</div><div class="recipe-card-footer"><button class="secondary-button" onclick="editRecipe(${ops2EscapeAttr(JSON.stringify(r.id))})">Editar</button><button class="danger-button" onclick="deleteRecipe(${ops2EscapeAttr(JSON.stringify(r.id))})">Eliminar</button></div></div>`;}).join("");
 };
 const _opsFinalNewRecipe=newRecipe;
 newRecipe=function(){_opsFinalNewRecipe();if(recipeExpectedYieldPct)recipeExpectedYieldPct.value="100";if(recipeCookMinutes)recipeCookMinutes.value="0";if(recipeAssemblyMinutes)recipeAssemblyMinutes.value="0";if(recipeServiceTargetMinutes)recipeServiceTargetMinutes.value="10";if(recipeExtras)recipeExtras.innerHTML="";calculateRecipe();};
