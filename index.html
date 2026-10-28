@@ -1926,6 +1926,11 @@ COMPRAS / MERMAS / VENTAS / IA
 <span>Precio con IVA</span>
 <strong id="recipeFinalPrice">$0</strong>
 </div>
+<div class="cost-card" id="kucheProfitR5" data-state="missing" aria-live="polite">
+<span>Ganancia aproximada por unidad</span>
+<strong id="kucheProfitR5Value">Ingresa un precio</strong>
+<small id="kucheProfitR5Help">Se calcula con la venta sin IVA menos el costo por unidad.</small>
+</div>
 
 </div>
 
@@ -23918,4 +23923,17 @@ applyPOSConsumptions=function(lines,order,authorizedShortage){normalizeAreaStock
 
 <script id="kucheRecipeCostBreakdownR4">
 (()=>{const prior=calculateRecipe;calculateRecipe=function(){const result=prior.apply(this,arguments);const c=getCurrentRecipeCalculation(),host=document.getElementById('kucheV18RecipeTotals');if(host){let box=document.getElementById('kucheCostBreakdownR4');if(!box){box=document.createElement('div');box.id='kucheCostBreakdownR4';box.style='padding:14px 18px;background:#f3f7f4;border-top:1px solid #d8e3da';host.after(box)}box.replaceChildren();const title=document.createElement('strong');title.textContent='Desglose del costo por porción';box.append(title);const factor=1/c.yieldValue;for(const [label,value]of [['Ingredientes directos, sin IVA',c.directNet],['Preparaciones base, con su elaboración incluida',c.preparedFull],['Mano de obra sobre ingredientes directos',c.directLabor],['Costos indirectos sobre ingredientes directos',c.directIndirect],['Costo total por porción',c.realCost]]){const line=document.createElement('div');line.style='display:flex;justify-content:space-between;gap:16px;margin-top:7px';const name=document.createElement('span'),amount=document.createElement('strong');name.textContent=label;amount.textContent='$'+formatMoney(value*factor);line.append(name,amount);box.append(line)}const note=document.createElement('p');note.textContent='Las preparaciones base ya incluyen su mano de obra y costos indirectos. No se les aplican esos porcentajes nuevamente. El precio de venta se mantiene fijo.';note.style='font-size:12px;margin-top:12px';box.append(note);if(c.errors.length){const warning=document.createElement('p');warning.textContent='Revisa el cálculo: '+c.errors.join(' · ');warning.style='color:#a33325';box.append(warning)}}return result};const save=saveRecipe;saveRecipe=async function(){const c=getCurrentRecipeCalculation();if(c.errors?.length){alert('No se puede confirmar el costo: '+c.errors.join(' · '));return;}return save.apply(this,arguments)};})();
+</script>
+
+<style id="kucheProfitR5Style">
+#kucheProfitR5{background:#e9f4ec;border:1px solid #bdd6c4;color:#173f35;min-width:0}
+#kucheProfitR5>span{color:#325b43}#kucheProfitR5>strong{display:block;font-size:24px;color:#173f35;margin-top:5px}
+#kucheProfitR5>small{display:block;font-size:11px;line-height:1.45;margin-top:7px;color:#435c4a}
+#kucheProfitR5[data-state="loss"]{background:#fff0ed;border-color:#e1b6ac}#kucheProfitR5[data-state="loss"]>strong{color:#9c3324}
+#kucheProfitR5[data-state="missing"]{background:#f5f6f4;border-color:#d8dfda}#kucheProfitR5[data-state="missing"]>strong{font-size:16px}
+</style>
+<script id="kucheProfitR5Script">
+(()=>{'use strict';function updateProfit(){const box=document.getElementById('kucheProfitR5'),value=document.getElementById('kucheProfitR5Value'),help=document.getElementById('kucheProfitR5Help');if(!box||!value||!help)return;const isBase=document.getElementById('recipeType')?.value==='mise';box.hidden=isBase;if(isBase)return;const c=getCurrentRecipeCalculation();if(c.errors?.length||!Number.isFinite(c.profitPerPortion)){box.dataset.state='missing';value.textContent='Revisa los costos';help.textContent='Completa los ingredientes y preparaciones para calcular la ganancia.';return;}if(!(Number(c.finalPerPortion)>0)){box.dataset.state='missing';value.textContent='Ingresa un precio';help.textContent='Se calcula con la venta sin IVA menos el costo por unidad.';return;}const profit=Number(c.profitPerPortion);box.dataset.state=profit<0?'loss':'profit';value.textContent=(profit<0?'−$':'$')+formatMoney(Math.abs(profit));help.textContent=profit<0?'Pérdida estimada: el costo supera la venta sin IVA.':'Después del IVA y los costos registrados. No incluye gastos o comisiones sin registrar.';}
+const old=calculateRecipe;calculateRecipe=function(){const result=old.apply(this,arguments);updateProfit();return result};document.getElementById('recipeType')?.addEventListener('change',updateProfit);
+})();
 </script>
