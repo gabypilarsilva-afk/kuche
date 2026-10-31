@@ -20723,11 +20723,16 @@ function migrateExistingBaseRecipes(){let changed=false;(recipes||[]).forEach(r=
 function baseRecipesForSelect(excludedId=null){return (recipes||[]).filter(r=>isBaseRecipe(r)&&String(r.id)!==String(excludedId)).sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"es"));}
 function installSearchForSelect(select,{placeholder,hint,items,onSelected,className=""}){
  if(!select||select.dataset.searchInstalled)return null;select.dataset.searchInstalled="true";const field=select.closest(".field");if(!field)return null;field.classList.add("kuche-v18-search-field",className);const listId="kucheRecipeSearchList"+(++recipeSearchSequence),input=document.createElement("input"),list=document.createElement("datalist"),help=document.createElement("span");input.type="search";input.className="kuche-v18-search-input";input.setAttribute("list",listId);input.placeholder=placeholder;input.autocomplete="off";list.id=listId;help.className="kuche-v18-search-hint";help.textContent=hint;const values=items();list.innerHTML=values.map(x=>`<option value="${ops2EscapeAttr(x.name)}"></option>`).join("");select.before(input);field.appendChild(list);field.appendChild(help);
- const syncFromSelect=()=>{const item=values.find(x=>String(x.id)===String(select.value));if(item)input.value=item.name;};
+ const syncFromSelect=()=>{const item=items().find(x=>String(x.id)===String(select.value));if(item)input.value=item.name;};
  const choose=()=>{const value=normalizeText(input.value),currentItems=items(),exact=currentItems.find(x=>normalizeText(x.name)===value);if(exact){select.value=String(exact.id);select.dispatchEvent(new Event("change",{bubbles:true}));onSelected?.(exact);}else if(select.value){select.value="";select.dispatchEvent(new Event("change",{bubbles:true}));}};
- input.addEventListener("input",choose);input.addEventListener("change",choose);select.addEventListener("change",syncFromSelect);syncFromSelect();return input;
+ const refreshSuggestions=()=>{const current=items();list.replaceChildren(...current.map(item=>{const option=document.createElement('option');option.value=item.name;return option;}));};input.addEventListener("focus",refreshSuggestions);input.addEventListener("input",refreshSuggestions);input.addEventListener("input",choose);input.addEventListener("change",choose);select.addEventListener("change",syncFromSelect);syncFromSelect();return input;
 }
-function ingredientItemsFromSelect(select){return [...select.options].filter(o=>o.value).map(o=>{const p=inventory.find(x=>String(x.id)===String(o.value));return p?{id:p.id,name:p.name}:null;}).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name,"es"));}
+function ingredientItemsFromSelect(select){
+ const selected=String(select.value||''),items=inventory.filter(p=>{const normalized=kucheV17NormalizeProduct({...p});return normalized.inventoryClass==='ingredient'||String(p.id)===selected;});
+ const known=new Set([...select.options].map(o=>String(o.value)));
+ for(const p of items)if(!known.has(String(p.id))){const option=document.createElement('option');option.value=String(p.id);option.textContent=p.name;select.append(option);known.add(String(p.id));}
+ return items.map(p=>({id:p.id,name:p.name})).sort((a,b)=>String(a.name).localeCompare(String(b.name),'es'));
+}
 function installIngredientSearches(){document.querySelectorAll("#recipeIngredients .recipe-row").forEach(row=>{const select=row.querySelector(".recipeIngredientSelect");installSearchForSelect(select,{placeholder:"Escribe el nombre del ingrediente…",hint:"Comienza a escribir y selecciona el producto sugerido.",items:()=>ingredientItemsFromSelect(select),className:"kuche-v18-ingredient-search"});});}
 function recipeMaterialTotals(recipe,visited=new Set()){
  if(!recipe)return {net:0,gross:0};const key=String(recipe.id||recipe.name);if(visited.has(key))return {net:0,gross:0};const next=new Set(visited);next.add(key);let net=0,gross=0;
@@ -24026,3 +24031,26 @@ install();
 </script>
 
 <style id="kc9Compact">#recipeForm #kc7Config{margin:14px 18px;border:1px solid #d9e4dc;background:#fff;padding:0;border-radius:12px}#kc7Config>summary{padding:13px 15px;font-size:14px}#kc7Groups,#kc7Config>.kc7-actions,#kc7Status{margin:10px 14px}#kc7Config .kc7-group{padding:12px;margin:10px 0;background:#fafcfb}#kc7Config .kc7-group>label:first-child{display:inline-block;width:65%}#kc7Config .kc7-group>label:nth-child(2){display:inline-block;width:30%;margin-left:3%}#kc7Config input:not([type=checkbox]),#kc7Config select{min-height:38px;padding:8px;border:1px solid #d6dfd9;border-radius:8px;background:#fff;font:inherit}#kc7Status{font-size:12px;color:#52675b}#kc7Config .kc7-row label{font-size:12px}#kc7Config .kc7-actions button{font-size:12px;padding:8px 10px}#kc7Config>p[hidden],#kc7Reload[hidden],#kc7Save[hidden]{display:none!important}</style>
+<style id="kucheChoicesPresentationR11">
+/* Presentación exclusiva del editor de sabores. */
+#recipeForm #kc7Config{margin:18px;padding:0;border:1px solid #d5e2d9;border-radius:14px;background:#fff;overflow:hidden}
+#recipeForm #kc7Config>summary{padding:18px 20px;background:#f0f6f2;border-bottom:1px solid #d5e2d9;font-size:18px;color:#183f33}
+#recipeForm #kc7Groups{padding:0}
+#recipeForm #kc7Config .kc7-group{margin:0;padding:18px 20px 0;border:0;border-bottom:1px solid #dce5df;border-radius:0;background:#fff;display:grid;grid-template-columns:minmax(0,2fr) minmax(160px,1fr);gap:10px 18px}
+#recipeForm #kc7Config .kc7-group>label{font-size:13px;color:#64736c;margin:0}
+#recipeForm #kc7Config .kc7-group>label:nth-child(3),#recipeForm #kc7Config .kc7-group>label:nth-child(4){grid-column:1/-1;display:flex;align-items:center;gap:8px;color:#254638}
+#recipeForm #kc7Config input:not([type=checkbox]),#recipeForm #kc7Config select{min-height:46px;padding:10px 12px;border:1px solid #d8e0db;border-radius:10px;background:#fff;color:#202a25;font:inherit;width:100%;box-sizing:border-box;margin-top:5px}
+#recipeForm #kc7Config input[type=checkbox]{width:auto;margin:0;flex-shrink:0}
+#recipeForm #kc7Config .kc7-options{grid-column:1/-1;margin-top:6px}
+#recipeForm #kc7Config .kc7-row{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(100px,1fr) minmax(110px,1fr) auto;gap:12px;align-items:end;padding:16px 0;margin:0;border-top:1px solid #e0e7e2}
+#recipeForm #kc7Config .kc7-row label{font-size:13px;color:#64736c;margin:0;min-width:0}
+#recipeForm #kc7Config .kc7-row>label:nth-child(1){grid-column:1;grid-row:1}
+#recipeForm #kc7Config .kc7-row>label:nth-child(3){grid-column:2;grid-row:1}
+#recipeForm #kc7Config .kc7-row>label:nth-child(2){grid-column:3;grid-row:1}
+#recipeForm #kc7Config .kc7-row>button{grid-column:4;grid-row:1;align-self:end;min-height:46px}
+#recipeForm #kc7Config .kc7-group>.kc7-actions{grid-column:1/-1;margin:0;padding:12px 0 16px;border-top:1px solid #e0e7e2}
+#recipeForm #kc7Config>.kc7-actions{padding:14px 20px;margin:0;background:#f7faf7}
+#recipeForm #kc7Status{margin:0;padding:10px 20px;font-size:13px;color:#536b5e}
+@media(max-width:700px){#recipeForm #kc7Config .kc7-group{grid-template-columns:1fr}#recipeForm #kc7Config .kc7-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}#recipeForm #kc7Config .kc7-row>label:nth-child(1){grid-column:1/-1;grid-row:1}#recipeForm #kc7Config .kc7-row>label:nth-child(3){grid-column:1;grid-row:2}#recipeForm #kc7Config .kc7-row>label:nth-child(2){grid-column:2;grid-row:2}#recipeForm #kc7Config .kc7-row>button{grid-column:1/-1;grid-row:3;justify-self:end}}
+
+</style>
