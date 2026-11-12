@@ -17564,10 +17564,52 @@ async function enterSharedStation(){const candidate=selectedCandidate(),pin=el("
 function goToStationPage(){const pageId=stationDeviceType()==="kitchen"?"kds":"commandas",button=Array.from(document.querySelectorAll(".nav-item")).find(b=>(b.getAttribute("onclick")||"").includes("'"+pageId+"'"));const base=window.__kucheV20BaseShowPage;if(typeof base==="function")base(pageId,button||null);if(pageId==="kds"&&typeof window.renderKDS==="function")window.renderKDS();if(pageId==="commandas"&&typeof window.renderPOS==="function")window.renderPOS();}
 function openStationLock(){ensureStationDOM();sharedOperator=null;selectedStationWorkerId=null;document.body.classList.add("kuche-shared-station-mode");el("kucheStationPinBox").classList.remove("open");el("kucheStationError").textContent="";renderStationWorkers();el("kucheStationLock").classList.add("open");}
 function activateSharedStation(type="pos"){if(!stationConfigurator()){alert("Solo un administrador o gerente puede activar un dispositivo compartido.");return;}if(!/^[0-9]{4,6}$/.test(String(appSettings?.adminPin||""))){alert("Primero configura un PIN de autorización de 4 a 6 números en Configuración. Ese PIN permitirá cerrar de forma segura el dispositivo compartido.");const b=Array.from(document.querySelectorAll(".nav-item")).find(x=>(x.getAttribute("onclick")||"").includes("'settings'"));window.showPage("settings",b||null);return;}const eligible=activeWorkers().filter(w=>type!=="kitchen"||["cocina","admin","manager"].includes(stationRole(w)));if(!eligible.some(w=>w.stationPinHash||w.pin)){alert(type==="kitchen"?"Primero configura en Personal el PIN de al menos un trabajador de Cocina.":"Primero entra a Personal y configura un PIN de estación para al menos un trabajador.");return;}localStorage.setItem(stationModeKey(),"1");localStorage.setItem(stationTypeKey(),type);auditStation("Dispositivo compartido activado",type==="kitchen"?"Tablet de Cocina asociada al local":"PC de comandas asociado al local");openStationLock();}
-function switchStationWorker(){if(!stationModeActive())return;const previous=sharedOperator;auditStation("Cambio de trabajador","Pantalla bloqueada para el siguiente turno",previous);openStationLock();}
+function switchStationWorker(){if(!stationModeActive()||startKitchenDisplay())return;const previous=sharedOperator;auditStation("Cambio de trabajador","Pantalla bloqueada para el siguiente turno",previous);openStationLock();}
 function closeSharedStation(){if(!stationModeActive())return;const required=String(appSettings?.adminPin||"");const entered=prompt("Ingresa el PIN del administrador para cerrar el dispositivo compartido:");if(entered===null)return;if(!required||entered!==required){alert("PIN de administrador incorrecto.");return;}auditStation("Dispositivo compartido cerrado","Regreso a la administración");localStorage.removeItem(stationModeKey());localStorage.removeItem(stationTypeKey());sharedOperator=null;selectedStationWorkerId=null;el("kucheStationLock")?.classList.remove("open");document.body.classList.remove("kuche-shared-station-mode");if(typeof window.applyAccessMode==="function")window.applyAccessMode();const b=Array.from(document.querySelectorAll(".nav-item")).find(x=>(x.getAttribute("onclick")||"").includes("'dashboard'"));window.__kucheV20BaseShowPage?.("dashboard",b||null);}
-function refreshStationMode(){ensureStationDOM();installStationButton();installStaffPinField();const version=el("systemVersionLabel");if(version)version.textContent=V20_SHARED_VERSION;if(!currentSession||!stationModeActive())return;if(!sharedOperator)openStationLock();}
+function startKitchenDisplay(){
+ if(currentSession?.role!=="worker"||!["cocina","bar"].includes(currentSession.accessRole))return false;
+ if(stationDeviceType()!=="kitchen"||!stationModeActive())return false;
+ const stations=baseGetKDSWorkerStations?.();
+ if(!stations?.length)return false;
+ sharedOperator={workerId:"station-kitchen",workerName:"Pantalla de cocina",accessRole:"cocina",workStations:stations};
+ ensureStationDOM();
+ el("kucheStationLock").classList.remove("open");
+ document.body.classList.add("kuche-shared-station-mode");
+ el("kucheStationOperator").textContent="Pantalla fija · "+stations.join(", ");
+ goToStationPage();
+ return true;
+}
+function installKitchenDisplayButton(){
+ const header=el("kds")?.querySelector(".page-header");
+ if(!header)return;
+ let button=el("kucheFixedKitchen");
+ if(!button){
+  button=document.createElement("button");
+  button.id="kucheFixedKitchen";
+  button.type="button";
+  button.className="secondary-button";
+  button.textContent="Usar como pantalla fija";
+  button.onclick=()=>{
+   if(currentSession?.role!=="worker"||!["cocina","bar"].includes(currentSession.accessRole)||!baseGetKDSWorkerStations?.()?.length)return;
+   localStorage.setItem(stationModeKey(),"1");
+   localStorage.setItem(stationTypeKey(),"kitchen");
+   startKitchenDisplay();
+  };
+  header.append(button);
+ }
+ button.hidden=stationModeActive()||currentSession?.role!=="worker"||!["cocina","bar"].includes(currentSession.accessRole)||!baseGetKDSWorkerStations?.()?.length;
+}
+function refreshStationMode(){ensureStationDOM();installStationButton();installKitchenDisplayButton();installStaffPinField();const version=el("systemVersionLabel");if(version)version.textContent=V20_SHARED_VERSION;if(!currentSession||!stationModeActive())return;if(!sharedOperator&&!startKitchenDisplay())openStationLock();}
 
+let lastStationActivity=Date.now();
+for(const event of ["pointerdown","keydown"])document.addEventListener(event,()=>{lastStationActivity=Date.now()},{passive:true});
+setInterval(()=>{
+ if(stationModeActive()&&stationDeviceType()==="pos"&&sharedOperator&&Date.now()-lastStationActivity>=120000){
+  closePOSPayment();
+  openStationLock();
+ }
+ installKitchenDisplayButton();
+},3000);
 const baseGetPOSWorkerIdentity=window.getPOSWorkerIdentity;
 if(typeof baseGetPOSWorkerIdentity==="function")window.getPOSWorkerIdentity=function(){if(stationModeActive()&&sharedOperator)return {workerId:sharedOperator.workerId,workerName:sharedOperator.workerName,accessRole:sharedOperator.accessRole};return baseGetPOSWorkerIdentity.apply(this,arguments);};
 
@@ -24057,4 +24099,120 @@ install();
 
 <script id="kucheCatalogDiagnostic">
 (()=>{function install(){const page=document.getElementById('ingredients');if(!page||document.getElementById('kucheExportCatalogDiagnostic'))return;const b=document.createElement('button');b.id='kucheExportCatalogDiagnostic';b.type='button';b.className='secondary-button';b.textContent='Descargar catálogo para revisión';b.style.margin='12px 0';b.onclick=()=>{if(!currentSession||!['admin','manager'].includes(currentSession.role||currentSession.accessRole)&&currentSession.ownershipRole!=='owner'){alert('Ingresa con tu sesión de Administración.');return}const blob=new Blob([JSON.stringify({format:'kuche-catalog-diagnostic-v1',exportedAt:new Date().toISOString(),inventory:inventory.map(p=>({id:p.id,name:p.name,inventoryClass:p.inventoryClass,inventory_class:p.inventory_class,inventoryKind:p.inventoryKind,item_kind:p.item_kind,active:p.active,unit:p.unit,sourceRecipeId:p.sourceRecipeId}))},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='KUCHE_catalogo_revision.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};page.prepend(b)}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();const observer=new MutationObserver(()=>{if(document.getElementById('ingredients')&&!document.getElementById('kucheExportCatalogDiagnostic'))install()});observer.observe(document.body,{childList:true,subtree:true});})();
+</script>
+
+<script>
+(()=>{
+ const $=id=>document.getElementById(id);
+ const norm=value=>String(value??"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase();
+ const organization=()=>String(cloudOrganization?.id||"");
+ const admin=()=>currentSession&&(currentSession.role==="admin"||["admin","manager"].includes(currentSession.accessRole)||currentSession.ownershipRole==="owner");
+ const defaults={edenred:["Alcohol","Cerveza","Cervezas","Vino","Vinos","Licor","Licores","Cóctel","Cócteles","Bebestibles alcohólicos","Bebidas alcohólicas"]};
+ const ruleKey=()=> "kuchePaymentCategoryRules:"+organization();
+ function rules(){
+  try{return {...defaults,...JSON.parse(localStorage.getItem(ruleKey())||"{}")};}
+  catch{return defaults;}
+ }
+ function restriction(order,lines){
+  if(!order)return null;
+  const configured=rules();
+  for(const line of lines){
+   const blocked=configured[norm(line.code)]??configured[norm(line.name)];
+   if(!Array.isArray(blocked)||!blocked.length||Number(line.amount)<=0)continue;
+   const categories=new Set(blocked.map(norm));
+   const affected=[];
+   for(const item of order.items||[]){
+    if(item.status==="cancelled"||item.kdsStatus==="cancelled"||Number(item.quantity)<=0)continue;
+    const recipe=recipes.find(r=>String(r.id)===String(item.recipeId));
+    const category=recipe?.category||item.category;
+    if(!category)return "No se puede verificar "+line.name+" porque un producto de la comanda no tiene categoría. Selecciona otro medio de pago.";
+    if(categories.has(norm(category)))affected.push(recipe?.name||item.name||category);
+   }
+   if(affected.length)return "No se puede usar "+line.name+" en esta comanda. Incluye "+[...new Set(affected)].join(", ")+". Selecciona otro medio de pago.";
+  }
+  return null;
+ }
+ const previousRestriction=paymentRestrictionError;
+ paymentRestrictionError=function(lines){
+  return restriction(getActivePOSOrder(),lines)||previousRestriction.apply(this,arguments);
+ };
+ const previousFinalize=finalizePOSPayment;
+ finalizePOSPayment=function(){
+  const error=restriction(getActivePOSOrder(),getPOSPaymentLines());
+  if(error){updatePOSPaymentCheck();alert(error);return;}
+  return previousFinalize.apply(this,arguments);
+ };
+ function installRules(){
+  const list=$("paymentMethodSettingsList");
+  const existing=$("kucheCategoryRules");
+  if(existing&&(existing.dataset.organization!==organization()||!admin()))existing.remove();
+  if(!list||!organization()||!admin()||$("kucheCategoryRules"))return;
+  const box=document.createElement("details");
+  box.id="kucheCategoryRules";
+  box.dataset.organization=organization();
+  box.className="config-card";
+  box.innerHTML='<summary><strong>Reglas por medio de pago</strong></summary><p>Categorías de recetas que impiden cobrar una comanda con el medio seleccionado. Se guarda en este navegador.</p><label>Medio de pago <select></select></label> <label>Categorías separadas por comas <input type="text"></label> <button type="button" class="secondary-button">Guardar regla</button> <span role="status"></span>';
+  list.before(box);
+  const select=box.querySelector("select"),input=box.querySelector("input");
+  for(const method of activePaymentMethods())select.add(new Option(method.name,method.code));
+  if([...select.options].some(o=>o.value==="edenred"))select.value="edenred";
+  const fill=()=>{input.value=(rules()[norm(select.value)]||[]).join(", ");};
+  select.onchange=fill;
+  fill();
+  box.querySelector("button").onclick=()=>{
+   if(!admin()||!organization()||box.dataset.organization!==organization()||!select.value)return;
+   const configured=rules();
+   configured[norm(select.value)]=input.value.split(",").map(x=>x.trim()).filter(Boolean);
+   localStorage.setItem(ruleKey(),JSON.stringify(configured));
+   box.querySelector('[role="status"]').textContent="Regla guardada en este equipo.";
+  };
+ }
+ function taskList(role){
+  try{
+   const data=JSON.parse(localStorage.getItem("kucheV29:"+encodeURIComponent(organization())+":operations")||"{}");
+   const now=new Date(),today=getToday(),areas=role==="cocina"?["cocina","refrigeracion","residuos"]:["salon","banos","consolas","fachada"];
+   return (data.tasks||[]).filter(t=>t.active&&!t.personId&&(t.role?norm(t.role)===role:areas.includes(norm(t.area)))).filter(t=>{
+    if(t.frequency==="weekdays")return (t.weekdays||[]).map(Number).includes(now.getDay());
+    if(t.frequency==="monthly")return Number(t.dayOfMonth||1)===now.getDate();
+    return true;
+   }).flatMap(t=>(t.times?.length?t.times:["Durante el turno"]).filter(time=>!(data.taskRuns||[]).some(run=>run.key===t.id+":"+today+":"+time&&run.status==="completed")).map(time=>(t.name||t.title||"Tarea")+" · "+time));
+  }catch{return [];}
+ }
+ function renderStationSummary(){
+  if(!currentSession||!window.kucheStationModeActive?.()||!window.kucheStationCurrentOperator?.())return;
+  const kitchen=window.kucheStationDeviceType()==="kitchen",page=$(kitchen?"kds":"commandas");
+  if(!page||!page.classList.contains("active"))return;
+  let panel=$("kucheStationDaily");
+  if(!panel||panel.parentElement!==page){
+   panel?.remove();
+   panel=document.createElement("section");
+   panel.id="kucheStationDaily";
+   panel.className="config-card";
+   (page.querySelector(".page-header")||page.firstElementChild).after(panel);
+  }
+  const stations=kitchen?getKDSWorkerStations():null;
+  const stock=getPOSStockSummary();
+  const shortages=[...stock.out,...stock.low].filter(x=>!stations||stations.includes(getRecipeStation(x.recipe))).slice(0,12);
+  const tasks=taskList(kitchen?"cocina":"garzon");
+  const content='<h3>Disponibilidad y tareas del turno</h3><p><strong>Stock bajo o agotado</strong></p>'+
+   (shortages.length?"<ul>"+shortages.map(x=>"<li>"+escapeHTML(x.recipe.name)+" · "+(x.status==="out"?"Agotado":"Stock bajo")+"</li>").join("")+"</ul>":"<p>Sin alertas de disponibilidad.</p>")+
+   '<p><strong>Tareas de la estación</strong></p>'+(tasks.length?"<ul>"+tasks.map(t=>"<li>"+escapeHTML(t)+"</li>").join("")+"</ul>":"<p>Sin tareas pendientes de la estación.</p>");
+  if(panel.innerHTML!==content)panel.innerHTML=content;
+ }
+ const refresh=()=>{
+  installRules();
+  if(!window.kucheStationModeActive?.()||!window.kucheStationCurrentOperator?.())$("kucheStationDaily")?.remove();
+  else renderStationSummary();
+ };
+ const previousRender=renderPaymentMethodSettings;
+ renderPaymentMethodSettings=function(){
+  const result=previousRender.apply(this,arguments);
+  $("kucheCategoryRules")?.remove();
+  installRules();
+  return result;
+ };
+ setInterval(refresh,3000);
+ refresh();
+})();
+
 </script>
