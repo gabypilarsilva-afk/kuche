@@ -24313,3 +24313,59 @@ let timer;document.addEventListener('input',e=>{if(e.target.closest('#recipeForm
 })();
 
 </script>
+
+<style id="kucheRecipeCategoriesStyle">
+#recipeList>.kr-category{grid-column:1/-1;border:1px solid var(--border,#d8e1dc);border-radius:14px;background:#fff;overflow:hidden;min-width:0}
+.kr-category>summary{cursor:pointer;padding:18px 20px;background:#eef5f1;color:var(--green-dark,#173f35);font-size:17px;font-weight:700;list-style:none;display:flex;align-items:center;gap:12px}
+.kr-category>summary::-webkit-details-marker{display:none}
+.kr-category>summary::before{content:'›';font-size:24px;line-height:1;transition:transform .15s}
+.kr-category[open]>summary::before{transform:rotate(90deg)}
+.kr-category>summary:focus-visible{outline:3px solid #38795f;outline-offset:-4px}
+.kr-category-count{margin-left:auto;background:white;border:1px solid #cbd9d2;border-radius:20px;min-width:30px;padding:3px 9px;text-align:center;font-size:14px;color:#173f35}
+.kr-category-recipes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;padding:18px}
+.kr-category-recipes>.recipe-card{min-width:0}
+@media(max-width:800px){.kr-category-recipes{grid-template-columns:1fr;padding:12px}.kr-category>summary{padding:15px}}
+
+</style>
+<script id="kucheRecipeCategories">
+/* Presentation only: move existing cards, retaining buttons and recipe data. */
+(()=>{
+'use strict';
+const opened=new Map();
+const query=()=>document.getElementById('recipeSearch')?.value.trim()||'';
+const scope=()=>String(typeof cloudOrganization!=='undefined'?cloudOrganization?.id||'':'')+':'+String(typeof activeRecipeKind!=='undefined'?activeRecipeKind:'sale');
+const normalize=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('es').replace(/\s+/g,' ').trim();
+function remember(){
+ const list=document.getElementById('recipeList');if(!list||list.dataset.categorySearch==='true')return;
+ const state=new Set();for(const d of list.querySelectorAll(':scope > .kr-category'))if(d.open)state.add(d.dataset.categoryKey);
+ if(list.dataset.categoryScope)opened.set(list.dataset.categoryScope,state);
+}
+function group(){
+ const list=document.getElementById('recipeList');if(!list)return;
+ const cards=[...list.querySelectorAll('.recipe-card')];if(!cards.length)return;
+ const groups=new Map(),hidden=[];
+ for(const card of cards){
+  if(card.style.display==='none'||card.hidden){hidden.push(card);continue;}
+  const label=(card.querySelector('.recipe-card-header p')?.textContent.split(' · ')[0]||'').trim();
+  const name=label&&label!=='undefined'&&label!=='null'?label:'Sin categoría',key=normalize(name);
+  if(!groups.has(key))groups.set(key,{name,cards:[]});groups.get(key).cards.push(card);
+ }
+ const fragment=document.createDocumentFragment(),current=scope(),searching=!!query(),state=opened.get(current)||new Set();
+ for(const [key,g]of [...groups.entries()].sort((a,b)=>a[1].name.localeCompare(b[1].name,'es',{sensitivity:'base'}))){
+  const details=document.createElement('details'),summary=document.createElement('summary'),title=document.createElement('span'),count=document.createElement('span'),body=document.createElement('div');
+  details.className='kr-category';details.dataset.categoryKey=key;details.open=searching||state.has(key);
+  title.textContent=g.name;count.className='kr-category-count';count.textContent=String(g.cards.length);count.setAttribute('aria-label',g.cards.length+(g.cards.length===1?' receta':' recetas'));
+  summary.append(title,count);body.className='kr-category-recipes';g.cards.forEach(card=>body.append(card));details.append(summary,body);
+  details.addEventListener('toggle',()=>{if(details.isConnected&&!query()){const saved=opened.get(current)||new Set();if(details.open)saved.add(key);else saved.delete(key);opened.set(current,saved);}});
+  fragment.append(details);
+ }
+ // Hidden cards stay in the DOM for the application's existing decorators.
+ hidden.forEach(card=>fragment.append(card));
+ list.replaceChildren(fragment);list.dataset.categoryScope=current;list.dataset.categorySearch=String(searching);
+}
+const prior=window.renderRecipes;
+if(typeof prior==='function')window.renderRecipes=function(){remember();const result=prior.apply(this,arguments);group();return result;};
+group();
+})();
+
+</script>
